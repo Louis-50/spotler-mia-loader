@@ -12,6 +12,7 @@ Scope and decisions: *Botpress lazy loader: scope* (Claude doc) and Confluence �
 | `config/config.json` | The page table: opener, buttons, teaser and mode per URL. Published by n8n; the tag reads it from jsDelivr. |
 | `build.mjs` | Builds `dist/mia-loader.gtm.html`, the file you paste into GTM. |
 | `scripts/check-config.mjs` | The same row checks the n8n workflow runs before publishing. |
+| `n8n/mia-page-settings.workflow.ts` | Source of the n8n form marketing uses to edit `config.json` (n8n: *Mia chat: page settings (marketing)*, Spotler AI project). |
 | `test/` | Headless tests against a mocked Botpress (`python3 test/run_tests.py`). |
 
 ## Build and release
@@ -82,6 +83,16 @@ Each row: `url_match`, `match_type` (`exact` · `prefix` · `contains`), `region
 | — | `/de-de`, `/en-de`, `/es-es`, `/sv-se`, `/en-au` and any other `/xx-xx` | — | No chat, as today |
 
 Moving to a page in another region ends the conversation and shows that region's shell.
+
+## Editing the page table (marketing)
+
+The n8n form *Mia chat: page settings (marketing)* (n8n login required) does it without git:
+
+1. Pick the region, the page URL and which URLs it covers. The next step shows that page's current settings, prefilled.
+2. Edit and publish. The workflow runs the same checks as `scripts/check-config.mjs`; if one fails, nothing is published and the form lists what to fix.
+3. It commits `config/config.json` to `main` (the commit message names who changed what) and purges jsDelivr, so the change shows within a few minutes.
+
+It needs a fine-grained GitHub token (this repo only, Contents read and write) as the n8n credential *GitHub: spotler-mia-loader config*. Hand edits to `config.json` still work; purge jsDelivr after pushing them.
 
 ## Not done yet
 
