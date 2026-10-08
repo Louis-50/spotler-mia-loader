@@ -150,6 +150,20 @@ async def main():
         check("7d stale cached off-switch: live config turns NL back on", await page.evaluate("!!document.getElementById('spotler-agent-panel') && !JSON.parse(localStorage.getItem('spotler_mia_config')).enabledRegions"))
         await ctx.close()
 
+        # an older cached config must not win over the live file
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+        reqs = await setup(ctx)
+        old = json.loads(CONFIG); old["version"] = "old"
+        for r in old["rows"]:
+            if r["url_match"] == "*" and r["region"] == "en-GB": r["opener"] = "OLD CACHED OPENER"
+        await ctx.add_init_script("localStorage.setItem('spotler_mia_config', " + json.dumps(json.dumps(old)) + ")")
+        page = await ctx.new_page()
+        await page.goto("https://www.spotler.com/en-gb/pricing/compare"); await page.wait_for_timeout(900)
+        txt = await shell_text(page) or ""
+        check("7e live config wins over an older cached copy on the first load", "OLD CACHED OPENER" not in txt and "Spotler Agent" in txt, txt[:120])
+        check("7e config URL carries a cache-busting stamp", any("config.json?t=" in u for u in reqs))
+        await ctx.close()
+
         # ---------- 8. config down: built-in default ----------
         ctx = await b.new_context(viewport={"width": 1440, "height": 900})
         reqs = await setup(ctx, config_ok=False)

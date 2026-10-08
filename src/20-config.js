@@ -1,10 +1,12 @@
 /* ==================================================================
    20 · Page config: load config.json, pick the row for this page
-   - Returning visitors: cached copy used at once, refreshed in the
-     background (a change shows from their next page). Exception: a
-     cached copy that switches the region off waits for the live one.
-   - First visit: wait up to CONFIG_WAIT_MS, then fall back to the
-     built-in DEFAULT_ROWS. A late response is still cached.
+   - The live file wins when it arrives within CONFIG_WAIT_MS, so a
+     published change shows on the next page load. The URL carries a
+     5-minute stamp so the browser's HTTP cache can't serve an old copy.
+   - Slow or failed fetch: the cached copy (returning visitors) or the
+     built-in DEFAULT_ROWS (first visit). A late response is still cached.
+   - A cached copy that switches the region off never decides alone:
+     the live one is awaited.
    ================================================================== */
 var CONFIG_CACHE_KEY = "spotler_mia_config";
 
@@ -13,18 +15,19 @@ function fetchConfig(cb) {
   var xhr;
   try {
     xhr = new XMLHttpRequest();
-    xhr.open("GET", SETTINGS.CONFIG_URL, true);
+    xhr.open("GET", SETTINGS.CONFIG_URL + "?t=" + Math.floor(now() / 300000), true);
     xhr.timeout = 10000;
     xhr.onload = function () {
       if (done) return; done = true;
       if (xhr.status >= 200 && xhr.status < 300) {
         try { cb(validateConfig(JSON.parse(xhr.responseText))); return; } catch (e) { log("config parse failed", e); }
-      }
+      } else log("config fetch failed: HTTP " + xhr.status);
       cb(null);
     };
-    xhr.onerror = xhr.ontimeout = function () { if (!done) { done = true; cb(null); } };
+    xhr.onerror = function () { if (!done) { done = true; log("config fetch failed: network or blocked (CSP?)"); cb(null); } };
+    xhr.ontimeout = function () { if (!done) { done = true; log("config fetch failed: timeout"); cb(null); } };
     xhr.send();
-  } catch (e) { if (!done) { done = true; cb(null); } }
+  } catch (e) { if (!done) { done = true; log("config fetch failed", e); cb(null); } }
 }
 
 // Defensive: never trust the file's shape. Bad rows are dropped, not fatal.
@@ -62,28 +65,30 @@ function validateConfig(cfg) {
 
 function loadConfig(cb) {
   var cached = LS.getJSON(CONFIG_CACHE_KEY);
+  if (!(cached && cached.rows)) cached = null;
   var answered = false;
   // cb returns false to turn down a cached answer (it would switch the
-  // region off); the network copy then decides, so a stale cache can't
-  // keep a region off after it has been switched on.
+  // region off); the network copy then decides.
   function answer(cfg, source) {
     if (answered) return;
     log("config from " + source + (cfg && cfg.version ? " v" + cfg.version : ""));
     answered = cb(cfg, source) !== false;
   }
 
-  if (cached && cached.rows) answer(cached, "cache");
-
   fetchConfig(function (fresh) {
     if (fresh) {
       if (!cached || cached.version !== fresh.version) LS.setJSON(CONFIG_CACHE_KEY, fresh);
       answer(fresh, "network");
     } else {
+      if (cached) answer(cached, "cache");
       answer(null, "built-in default (fetch failed)");
     }
   });
 
-  if (!cached) setTimeout(function () { answer(null, "built-in default (slow)"); }, SETTINGS.CONFIG_WAIT_MS);
+  setTimeout(function () {
+    if (cached) answer(cached, "cache");            // network slow: last known copy
+    else answer(null, "built-in default (slow)");
+  }, SETTINGS.CONFIG_WAIT_MS);
 }
 
 function normalisePath(p) {
