@@ -43,7 +43,7 @@ function createSlideout(region, labels, handlers) {
   pill.appendChild(document.createTextNode(" " + labels.pill));
 
   var teaserText = el("span", { id: "spotler-agent-teaser-text" });
-  var teaserClose = el("button", { id: "spotler-agent-teaser-close", type: "button", "aria-label": "Dismiss" });
+  var teaserClose = el("button", { id: "spotler-agent-teaser-close", type: "button", "aria-label": labels.dismiss || "Dismiss" });
   teaserClose.innerHTML = "&#10005;";
   var teaser = el("div", { id: "spotler-agent-teaser", role: "status" }, [teaserClose, teaserText]);
   teaser.hidden = true;

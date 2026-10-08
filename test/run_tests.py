@@ -21,7 +21,7 @@ def check(name, cond, detail=""):
     results.append((name, bool(cond), detail))
     print(("PASS " if cond else "FAIL ") + name + (("  -- " + str(detail)) if detail and not cond else ""))
 
-async def setup(ctx, config_ok=True):
+async def setup(ctx, config_ok=True, config=None):
     reqs = []
     async def handler(route):
         url = route.request.url
@@ -31,7 +31,7 @@ async def setup(ctx, config_ok=True):
         if url.endswith(".webp"): return await route.fulfill(body=AVATAR, content_type="image/png")
         if "cdn.jsdelivr.net" in url:
             if not config_ok: return await route.fulfill(status=500, body="")
-            return await route.fulfill(body=CONFIG, content_type="application/json", headers={"access-control-allow-origin": "*"})
+            return await route.fulfill(body=config or CONFIG, content_type="application/json", headers={"access-control-allow-origin": "*"})
         if url.endswith("/logo.svg"): return await route.fulfill(body=SVG, content_type="image/svg+xml")
         if url.endswith(".png"): return await route.fulfill(body=AVATAR, content_type="image/png")
         if "spotler.com" in url and "/discover/mailplus" in url: return await route.fulfill(body=FULL, content_type="text/html")
@@ -129,10 +129,12 @@ async def main():
         await ctx.close()
 
         # ---------- 7. guards ----------
-        for name, url, vw in [("7a NL not enabled yet", "https://www.spotler.com/nl-nl/", 1440),
-                              ("7c off below 1200px", "https://www.spotler.com/en-gb/", 1100)]:
+        OFF_SWITCH = json.dumps(dict(json.loads(CONFIG), enabledRegions=["en-GB"]))
+        for name, url, vw, cfg in [("7a config enabledRegions turns NL off", "https://www.spotler.com/nl-nl/", 1440, OFF_SWITCH),
+                                   ("7b config enabledRegions turns INT off", "https://www.spotler.com/pricing", 1440, OFF_SWITCH),
+                                   ("7c off below 1200px", "https://www.spotler.com/en-gb/", 1100, None)]:
             ctx = await b.new_context(viewport={"width": vw, "height": 900})
-            reqs = await setup(ctx)
+            reqs = await setup(ctx, config=cfg)
             page = await ctx.new_page()
             await page.goto(url); await page.wait_for_timeout(600)
             check(name, await page.evaluate("!document.getElementById('spotler-agent-panel')") and not bp_requests(reqs))
@@ -238,6 +240,59 @@ async def main():
         check("13e card restart brings the shell back", "FeedbackPro inside out" in (await shell_text(page) or ""))
         await ctx.close()
 
+
+        # ---------- 15. NL and INT regions, other locales off ----------
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+        await setup(ctx)
+        page = await ctx.new_page()
+        logs = []
+        page.on("console", lambda m: logs.append(m.text))
+        await page.goto("https://www.spotler.com/nl-nl/prijzen")
+        await page.wait_for_timeout(1200)
+        txt = await shell_text(page)
+        check("15a NL shell: Dutch greeting + buttons", txt and "Wat brengt je vandaag naar Spotler" in txt and "Een demo boeken" in txt and "Bekijk prijzen" in txt, txt)
+        ph = await page.evaluate("document.getElementById('spotler-mia-shell').shadowRoot.querySelector('textarea').getAttribute('placeholder')")
+        check("15b NL placeholder + header title", ph == "Stel Mia een vraag..." and await page.evaluate("document.getElementById('spotler-agent-title').textContent") == "Spotler Assistent", ph)
+        await page.locator("#spotler-agent-panel").screenshot(path=f"{OUT}/15-nl-shell.png")
+        await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; [...sr.querySelectorAll('.btn')].find(b=>b.textContent==='Een demo boeken').click(); }""")
+        await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
+        bplog = await page.evaluate("window.__bpLog")
+        ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
+        check("15c NL start event language nl, page key prijzen", ev and ev[0]["language"] == "nl" and ev[0]["region"] == "nl" and ev[0]["pageKey"] == "prijzen" and ["sendMessage", "Een demo boeken"] in bplog, ev)
+        # Moving to an INT page ends the NL conversation and shows the INT shell
+        await page.goto("https://www.spotler.com/pricing")
+        await page.wait_for_timeout(1200)
+        txt = await shell_text(page)
+        check("15d region change starts fresh: INT shell, NL chat ended", txt and "Hi, I'm the Spotler Agent" in txt and "Pricing" in txt and not await page.evaluate("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')"), txt)
+        await page.click("#spotler-agent-close")
+        await page.wait_for_timeout(4400)
+        tz = await page.evaluate("[document.getElementById('spotler-agent-teaser').hidden, document.getElementById('spotler-agent-teaser-text').textContent, document.getElementById('spotler-agent-pill').textContent]")
+        check("15e INT teaser from the /pricing row", not tz[0] and tz[1] == "Want help comparing plans and pricing?" and "Ask Mia" in tz[2], tz)
+        await page.evaluate("document.getElementById('spotler-agent-teaser').click()")
+        await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
+        bplog = await page.evaluate("window.__bpLog")
+        ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
+        check("15f INT start event language int, teaser text sent", ev and ev[-1]["language"] == "int" and ev[-1]["source"] == "teaser" and ["sendMessage", "Help me compare plans and pricing"] in bplog, [ev, bplog[-3:]])
+        await ctx.close()
+
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+        await setup(ctx)
+        page = await ctx.new_page()
+        logs = []
+        page.on("console", lambda m: logs.append(m.text))
+        await page.goto("https://www.spotler.com/nl-nl/")
+        await page.wait_for_timeout(1000)
+        await page.click("#spotler-agent-close")
+        await page.wait_for_timeout(4400)
+        tz = await page.evaluate("[document.getElementById('spotler-agent-teaser').className, document.getElementById('spotler-agent-teaser-text').textContent, document.getElementById('spotler-agent-pill').textContent]")
+        check("15g NL default teaser beside the pill, Dutch pill", tz[0] == "nl" and tz[1] == "Vragen over Spotler? Vraag maar raak!" and "Vraag het Mia" in tz[2], tz)
+        for loc in ["/de-de/", "/en-au/pricing", "/sv-se"]:
+            logs.clear()
+            await page.goto("https://www.spotler.com" + loc)
+            await page.wait_for_timeout(700)
+            off = await page.evaluate("!document.getElementById('spotler-agent-panel') && !document.getElementById('spotler-mia-shell')")
+            check(f"15h no chat on {loc}", off and any("no chat for this locale" in l for l in logs), logs)
+        await ctx.close()
 
         # ---------- 14. header fit beside the open panel ----------
         for vw, expect in [(2100, None), (1920, None), (1440, None), (1280, None), (1200, None)]:

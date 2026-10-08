@@ -18,13 +18,13 @@ Scope and decisions: *Botpress lazy loader: scope* (Claude doc) and Confluence �
 
 ```bash
 npm install
-node build.mjs                # → dist/mia-loader.gtm.html (≈56 KB)
-python3 test/run_tests.py     # 53 checks against a mocked Botpress
+node build.mjs                # → dist/mia-loader.gtm.html (≈63 KB)
+python3 test/run_tests.py     # 65 checks against a mocked Botpress
 ```
 
 1. In GTM, create a Custom HTML tag "Mia lazy loader" and paste `dist/mia-loader.gtm.html`.
 2. Trigger: all pages, with the same consent condition the current Botpress tags use.
-3. Pause the old tags for every region switched on (`ENABLED_REGIONS`, default `en-GB`): the UK slide-out **and** both UK campaign tags. Only one Botpress chat can load per page; the new tag stands down if it finds another `#bp-embedded-webchat`.
+3. Pause the old tags for every region switched on (`ENABLED_REGIONS`: `en-GB`, `nl`, `int`) in the **same** publish: the UK, NL and INT slide-outs and both UK campaign tags. Only one Botpress chat can load per page; the new tag stands down if it finds another `#bp-embedded-webchat`.
 4. Test in GTM Preview: the console shows `[Mia] …` lines (`config from …`, `loading Botpress (new)`, `start event confirmed`, `revealed live chat`).
 
 ## Settings (`src/00-settings.js`)
@@ -32,7 +32,7 @@ python3 test/run_tests.py     # 53 checks against a mocked Botpress
 | Setting | Value | Notes |
 | --- | --- | --- |
 | `TIMEOUT_MS` | 15 min | Must equal the Botpress inactivity timeout |
-| `ENABLED_REGIONS` | `["en-GB"]` | Rollout switch; `config.json` can override it with `enabledRegions` |
+| `ENABLED_REGIONS` | `["en-GB", "nl", "int"]` | Rollout switch. Emergency off-switch without a GTM publish: add `"enabledRegions": ["en-GB"]` to `config.json` (lists the regions that stay on) |
 | `LEGACY_EXCLUDE` | the campaign pages | Pages still served by the old campaign tags; the new tag stays off them until v2 |
 | `INJECT_URL` | webchat v3.7 | All regions on one version |
 | `LABELS` | per region | Header title, pill and footer text (naming still undecided) |
@@ -72,7 +72,17 @@ Each row: `url_match`, `match_type` (`exact` · `prefix` · `contains`), `region
 - `opener` bubbles can be a video: a bubble that is exactly `[video] https://…` renders a video player (no Botpress needed to play it).
 - Up to 6 buttons per row.
 
+## Regions
+
+| Region | URLs | Language event | Notes |
+| --- | --- | --- | --- |
+| `en-GB` | `/en-gb/…` | `en-GB` | |
+| `nl` | `/nl-nl/…` | `nl` | Dutch panel labels; Botpress's own strings ("Today", "Delivered", tagline) stay English, as in the live chat. Teaser sits beside the pill |
+| `int` | everything else | `int` | |
+| — | `/de-de`, `/en-de`, `/es-es`, `/sv-se`, `/en-au` and any other `/xx-xx` | — | No chat, as today |
+
+Moving to a page in another region ends the conversation and shows that region's shell.
+
 ## Not done yet
 
-- Moving the NL and INT regions over. NL needs its Dutch default row first.
 - `/en-gb/services` (the old Mail+ test home) gets the slide-out once the old Mail+ tag is paused; add a `full` row if it should keep the card.

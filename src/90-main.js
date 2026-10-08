@@ -38,6 +38,7 @@ function boot() {
   if (document.getElementById("bp-embedded-webchat")) { log("off: another Botpress tag already runs on this page"); return; }
 
   var region = detectRegion(path);
+  if (region.id === "none") { log("off: no chat for this locale"); return; }
   SETTINGS.CDN_ORIGINS.forEach(preconnect);
 
   var labels = SETTINGS.LABELS[region.id] || SETTINGS.LABELS["en-GB"];
