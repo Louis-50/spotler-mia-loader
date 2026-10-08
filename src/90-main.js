@@ -38,12 +38,7 @@ function boot() {
   if (document.getElementById("bp-embedded-webchat")) { log("off: another Botpress tag already runs on this page"); return; }
 
   var region = detectRegion(path);
-  var cachedCfg = LS.getJSON(CONFIG_CACHE_KEY);
-  var enabled = (cachedCfg && cachedCfg.enabledRegions) || SETTINGS.ENABLED_REGIONS;
-  if (enabled.indexOf(region.id) === -1) { log("off: region " + region.id + " not enabled"); return; }
-
   SETTINGS.CDN_ORIGINS.forEach(preconnect);
-  State.cleanLegacy();
 
   var labels = SETTINGS.LABELS[region.id] || SETTINGS.LABELS["en-GB"];
   var ctx = { region: region, labels: labels, row: null, ui: null, shell: null };
@@ -52,9 +47,15 @@ function boot() {
   // Cached config answers at once; a first visit waits for the file
   // (CONFIG_WAIT_MS at most) so the right mode is chosen before painting.
   var started = false;
+  // The region switch lives in config.json (enabledRegions), so a region
+  // can be turned on or off without a GTM publish.
   loadConfig(function (cfg) {
-    var row = pickRow(cfg, path, region.id);
-    if (!started) { started = true; start(row); }
+    if (started) return;
+    started = true;
+    var enabled = (cfg && cfg.enabledRegions) || SETTINGS.ENABLED_REGIONS;
+    if (enabled.indexOf(region.id) === -1) { log("off: region " + region.id + " not enabled"); return; }
+    State.cleanLegacy();
+    start(pickRow(cfg, path, region.id));
   });
 
   function start(row) {
