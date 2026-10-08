@@ -30,7 +30,8 @@ export function checkConfig(cfg) {
       if (!b.label) errors.push(`${at}: button ${j + 1} has no label`);
       if (b.label && b.label.length > 80) errors.push(`${at}: button ${j + 1} label longer than 80`);
     });
-    if ((r.buttons || []).length > 4) errors.push(`${at}: more than 4 buttons`);
+    if ((r.buttons || []).length > 6) errors.push(`${at}: more than 6 buttons`);
+    String(r.opener || "").split(/\n\s*\n/).forEach(b => { if (/^\[video\]/i.test(b.trim()) && !/^\[video\]\s*https:\/\/\S+$/i.test(b.trim())) errors.push(`${at}: [video] needs one https URL`); });
     if ((r.mode === "half" || r.mode === "full") && !r.opener) errors.push(`${at}: embedded rows need their own opener`);
     const key = `${r.region}|${r.match_type || "prefix"}|${String(r.url_match).toLowerCase()}`;
     if (seen.has(key)) errors.push(`${at}: duplicate of another row`);

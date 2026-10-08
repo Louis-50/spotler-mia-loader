@@ -182,6 +182,7 @@ function watchForUserMessage() {
     var sr = webchatShadow();
     if (!sr) { if (++tries < 100) setTimeout(attach, 100); return; }
     BP.checkForUserMessage = check;
+    if (BP.ctx.ui.videoWidth) sizeVideos(sr, BP.ctx.ui.videoWidth);
     function check() {
       if (BP.mode !== "new" || BP.revealed || BP.awaitingConv || BP.pending || !BP.sentText) return;
       var want = trim(BP.sentText);
@@ -283,4 +284,31 @@ function startTimeoutWatch() {
   }
   setInterval(check, SETTINGS.TIMEOUT_CHECK_MS);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+}
+
+/* Embedded cards: Botpress videos sit in nested shadow roots CSS can't
+   reach, so size them inline. Runs on chat changes only (the live
+   campaign tags polled every 700 ms forever). */
+function sizeVideos(sr, width) {
+  function sweep(root) {
+    try {
+      var media = root.querySelectorAll("video, iframe");
+      for (var i = 0; i < media.length; i++) {
+        var m = media[i];
+        var src = m.getAttribute("src") || "";
+        if (m.__miaSized || (m.tagName === "IFRAME" && !/vimeo|youtube/.test(src))) continue;
+        m.__miaSized = true;
+        m.style.setProperty("width", width + "px", "important");
+        m.style.setProperty("max-width", "100%", "important");
+        m.style.setProperty("height", "auto", "important");
+        m.style.setProperty("border-radius", "12px", "important");
+      }
+      var all = root.querySelectorAll("*");
+      for (var j = 0; j < all.length; j++) if (all[j].shadowRoot) sweep(all[j].shadowRoot);
+    } catch (e) {}
+  }
+  var t;
+  new MutationObserver(function () { clearTimeout(t); t = setTimeout(function () { sweep(sr); }, 100); })
+    .observe(sr, { childList: true, subtree: true });
+  sweep(sr);
 }

@@ -1,8 +1,10 @@
 /* ==================================================================
    90 · Boot
-   v1 runs the slide-out on desktop only. Rows set to "half" or "full"
-   are left alone (their old campaign tags still serve them) until the
-   embedded modes ship.
+   The page's config row decides the mode:
+     slideout  desktop only (1200px+, no phone/tablet)
+     half      desktop and laptop (HALF_MIN_WIDTH+, no phone/tablet)
+     full      every device: the only mode on mobile
+   A mode the device can't show means no chat on that page.
    ================================================================== */
 function detectRegion(path) {
   for (var i = 0; i < SETTINGS.REGIONS.length; i++) {
@@ -20,22 +22,25 @@ function isLegacyExcluded(path) {
   return false;
 }
 
+function modeAllowed(mode) {
+  var touch = isMobileOrTabletUA(), w = window.innerWidth;
+  if (mode === "full") return true;
+  if (mode === "half") return !touch && w >= SETTINGS.HALF_MIN_WIDTH;
+  return !touch && w >= SETTINGS.DESKTOP_MIN_WIDTH;
+}
+
 function boot() {
   if (window.__spotlerMiaStarted) return;          // GTM can fire a tag twice
   window.__spotlerMiaStarted = SETTINGS.VERSION;
 
   var path = location.pathname;
-  if (isLegacyExcluded(path)) { log("off: page still on a legacy campaign tag"); return; }
+  if (isLegacyExcluded(path)) { log("off: page still on a legacy tag"); return; }
+  if (document.getElementById("bp-embedded-webchat")) { log("off: another Botpress tag already runs on this page"); return; }
 
   var region = detectRegion(path);
   var cachedCfg = LS.getJSON(CONFIG_CACHE_KEY);
   var enabled = (cachedCfg && cachedCfg.enabledRegions) || SETTINGS.ENABLED_REGIONS;
   if (enabled.indexOf(region.id) === -1) { log("off: region " + region.id + " not enabled"); return; }
-
-  if (window.innerWidth < SETTINGS.DESKTOP_MIN_WIDTH || isMobileOrTabletUA()) {
-    log("off: slide-out is desktop only");
-    return;
-  }
 
   SETTINGS.CDN_ORIGINS.forEach(preconnect);
   State.cleanLegacy();
@@ -44,21 +49,44 @@ function boot() {
   var ctx = { region: region, labels: labels, row: null, ui: null, shell: null };
   BP.ctx = ctx;
 
-  // HubSpot booking modal markup (logic attaches when Botpress loads).
-  var hs = document.createElement("div");
-  hs.innerHTML = HTML.hubspot;
-  while (hs.firstChild) document.body.appendChild(hs.firstChild);
-
-  ctx.ui = createSlideout(region, labels, {
-    onRestart: function () {
-      if (LS.getJSON(LIVE_KEY) || BP.engaged) resetToShell("restart");
-    },
-    onTeaser: function (text) { teaserSend(text); }
+  // Cached config answers at once; a first visit waits for the file
+  // (CONFIG_WAIT_MS at most) so the right mode is chosen before painting.
+  var started = false;
+  loadConfig(function (cfg) {
+    var row = pickRow(cfg, path, region.id);
+    if (!started) { started = true; start(row); }
   });
+
+  function start(row) {
+    var mode = row.mode || "slideout";
+    if (!modeAllowed(mode)) { log("off: mode '" + mode + "' not shown on this device"); return; }
+    ctx.row = row;
+    log("mode " + mode + ", page " + (row.page || "default"));
+
+    addStyle(CSS.common);
+    var hs = document.createElement("div");
+    hs.innerHTML = HTML.hubspot;
+    while (hs.firstChild) document.body.appendChild(hs.firstChild);
+
+    var handlers = {
+      onRestart: function () { if (LS.getJSON(LIVE_KEY) || BP.engaged) resetToShell("restart"); },
+      onTeaser: function (text) { teaserSend(text); }
+    };
+
+    if (mode === "slideout") {
+      ctx.ui = createSlideout(region, labels, handlers);
+      begin();
+      ctx.ui.restore();
+      ctx.ui.setRow(row);
+    } else {
+      createEmbedded(mode, row, labels, handlers, function (ui) { ctx.ui = ui; begin(); });
+    }
+  }
 
   function mountShell() {
     if (ctx.shell && ctx.shell.host && ctx.shell.host.parentNode) ctx.shell.host.parentNode.removeChild(ctx.shell.host);
     var host = el("div", { id: "spotler-mia-shell" });
+    if (ctx.ui.videoWidth) host.style.setProperty("--mia-video-w", ctx.ui.videoWidth + "px");
     ctx.ui.body.insertBefore(host, ctx.ui.body.firstChild);
     ctx.shell = createShell(host, labels, ctx.row, {
       onSend: function (text, source) { engage(text, source); },
@@ -67,25 +95,13 @@ function boot() {
   }
   ctx.remountShell = mountShell;
 
-  var live = State.getLive(region.id);
-  if (live) {
-    // Mid-conversation from an earlier page: straight to the live chat.
-    resume();
-  } else {
-    mountShell();
+  // One live conversation per visitor, shown in whatever container this
+  // page uses: resume it, or show the static shell.
+  function begin() {
+    if (State.getLive(region.id)) resume();
+    else mountShell();
+    startTimeoutWatch();
   }
-  ctx.ui.restore();
-  startTimeoutWatch();
-
-  loadConfig(function (cfg) {
-    var row = pickRow(cfg, path, region.id);
-    if (row && row.mode !== "slideout") {
-      log("row asks for mode '" + row.mode + "' (not in v1): using slide-out");
-    }
-    ctx.row = row;
-    if (ctx.shell) ctx.shell.setRow(row);
-    ctx.ui.setRow(row);
-  });
 }
 
 onDomReady(function () {

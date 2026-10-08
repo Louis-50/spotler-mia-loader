@@ -90,7 +90,10 @@ function createShell(host, labels, row, handlers) {
     var bubbles = String((r && r.opener) || "").split(/\n\s*\n/).map(trim).filter(Boolean);
     bubbles.forEach(function (text, i) {
       var last = i === bubbles.length - 1;
-      var bubble = el("div", { "class": "b" }, [el("p", { text: text })]);
+      var vid = /^\[video\]\s*(https:\/\/\S+)$/i.exec(text);
+      var bubble = vid
+        ? el("div", { "class": "vid" }, [el("video", { src: vid[1], controls: "", playsinline: "", preload: "metadata" })])
+        : el("div", { "class": "b" }, [el("p", { text: text })]);
       var col = bubble;
       if (last && r.buttons && r.buttons.length) {
         col = el("div", { "class": "col" }, [bubble]);

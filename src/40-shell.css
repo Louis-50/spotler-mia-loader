@@ -49,6 +49,8 @@
 .col .b { max-width: 85%; }
 .m.out .b { background: #002645; color: #F2F4F6; border-radius: 24px 24px 2px 24px; }
 
+.vid { max-width: 85%; }
+.vid video { display: block; width: var(--mia-video-w, 100%); max-width: 100%; height: auto; border-radius: 12px; background: #000; }
 .row { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px; }
 .btn { display: block; padding: 4px 12px; border-radius: 24px; background: #BFCAD3; color: #001323;
        font: inherit; font-size: 14px; line-height: 20px; text-align: center; cursor: pointer;

@@ -41,13 +41,14 @@ function validateConfig(cfg) {
       page: typeof r.page === "string" ? r.page : "",
       route: typeof r.route === "string" ? r.route : "",
       opener: typeof r.opener === "string" ? r.opener.slice(0, 1200) : "",
-      buttons: (r.buttons || []).filter(function (b) { return b && trim(b.label); }).slice(0, 4).map(function (b) {
+      buttons: (r.buttons || []).filter(function (b) { return b && trim(b.label); }).slice(0, 6).map(function (b) {
         return { label: trim(b.label).slice(0, 80), send: trim(b.send || b.label).slice(0, 300) };
       }),
       teaser_text: typeof r.teaser_text === "string" ? r.teaser_text.slice(0, 200) : "",
       teaser_send: typeof r.teaser_send === "string" ? r.teaser_send.slice(0, 300) : "",
       headline: typeof r.headline === "string" ? r.headline.slice(0, 200) : "",
-      intro: typeof r.intro === "string" ? r.intro.slice(0, 400) : ""
+      intro: typeof r.intro === "string" ? r.intro.slice(0, 400) : "",
+      media_selector: typeof r.media_selector === "string" ? r.media_selector.slice(0, 300) : ""
     });
   }
   if (!rows.length) throw new Error("no valid rows");

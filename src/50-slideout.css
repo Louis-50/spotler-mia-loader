@@ -44,28 +44,6 @@ body.admin-bar #spotler-agent-panel { top: 32px; height: calc(100vh - 32px); }
 #spotler-agent-restart:hover, #spotler-agent-close:hover { background: rgba(255,255,255,0.15); }
 
 #spotler-agent-body { position: relative; flex: 1 1 auto; min-height: 0; }
-#spotler-mia-shell {
-  position: absolute; inset: 0;
-  opacity: 1; transition: opacity 0.25s ease;
-}
-#spotler-mia-shell.mia-out { opacity: 0; pointer-events: none; }
-#spotler-mia-shell.mia-gone { visibility: hidden; }
-
-#bp-embedded-webchat {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  transition: opacity 0.25s ease;
-}
-#bp-embedded-webchat.bp-ready {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-}
-#bp-embedded-webchat iframe, #bp-embedded-webchat > div {
-  width: 100% !important; height: 100% !important; border: 0;
-}
 #spotler-agent-loading {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%); display: none;
@@ -151,7 +129,6 @@ body.agent-panel-open .partners-list-wrap .search-sort-wrap { width: auto; }
   body.agent-panel-open #header { width: 100% !important; }
 }
 @media (prefers-reduced-motion: reduce) {
-  #spotler-agent-panel, #site-wrapper, #spotler-agent-pill, #spotler-mia-shell, #bp-embedded-webchat { transition: none; }
+  #spotler-agent-panel, #site-wrapper, #spotler-agent-pill { transition: none; }
 }
 
-.bpFab, #fab-root { display: none !important; }

@@ -1,6 +1,6 @@
 {
-  "version": "2026-10-08.1",
-  "generatedBy": "initial import from the live UK slide-out tag (TEASER_RULES)",
+  "version": "2026-10-08.2",
+  "generatedBy": "UK slide-out TEASER_RULES + campaign openers captured from the live chat (8 Oct 2026)",
   "enabledRegions": [
     "en-GB"
   ],
@@ -192,6 +192,110 @@
       "page": "resources",
       "teaser_text": "Subscribe to the Spotler Insights newsletter to stay informed",
       "teaser_send": "I want to subscribe to the Spotler Insights newsletter"
+    },
+    {
+      "url_match": "/en-gb/discover/feedbackpro-x-zendesk",
+      "match_type": "exact",
+      "region": "en-GB",
+      "mode": "half",
+      "page": "feedbackpro-zendesk",
+      "route": "C",
+      "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
+      "buttons": [
+        {
+          "label": "How does FeedbackPro work?",
+          "send": "How does FeedbackPro work?"
+        },
+        {
+          "label": "What can I automate?",
+          "send": "What can I automate?"
+        },
+        {
+          "label": "What feedback can I collect?",
+          "send": "What feedback can I collect?"
+        },
+        {
+          "label": "How much does it cost?",
+          "send": "How much does it cost?"
+        },
+        {
+          "label": "How does it work with Zendesk?",
+          "send": "How does it work with Zendesk?"
+        },
+        {
+          "label": "How do we act on negative feedback?",
+          "send": "How do we act on negative feedback?"
+        }
+      ]
+    },
+    {
+      "url_match": "/en-gb/discover/customer-feedback-platform",
+      "match_type": "exact",
+      "region": "en-GB",
+      "mode": "half",
+      "page": "feedbackpro-platform",
+      "route": "C",
+      "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
+      "buttons": [
+        {
+          "label": "How does FeedbackPro work?",
+          "send": "How does FeedbackPro work?"
+        },
+        {
+          "label": "What can I automate?",
+          "send": "What can I automate?"
+        },
+        {
+          "label": "What feedback can I collect?",
+          "send": "What feedback can I collect?"
+        },
+        {
+          "label": "How much does it cost?",
+          "send": "How much does it cost?"
+        },
+        {
+          "label": "How does it work with Zendesk?",
+          "send": "How does it work with Zendesk?"
+        },
+        {
+          "label": "How do we act on negative feedback?",
+          "send": "How do we act on negative feedback?"
+        }
+      ]
+    },
+    {
+      "url_match": "/en-gb/discover/mailplus-video-overview",
+      "match_type": "exact",
+      "region": "en-GB",
+      "mode": "full",
+      "page": "services",
+      "route": "B",
+      "headline": "Mail+ – built to make marketers lives easier",
+      "intro": "Let’s chat! I’ll show you how Mail+ can help you. 👋",
+      "opener": "You clicked to see how it all comes together. Here it is in just 45 seconds.\n\n[video] https://files.bpcontent.cloud/2026/08/10/16/20260810160832-27BW9XR8.mov\n\nI'm Mia. I know Mail+ inside out, so ask me anything the video didn't cover.",
+      "buttons": [
+        {
+          "label": "How do the automations save me time?",
+          "send": "How do the automations save me time?"
+        },
+        {
+          "label": "Can I build a landing page in Mail+?",
+          "send": "Can I build a landing page in Mail+?"
+        },
+        {
+          "label": "Is it easy to do advanced segmentation?",
+          "send": "Is it easy to do advanced segmentation?"
+        },
+        {
+          "label": "What does it cost?",
+          "send": "What does it cost?"
+        },
+        {
+          "label": "Book a Demo",
+          "send": "Book a Demo"
+        }
+      ],
+      "media_selector": "iframe[src*=\"player.vimeo.com\"], img[src*=\"services-hero\"]"
     }
   ]
 }

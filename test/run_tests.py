@@ -6,6 +6,10 @@ from playwright.async_api import async_playwright
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TAG = open(os.path.join(ROOT, "dist/mia-loader.gtm.html")).read()
 PAGE = open(os.path.join(ROOT, "test/mock/page.html")).read().replace("<!--TAG-->", TAG)
+FULL = open(os.path.join(ROOT, "test/mock/campaign-full.html")).read().replace("<!--TAG-->", TAG)
+HALF = open(os.path.join(ROOT, "test/mock/campaign-half.html")).read().replace("<!--TAG-->", TAG)
+SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40"><rect width="120" height="40" fill="#002a4d"/></svg>'
+MOBILE_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
 INJECT = open(os.path.join(ROOT, "test/mock/inject.js")).read()
 BOTCFG = open(os.path.join(ROOT, "test/mock/botconfig.js")).read()
 CONFIG = open(os.path.join(ROOT, "config/config.json")).read()
@@ -28,6 +32,10 @@ async def setup(ctx, config_ok=True):
         if "cdn.jsdelivr.net" in url:
             if not config_ok: return await route.fulfill(status=500, body="")
             return await route.fulfill(body=CONFIG, content_type="application/json", headers={"access-control-allow-origin": "*"})
+        if url.endswith("/logo.svg"): return await route.fulfill(body=SVG, content_type="image/svg+xml")
+        if url.endswith(".png"): return await route.fulfill(body=AVATAR, content_type="image/png")
+        if "spotler.com" in url and "/discover/mailplus" in url: return await route.fulfill(body=FULL, content_type="text/html")
+        if "spotler.com" in url and "/discover/feedbackpro" in url: return await route.fulfill(body=HALF, content_type="text/html")
         if "spotler.com" in url: return await route.fulfill(body=PAGE, content_type="text/html")
         return await route.fulfill(status=404, body="")
     await ctx.route("**/*", handler)
@@ -122,7 +130,6 @@ async def main():
 
         # ---------- 7. guards ----------
         for name, url, vw in [("7a NL not enabled yet", "https://www.spotler.com/nl-nl/", 1440),
-                              ("7b legacy campaign page untouched", "https://www.spotler.com/en-gb/discover/mailplus-video-overview", 1440),
                               ("7c off below 1200px", "https://www.spotler.com/en-gb/", 1100)]:
             ctx = await b.new_context(viewport={"width": vw, "height": 900})
             reqs = await setup(ctx)
@@ -160,6 +167,77 @@ async def main():
         ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
         check("10b teaser click sends its message, source teaser", ["sendMessage", "Help me compare plans and pricing"] in bplog and ev and ev[0]["source"] == "teaser", bplog)
         await ctx.close()
+
+        # ---------- 11. full-page (Mail+) ----------
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+        reqs = await setup(ctx)
+        page = await ctx.new_page()
+        await page.goto("https://www.spotler.com/en-gb/discover/mailplus-video-overview")
+        await page.wait_for_timeout(1500)
+        st = await page.evaluate("""() => { const a=document.getElementById('spotler-inline-agent'); const sr=document.getElementById('spotler-mia-shell')&&document.getElementById('spotler-mia-shell').shadowRoot;
+            return { mode: a && a.className, heroHidden: getComputedStyle(document.querySelector('.header-section')).display==='none', afterHero: a && a.previousElementSibling && a.previousElementSibling.classList.contains('header-section'),
+              h2: a && a.querySelector('h2') && a.querySelector('h2').textContent, intro: document.getElementById('spotler-agent-intro') && document.getElementById('spotler-agent-intro').textContent,
+              video: sr && sr.querySelector('video') && sr.querySelector('video').getAttribute('src'), buttons: sr ? sr.querySelectorAll('.btn').length : 0,
+              scale: a && getComputedStyle(a).getPropertyValue('--chat-scale').trim(), panel: !!document.getElementById('spotler-agent-panel') } }""")
+        check("11a full card replaces hero, after it", st["mode"] == "mia-full" and st["heroHidden"] and st["afterHero"], st)
+        check("11b headline + intro from config", st["h2"] and "Mail+" in st["h2"] and st["intro"] and "Let" in st["intro"], st)
+        check("11c shell shows campaign opener: video + 5 buttons", st["video"] and st["video"].endswith(".mov") and st["buttons"] == 5, st)
+        check("11d content scale 1.08 at 1440px, no slide-out", st["scale"] == "1.08" and not st["panel"], st)
+        check("11e no Botpress on page view", not bp_requests(reqs), bp_requests(reqs))
+        await page.screenshot(path=f"{OUT}/11-full.png", full_page=False)
+        await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; [...sr.querySelectorAll('.btn')].find(b=>b.textContent==='What does it cost?').click(); }""")
+        await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
+        bplog = await page.evaluate("window.__bpLog")
+        ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
+        check("11f start event keeps page/route for Studio gate (services/B)", ev and ev[0].get("page") == "services" and ev[0].get("route") == "B" and ev[0]["source"] == "button", ev)
+        check("11g message sent", ["sendMessage", "What does it cost?"] in bplog, bplog)
+        # carry over: campaign chat follows into the slide-out
+        await page.goto("https://www.spotler.com/en-gb/pricing")
+        await page.wait_for_function("document.getElementById('bp-embedded-webchat') && document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
+        bplog = await page.evaluate("window.__bpLog")
+        check("11h campaign conversation resumes in slide-out", any(e[0] == "resume" for e in bplog) and await page.evaluate("!!document.getElementById('spotler-agent-panel') && !document.getElementById('spotler-mia-shell')"), bplog)
+        await ctx.close()
+
+        # ---------- 12. full-page on mobile ----------
+        ctx = await b.new_context(viewport={"width": 390, "height": 844}, user_agent=MOBILE_UA, is_mobile=True, has_touch=True)
+        reqs = await setup(ctx)
+        page = await ctx.new_page()
+        await page.goto("https://www.spotler.com/en-gb/discover/mailplus-video-overview")
+        await page.wait_for_timeout(1500)
+        ok = await page.evaluate("!!document.querySelector('#spotler-inline-agent.mia-full') && !!document.getElementById('spotler-mia-shell')")
+        check("12a full-page shows on mobile", ok)
+        await page.screenshot(path=f"{OUT}/12-full-mobile.png")
+        await page.goto("https://www.spotler.com/en-gb/discover/feedbackpro-x-zendesk")
+        await page.wait_for_timeout(1200)
+        check("12b half-page off on mobile", await page.evaluate("!document.getElementById('spotler-inline-agent')"))
+        await page.goto("https://www.spotler.com/en-gb/pricing")
+        await page.wait_for_timeout(800)
+        check("12c slide-out off on mobile", await page.evaluate("!document.getElementById('spotler-agent-panel')") and not bp_requests(reqs))
+        await ctx.close()
+
+        # ---------- 13. half-page (FeedbackPro) ----------
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+        reqs = await setup(ctx)
+        page = await ctx.new_page()
+        await page.goto("https://www.spotler.com/en-gb/discover/feedbackpro-x-zendesk")
+        await page.wait_for_timeout(1500)
+        st = await page.evaluate("""() => { const a=document.getElementById('spotler-inline-agent'); const sr=document.getElementById('spotler-mia-shell')&&document.getElementById('spotler-mia-shell').shadowRoot;
+            return { mode: a && a.className, inVisual: a && a.parentElement.classList.contains('spotler-inline-visual-host'), imgHidden: getComputedStyle(document.querySelector('.visual img')).visibility==='hidden',
+              copyVisible: getComputedStyle(document.querySelector('.copy')).visibility==='visible', buttons: sr ? sr.querySelectorAll('.btn').length : 0, text: sr && sr.textContent } }""")
+        check("13a half card overlays the hero image, copy untouched", st["mode"] == "mia-half" and st["inVisual"] and st["imgHidden"] and st["copyVisible"], st)
+        check("13b FeedbackPro opener + 6 buttons", st["buttons"] == 6 and "FeedbackPro inside out" in (st["text"] or ""), st)
+        check("13c no Botpress on page view", not bp_requests(reqs), bp_requests(reqs))
+        await page.screenshot(path=f"{OUT}/13-half.png")
+        await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; const ta=sr.querySelector('textarea'); ta.value='Does it work with Zendesk?'; ta.dispatchEvent(new Event('input')); ta.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true})); }""")
+        await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
+        bplog = await page.evaluate("window.__bpLog")
+        ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
+        check("13d route C event, typed message sent", ev and ev[0].get("route") == "C" and ev[0].get("page") == "feedbackpro-zendesk" and ["sendMessage", "Does it work with Zendesk?"] in bplog, bplog)
+        await page.click("#spotler-inline-restart")
+        await page.wait_for_timeout(300)
+        check("13e card restart brings the shell back", "FeedbackPro inside out" in (await shell_text(page) or ""))
+        await ctx.close()
+
         await b.close()
 
     failed = [r for r in results if not r[1]]

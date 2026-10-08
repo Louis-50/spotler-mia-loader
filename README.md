@@ -18,13 +18,13 @@ Scope and decisions: *Botpress lazy loader: scope* (Claude doc) and Confluence �
 
 ```bash
 npm install
-node build.mjs                # → dist/mia-loader.gtm.html (≈45 KB)
-python3 test/run_tests.py     # 33 checks against a mocked Botpress
+node build.mjs                # → dist/mia-loader.gtm.html (≈56 KB)
+python3 test/run_tests.py     # 48 checks against a mocked Botpress
 ```
 
 1. In GTM, create a Custom HTML tag "Mia lazy loader" and paste `dist/mia-loader.gtm.html`.
 2. Trigger: all pages, with the same consent condition the current Botpress tags use.
-3. Add the regions that are switched on (`ENABLED_REGIONS`, default `en-GB`) as **exceptions on the old slide-out tag for that region**, so only one chat loads.
+3. Pause the old tags for every region switched on (`ENABLED_REGIONS`, default `en-GB`): the UK slide-out **and** both UK campaign tags. Only one Botpress chat can load per page; the new tag stands down if it finds another `#bp-embedded-webchat`.
 4. Test in GTM Preview: the console shows `[Mia] …` lines (`config from …`, `loading Botpress (new)`, `start event confirmed`, `revealed live chat`).
 
 ## Settings (`src/00-settings.js`)
@@ -59,8 +59,20 @@ Each row: `url_match`, `match_type` (`exact` · `prefix` · `contains`), `region
 - **`page` and `route`:** these are only sent for rows that set a `route`, so the existing Studio gates behave exactly as today.
 - **dataLayer events:** `spotler_mia_start` (`miaSource`, `miaRegion`, `miaPage`), `spotler_mia_ready`, `spotler_mia_end` (`miaEndReason`).
 
-## Not in v1
+## Modes
 
-- Half-page and centre full-page modes (rows with those modes fall back to the slide-out).
-- Mobile.
+| Mode | Where | Devices | Notes |
+| --- | --- | --- | --- |
+| `slideout` | Default for every page without a row | Desktop 1200px+, no phones/tablets | Panel, pill, teaser, page squeeze |
+| `half` | Rows set to `half` (FeedbackPro) | 1024px+, no phones/tablets | Card overlays the hero image; copy untouched. `media_selector` overrides the image pick |
+| `full` | Rows set to `full` (Mail+) | All devices: the only mode on mobile | Hero hidden; `headline`, `intro` and a large card go after it. `media_selector` picks the hero media |
+
+- A mode the device can't show means no chat on that page.
+- One live conversation per visitor shows in whichever container the page uses: a chat started on a campaign card continues in the slide-out on the next page (desktop).
+- `opener` bubbles can be a video: a bubble that is exactly `[video] https://…` renders a video player (no Botpress needed to play it).
+- Up to 6 buttons per row.
+
+## Not done yet
+
 - Moving the NL and INT regions over. NL needs its Dutch default row first.
+- `/en-gb/services` (the old Mail+ test home) gets the slide-out once the old Mail+ tag is paused; add a `full` row if it should keep the card.

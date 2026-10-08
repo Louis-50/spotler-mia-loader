@@ -6,7 +6,7 @@
    are only the fallback used when config.json can't be loaded.
    ================================================================== */
 var SETTINGS = {
-  VERSION: "1.0.0",
+  VERSION: "1.1.0",
 
   // ---- Page table (published by n8n) ----
   CONFIG_URL: "https://cdn.jsdelivr.net/gh/Louis-50/spotler-mia-loader@main/config/config.json",
@@ -35,14 +35,11 @@ var SETTINGS = {
   TEASER_DELAY_MS: 4000,
   TEASER_HIDE_MS: 25000,
 
-  // Paths still served by the old campaign tags. The new tag stays off them
-  // until the half-page / full-page modes ship (v2). Remove as they move over.
-  LEGACY_EXCLUDE: [
-    "/en-gb/discover/feedbackpro-x-zendesk",
-    "/en-gb/discover/customer-feedback-platform",
-    "/en-gb/discover/mailplus-video-overview",
-    "/en-gb/services"
-  ],
+  HALF_MIN_WIDTH: 1024,           // half-page card: laptops and up, never phones/tablets
+
+  // Paths the new tag must leave alone (e.g. a page still on an old tag).
+  // Pause the old campaign/slide-out tags when this tag goes live.
+  LEGACY_EXCLUDE: [],
 
   // ---- Regions: first match wins, last entry is the fallback ----
   REGIONS: [
