@@ -295,7 +295,7 @@ async def main():
         await ctx.close()
 
         # ---------- 14. header fit beside the open panel ----------
-        for vw, expect in [(2100, None), (1920, None), (1440, None), (1280, None), (1200, None)]:
+        for vw, expect in [(2100, None), (1920, None), (1440, None), (1366, None), (1280, None), (1200, None)]:
             ctx = await b.new_context(viewport={"width": vw, "height": 800})
             await setup(ctx)
             page = await ctx.new_page()
@@ -308,15 +308,18 @@ async def main():
                   aboutHidden: lis.every(li=>!/About/.test(li.textContent)), gap: Math.round(btn.left - last.getBoundingClientRect().right),
                   clear: Math.round(hdr.getBoundingClientRect().right - box.querySelector('.main-switcher-box').getBoundingClientRect().right),
                   logoLeft: Math.round(box.querySelector('.logo-wrapper img').getBoundingClientRect().left - hdr.getBoundingClientRect().left),
-                  htmlStyle: document.documentElement.getAttribute('style') } }""")
-            ok = r["gap"] >= 12 and r["clear"] >= 12 and r["logoLeft"] >= 4 and r["htmlStyle"] is None and (expect is None or r["levels"] == expect)
+                  htmlStyle: document.documentElement.getAttribute('style'),
+                  barRows: new Set([...document.querySelectorAll('.top-nav > li')].map(li=>Math.round(li.getBoundingClientRect().top))).size,
+                  barRight: Math.round(hdr.getBoundingClientRect().right - document.querySelector('.top-nav > li:last-child').getBoundingClientRect().right) } }""")
+            ok = r["barRows"] == 1 and r["barRight"] >= 12 and r["gap"] >= 12 and r["clear"] >= 12 and r["logoLeft"] >= 4 and r["htmlStyle"] is None and (expect is None or r["levels"] == expect)
             if r["levels"] >= 1: ok = ok and r["aboutHidden"]
-            check(f"14 header fits beside panel at {vw}px (levels {r['levels']}, About us {'hidden' if r['aboutHidden'] else 'shown'})", ok, r)
+            check(f"14 header + top bar fit beside panel at {vw}px (levels {r['levels']}, About us {'hidden' if r['aboutHidden'] else 'shown'})", ok, r)
             await page.screenshot(path=f"{OUT}/14-header-{vw}.png", clip={"x": 0, "y": 0, "width": vw, "height": 140})
             if vw == 1280:
                 await page.click("#spotler-agent-close"); await page.wait_for_timeout(300)
                 back = await page.evaluate("[1,2,3,4].every(l=>!document.body.classList.contains('mia-fit-'+l)) && [...document.querySelectorAll('.main-nav > li')].some(li=>li.offsetParent!==null && /About/.test(li.textContent))")
-                check("14 closing the panel restores the full header", back)
+                back = back and await page.evaluate("getComputedStyle(document.querySelector('.top-nav-container')).marginRight === document.querySelector('.top-nav-container').style.marginRight")
+                check("14 closing the panel restores the full header and top bar", back)
             await ctx.close()
 
         await b.close()

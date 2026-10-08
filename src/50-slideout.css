@@ -91,6 +91,12 @@ body.agent-panel-open.mia-fit-4 .header .main-nav > li { padding-left: 5px !impo
 body.agent-panel-open.mia-fit-4 .header .main-nav > li,
 body.agent-panel-open.mia-fit-4 .header .main-nav > li > a { font-size: 14px !important; }
 
+/* Top bar fit (see fitBar): the theme gives the top bar links a right margin
+   measured from the window, so in the squeezed page they wrap onto a second
+   line. Shrink that margin (and, if needed, the gaps) until they fit. */
+body.agent-panel-open.mia-bar-fit .top-header-container .top-nav-container { margin-right: var(--mia-bar-mr, 16px) !important; }
+body.agent-panel-open.mia-bar-tight .top-header-container .top-nav { column-gap: 24px !important; }
+
 #spotler-agent-pill {
   position: fixed; bottom: 30px; right: 24px;
   display: none; align-items: center; gap: 8px;

@@ -142,7 +142,35 @@ function createSlideout(region, labels, handlers) {
       void hdr.offsetWidth;
     }
     hdr.style.transition = prev;
+    fitBar();
   }
+  // The top bar wraps when its links sit on more than one row.
+  function barWraps(ul) {
+    var lis = ul.children;
+    if (lis.length < 2) return false;
+    return lis[lis.length - 1].getBoundingClientRect().top > lis[0].getBoundingClientRect().top + 2;
+  }
+  function fitBar() {
+    var body = document.body;
+    body.classList.remove("mia-bar-fit");
+    body.classList.remove("mia-bar-tight");
+    if (!panel.classList.contains("open")) return;
+    var nav = document.querySelector(".top-header-container .top-nav-container");
+    var ul = nav && nav.querySelector(".top-nav");
+    if (!ul || !barWraps(ul)) return;
+    // Width the links need on one row, and the room the bar has for them.
+    var lis = ul.children, need = 0;
+    var gap = parseFloat(getComputedStyle(ul).columnGap) || 0;
+    for (var i = 0; i < lis.length; i++) need += lis[i].getBoundingClientRect().width;
+    need += gap * (lis.length - 1);
+    var col = nav.parentElement, cs = getComputedStyle(col);
+    var room = col.getBoundingClientRect().width - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    setVar("--mia-bar-mr", Math.max(16, Math.floor(room - need - 4)) + "px");
+    body.classList.add("mia-bar-fit");
+    if (barWraps(ul)) body.classList.add("mia-bar-tight");
+    syncBannerHeight();
+  }
+
   var fitTimer;
   function refit() { clearTimeout(fitTimer); fitTimer = setTimeout(fitHeader, 120); }
   window.addEventListener("resize", refit);
