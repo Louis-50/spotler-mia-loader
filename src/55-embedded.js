@@ -9,7 +9,7 @@
    once the card is on the page; gives up quietly (page untouched) if
    no mount point is found.
    ================================================================== */
-function createEmbedded(mode, row, labels, handlers, onMounted) {
+function createEmbedded(mode, row, labels, handlers, onMounted, onUnplaceable) {
   addStyle(CSS.embedded);
 
   var restart = el("button", { id: "spotler-inline-restart", type: "button", "aria-label": labels.restart, title: labels.restart });
@@ -62,9 +62,14 @@ function createEmbedded(mode, row, labels, handlers, onMounted) {
       var h1 = document.querySelector("h1");
       var hero = h1 ? findHeroAround(h1) : null;
       var host = hero ? findVisualHost(hero, h1, row.media_selector) : null;
-      if (!host) {
-        if (attempt < 60) return setTimeout(function () { tryHalf(attempt + 1); }, 250);
-        log("half: no hero visual found; page left untouched");
+      // The card covers the host, so it has to be a real picture next to
+      // the copy: big enough, and not behind the headline (a decorative
+      // background image would put the card over the page text).
+      var ok = host && (row.media_selector || besideHeadline(host, h1));
+      if (!ok) {
+        if (attempt < 20) return setTimeout(function () { tryHalf(attempt + 1); }, 250);  // images may still be loading
+        log(host ? "half: the only image is behind the headline; slide-out instead" : "half: no hero image found; slide-out instead");
+        if (onUnplaceable) onUnplaceable();
         return;
       }
       host.classList.add("spotler-inline-visual-host");
@@ -95,7 +100,8 @@ function createEmbedded(mode, row, labels, handlers, onMounted) {
       }
       var h1 = document.querySelector("h1");
       if (h1 && h1.parentNode) { h1.parentNode.insertBefore(agent, h1.nextSibling); return done(); }
-      log("full: no mount point; page left untouched");
+      log("full: no place for the card; slide-out instead");
+      if (onUnplaceable) onUnplaceable();
     })(0);
   }
   return ui;
@@ -138,6 +144,13 @@ function findHeroMedia(hero, selector) {
     if (score > bestScore) { best = img; bestScore = score; }
   }
   return best;
+}
+
+function besideHeadline(host, h1) {
+  var r = host.getBoundingClientRect(), t = h1.getBoundingClientRect();
+  if (r.width < 240 || r.height < 240) return false;
+  var overlap = Math.max(0, Math.min(r.right, t.right) - Math.max(r.left, t.left));
+  return overlap < 0.3 * t.width;
 }
 
 function findVisualHost(hero, h1, selector) {

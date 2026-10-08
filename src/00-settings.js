@@ -6,7 +6,7 @@
    are only the fallback used when config.json can't be loaded.
    ================================================================== */
 var SETTINGS = {
-  VERSION: "1.2.4",
+  VERSION: "1.2.5",
 
   // ---- Page table (published by n8n) ----
   // Tried in order. GitHub's own copy is live within ~5 minutes of a commit;

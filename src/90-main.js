@@ -80,14 +80,17 @@ function boot() {
       onTeaser: function (text) { teaserSend(text); }
     };
 
-    if (mode === "slideout") {
+    function slideout() {
       ctx.ui = createSlideout(region, labels, handlers);
       begin();
       ctx.ui.restore();
       ctx.ui.setRow(row);
-    } else {
-      createEmbedded(mode, row, labels, handlers, function (ui) { ctx.ui = ui; begin(); });
     }
+    if (mode === "slideout") slideout();
+    else createEmbedded(mode, row, labels, handlers, function (ui) { ctx.ui = ui; begin(); }, function () {
+      // The page has nowhere to put the card: the slide-out still offers the chat.
+      if (modeAllowed("slideout")) slideout();
+    });
   }
 
   function mountShell() {

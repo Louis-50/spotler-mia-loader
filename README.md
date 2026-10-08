@@ -20,7 +20,7 @@ Scope and decisions: *Botpress lazy loader: scope* (Claude doc) and Confluence �
 ```bash
 npm install
 node build.mjs                # → dist/mia-loader.gtm.html (≈63 KB)
-python3 test/run_tests.py     # 73 checks against a mocked Botpress
+python3 test/run_tests.py     # 74 checks against a mocked Botpress
 ```
 
 1. In GTM, create a Custom HTML tag "Mia lazy loader" and paste `dist/mia-loader.gtm.html`.
@@ -65,10 +65,10 @@ Each row: `url_match`, `match_type` (`exact` · `prefix` · `contains`), `region
 | Mode | Where | Devices | Notes |
 | --- | --- | --- | --- |
 | `slideout` | Default for every page without a row | Desktop 1200px+, no phones/tablets | Panel, pill, teaser, page squeeze. If the squeezed header doesn't fit, "About us" is hidden first, then the banner gets smaller (logo, padding, then menu text) until it does. If the top bar links wrap, their right margin (then their gaps) shrinks until they sit on one row |
-| `half` | Rows set to `half` (FeedbackPro) | 1024px+, no phones/tablets | Card overlays the hero image; copy untouched. `media_selector` overrides the image pick |
+| `half` | Rows set to `half` (FeedbackPro) | 1024px+, no phones/tablets | Card overlays the hero image; copy untouched. `media_selector` overrides the image pick. A page without a hero picture beside the headline (at least 240×240, not behind it) gets the slide-out instead |
 | `full` | Rows set to `full` (Mail+) | All devices: the only mode on mobile | Hero hidden; `headline`, `intro` and a large card go after it. `media_selector` picks the hero media |
 
-- A mode the device can't show means no chat on that page.
+- A mode the device can't show means no chat on that page. A half or full card that finds no place on the page falls back to the slide-out.
 - One live conversation per visitor shows in whichever container the page uses: a chat started on a campaign card continues in the slide-out on the next page (desktop).
 - `opener` bubbles can be a video: a bubble that is exactly `[video] https://…` renders a video player (no Botpress needed to play it).
 - Up to 6 buttons per row.
