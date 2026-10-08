@@ -239,20 +239,25 @@ async def main():
         await ctx.close()
 
 
-        # ---------- 14. header fit next to the open panel ----------
-        for vw, expect_fit in [(1920, False), (1440, None), (1280, True), (1200, True)]:
+        # ---------- 14. page-width emulation beside the open panel ----------
+        for vw, wide_menu in [(1920, True), (1280, False)]:
             ctx = await b.new_context(viewport={"width": vw, "height": 800})
             await setup(ctx)
             page = await ctx.new_page()
             await page.goto("https://www.spotler.com/en-gb/")
             await page.wait_for_timeout(900)
-            r = await page.evaluate("""() => { const hdr=document.getElementById('header'), box=hdr.querySelector('.header-box');
-                const lim=hdr.getBoundingClientRect().right; const sw=box.querySelector('.main-switcher-box').getBoundingClientRect().right;
-                const nav=box.querySelector('.main-nav'); return { levels:[1,2,3,4].filter(l=>document.body.classList.contains('mia-fit-'+l)).length,
-                  clear: Math.round(lim - sw), navOk: nav.scrollWidth <= nav.clientWidth + 1 } }""")
-            ok = r["clear"] >= 12 and r["navOk"] and (expect_fit is None or (r["levels"] > 0) == expect_fit)
-            check(f"14 header fits beside panel at {vw}px (levels {r['levels']}, {r['clear']}px clear)", ok, r)
-            await page.screenshot(path=f"{OUT}/14-header-{vw}.png", clip={"x": 0, "y": 0, "width": vw, "height": 140})
+            r = await page.evaluate("""() => ({ menu: getComputedStyle(document.querySelector('.main-menu-box')).display !== 'none',
+                burger: getComputedStyle(document.querySelector('.mobile-hamburger')).display !== 'none',
+                htmlStyle: document.documentElement.getAttribute('style'),
+                panelW: document.getElementById('spotler-agent-panel').getBoundingClientRect().width })""")
+            check(f"14a {vw}px: page laid out for {vw}-panel px (desktop menu {'kept' if wide_menu else 'swapped for hamburger'})",
+                  r["menu"] == wide_menu and r["burger"] != wide_menu, r)
+            check(f"14b {vw}px: no inline style on <html> (theme scroll-lock bug)", r["htmlStyle"] is None and r["panelW"] > 300, r)
+            if not wide_menu:
+                await page.click("#spotler-agent-close")
+                await page.wait_for_timeout(300)
+                r2 = await page.evaluate("getComputedStyle(document.querySelector('.main-menu-box')).display !== 'none'")
+                check("14c closing the panel restores the full-width layout", r2)
             await ctx.close()
 
         await b.close()

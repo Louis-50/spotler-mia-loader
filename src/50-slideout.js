@@ -6,7 +6,17 @@
    ================================================================== */
 function createSlideout(region, labels, handlers) {
   addStyle(CSS.slideout);
-  var rootStyle = document.documentElement.style;
+  // CSS variables live in our own <style>, NOT on <html style>: the theme's
+  // scroll-lock (used by its mobile menu) crashes when <html> has a style
+  // attribute with more than one declaration.
+  var vars = { "--spotler-agent-w": "400px", "--spotler-banner-h": SETTINGS.DEFAULT_BANNER_PX + "px" };
+  var varsStyle = addStyle("");
+  function setVar(name, value) {
+    vars[name] = value;
+    var css = ":root{";
+    for (var k in vars) if (vars.hasOwnProperty(k)) css += k + ":" + vars[k] + ";";
+    varsStyle.textContent = css + "}";
+  }
 
   var title = el("span", { id: "spotler-agent-title", text: labels.title });
   var restartBtn = el("button", { id: "spotler-agent-restart", type: "button", "aria-label": labels.restart, title: labels.restart });
@@ -46,13 +56,13 @@ function createSlideout(region, labels, handlers) {
   /* ---- sizing ---- */
   function syncPanelWidth() {
     var w = window.innerWidth >= 1600 ? SETTINGS.PANEL_WIDTH_WIDE : SETTINGS.PANEL_WIDTH;
-    rootStyle.setProperty("--spotler-agent-w", w + "px");
+    setVar("--spotler-agent-w", w + "px");
   }
   function syncBannerHeight() {
     var bar = document.querySelector(".top-header-container");
     if (bar) {
       var h = bar.offsetHeight;
-      if (h >= 24 && h <= 64) rootStyle.setProperty("--spotler-banner-h", h + "px");
+      if (h >= 24 && h <= 64) setVar("--spotler-banner-h", h + "px");
     }
     var link = document.querySelector(".top-header-container a");
     if (link) {
@@ -62,7 +72,6 @@ function createSlideout(region, labels, handlers) {
       title.style.fontFamily = cs.fontFamily;
     }
   }
-  rootStyle.setProperty("--spotler-banner-h", SETTINGS.DEFAULT_BANNER_PX + "px");
   syncPanelWidth();
   syncBannerHeight();
   var rt;
@@ -75,47 +84,21 @@ function createSlideout(region, labels, handlers) {
 
   function isDesktop() { return window.innerWidth >= SETTINGS.DESKTOP_MIN_WIDTH; }
 
-  /* ---- header fit ----
-     The theme's media queries read the viewport, not the squeezed width,
-     so on laptops the header's buttons and region switcher slid under the
-     panel. Measure the squeezed header and tighten it step by step. */
-  var FIT_LEVELS = 4;
-  // Overflowing = the menu is squashed, or the CTA / region switcher reach
-  // the panel (12px clear of it, for the panel's shadow).
-  function headerOverflows(hdr, box) {
-    var limit = hdr.getBoundingClientRect().right - 12;
-    var squashed = box.querySelectorAll(".main-menu-box, .main-nav, .header-buttons-box");
-    for (var i = 0; i < squashed.length; i++) {
-      if (squashed[i].scrollWidth > squashed[i].clientWidth + 1) return true;
-    }
-    var edges = box.querySelectorAll(".header-buttons, .header-btn-wrap, .header-btn-wrap > *, .main-switcher-box");
-    for (var j = 0; j < edges.length; j++) {
-      var r = edges[j].getBoundingClientRect();
-      if (r.width && r.right > limit) return true;
-    }
-    return false;
+  /* ---- page width ---- */
+  function panelWidth() { return window.innerWidth >= 1600 ? SETTINGS.PANEL_WIDTH_WIDE : SETTINGS.PANEL_WIDTH; }
+  function layoutWidth() { return window.innerWidth - panelWidth(); }
+  function syncEmulation() {
+    if (panel.classList.contains("open")) WidthEmu.apply(layoutWidth());
+    else WidthEmu.restore();
   }
-  function fitHeader() {
-    var body = document.body;
-    for (var i = 1; i <= FIT_LEVELS; i++) body.classList.remove("mia-fit-" + i);
-    if (!panel.classList.contains("open")) return;
-    var hdr = document.getElementById("header");
-    var box = hdr && hdr.querySelector(".header-box");
-    if (!box) return;
-    var prev = hdr.style.transition;
-    hdr.style.transition = "none";               // measure the final width, not mid-slide
-    void hdr.offsetWidth;
-    for (var lvl = 1; lvl <= FIT_LEVELS && headerOverflows(hdr, box); lvl++) {
-      body.classList.add("mia-fit-" + lvl);
-      void hdr.offsetWidth;
-    }
-    hdr.style.transition = prev;
-  }
-  var fitTimer;
-  function refit() { clearTimeout(fitTimer); fitTimer = setTimeout(fitHeader, 120); }
-  window.addEventListener("resize", refit);
-  window.addEventListener("load", refit);
-  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit); } catch (e) {}
+  var emuTimer;
+  window.addEventListener("resize", function () {
+    clearTimeout(emuTimer);
+    emuTimer = setTimeout(function () { WidthEmu.refresh(layoutWidth()); }, 120);
+  });
+  // Stylesheets that arrive late (lazy CSS) get the same treatment.
+  window.addEventListener("load", function () { WidthEmu.refresh(layoutWidth()); });
+  setTimeout(function () { WidthEmu.refresh(layoutWidth()); }, 2500);
 
   /* ---- open / close ---- */
   function open(instant) {
@@ -128,15 +111,15 @@ function createSlideout(region, labels, handlers) {
     pill.style.display = "none";
     hideTeaser(false);
     SS.set(PANEL_STATE_KEY, "open");
+    syncEmulation();
     syncBannerHeight();
-    fitHeader();
     if (handlers.onOpen) handlers.onOpen();
   }
   function close() {
     panel.classList.remove("open");
     document.body.classList.remove("agent-panel-open");
     SS.set(PANEL_STATE_KEY, "dismissed");
-    fitHeader();
+    syncEmulation();
     if (isDesktop()) { pill.style.display = "flex"; scheduleTeaser(); }
   }
 

@@ -47,6 +47,7 @@ function el(tag, attrs, children) {
 
 function addStyle(cssText, root) {
   var s = document.createElement("style");
+  s.setAttribute("data-mia", "");
   s.textContent = cssText;
   (root || document.head).appendChild(s);
   return s;

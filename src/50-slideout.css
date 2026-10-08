@@ -64,31 +64,6 @@ body.agent-panel-open #header {
   width: calc(100% - var(--spotler-agent-w, 400px)) !important;
   max-width: none !important;
 }
-@media (max-width: 2055px) {
-  body.agent-panel-open .header .header-box .logo-wrapper       { width: 185px !important; padding: 0 15px !important; }
-  body.agent-panel-open .header .header-box .main-menu-box      { width: auto  !important; padding: 0 15px !important; }
-  body.agent-panel-open .header .header-box .header-buttons-box { flex-grow: 0 !important; padding: 0 15px !important; }
-}
-
-/* Header fit: the theme's media queries read the viewport, not the
-   squeezed width, so on laptops the header's CTA and region switcher slid
-   under the panel. fitHeader() steps through these levels until the
-   header fits. The CTA and switcher never shrink; the menu does. */
-body.agent-panel-open.mia-fit-1 .header .header-box .logo-wrapper { width: auto !important; padding: 0 12px !important; }
-body.agent-panel-open.mia-fit-1 .header .header-box .main-menu-box { padding: 0 6px !important; }
-body.agent-panel-open.mia-fit-1 .header .main-nav > li { padding-left: 6px !important; padding-right: 6px !important; }
-body.agent-panel-open.mia-fit-1 .header .header-box .header-buttons-box { flex-shrink: 0 !important; padding: 0 24px 0 10px !important; }
-body.agent-panel-open.mia-fit-2 .header .main-nav > li,
-body.agent-panel-open.mia-fit-2 .header .main-nav > li > a { font-size: 15px !important; }
-body.agent-panel-open.mia-fit-3 .header .main-nav > li { padding-left: 4px !important; padding-right: 4px !important; }
-body.agent-panel-open.mia-fit-3 .header .main-nav > li,
-body.agent-panel-open.mia-fit-3 .header .main-nav > li > a { font-size: 14px !important; }
-body.agent-panel-open.mia-fit-3 .header .logo-wrapper img { max-width: 112px !important; height: auto !important; }
-body.agent-panel-open.mia-fit-4 .header .main-nav > li { padding-left: 3px !important; padding-right: 3px !important; }
-body.agent-panel-open.mia-fit-4 .header .main-nav > li,
-body.agent-panel-open.mia-fit-4 .header .main-nav > li > a { font-size: 13px !important; }
-body.agent-panel-open.mia-fit-4 .header .header-box .header-buttons-box { padding: 0 16px 0 6px !important; }
-body.agent-panel-open.mia-fit-4 .header .logo-wrapper img { max-width: 100px !important; }
 
 #spotler-agent-pill {
   position: fixed; bottom: 30px; right: 24px;
