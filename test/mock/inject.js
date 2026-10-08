@@ -39,7 +39,7 @@
     sendMessage: function (t) {
       log.push(["sendMessage", t]);
       setTimeout(function () { addMsg("outgoing", t); emit("message", { text: t }); }, 200);
-      setTimeout(function () { addMsg("incoming", "Bot reply to: " + t); emit("message", { text: "reply" }); }, 700);
+      setTimeout(function () { addMsg("incoming", window.__replyText || ("Bot reply to: " + t)); emit("message", { text: "reply" }); }, window.__replyDelay || 700);
       return Promise.resolve();
     },
     restartConversation: function () {

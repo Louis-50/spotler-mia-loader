@@ -183,17 +183,48 @@ function watchForUserMessage() {
     if (!sr) { if (++tries < 100) setTimeout(attach, 100); return; }
     BP.checkForUserMessage = check;
     if (BP.ctx.ui.videoWidth) sizeVideos(sr, BP.ctx.ui.videoWidth);
+    // Swap only once the bot's reply is in: mirror it into the shell,
+    // let it slide in there, then cross-fade to the identical live chat.
     function check() {
-      if (BP.mode !== "new" || BP.revealed || BP.awaitingConv || BP.pending || !BP.sentText) return;
+      if (BP.mode !== "new" || BP.revealed || BP.mirroring || BP.awaitingConv || BP.pending || !BP.sentText) return;
       var want = trim(BP.sentText);
-      var outs = sr.querySelectorAll('.bpMessageContainer[data-direction="outgoing"]');
-      for (var i = outs.length - 1; i >= 0; i--) {
-        if (trim(outs[i].textContent).indexOf(want) !== -1) {
-          // Let the message's own slide-in finish under the shell.
-          setTimeout(reveal, 250);
-          return;
-        }
+      var all = sr.querySelectorAll(".bpMessageContainer");
+      var mine = -1;
+      for (var i = all.length - 1; i >= 0; i--) {
+        if (all[i].getAttribute("data-direction") === "outgoing" && trim(all[i].textContent).indexOf(want) !== -1) { mine = i; break; }
       }
+      if (mine === -1) return;
+      var replies = [];
+      for (var j = mine + 1; j < all.length; j++) {
+        if (all[j].getAttribute("data-direction") === "incoming") replies.push(all[j]);
+      }
+      if (!replies.length) return;
+      BP.mirroring = true;
+      // Give a multi-part reply a moment to land, then mirror what's there.
+      setTimeout(function () {
+        var items = [], rich = false;
+        var nodes = sr.querySelectorAll(".bpMessageContainer");
+        var started = false;
+        for (var k = 0; k < nodes.length; k++) {
+          var n = nodes[k];
+          if (!started) { if (n === all[mine]) started = true; continue; }
+          if (n.getAttribute("data-direction") !== "incoming") continue;
+          if (n.querySelector("video, iframe, img:not(.bpMessageAvatarImage), .bpMessageBlocksCarousel, .bpMessageBlocksCard")) { rich = true; break; }
+          var texts = [];
+          var bubbles = n.querySelectorAll(".bpMessageBlocksBubble");
+          for (var b = 0; b < bubbles.length; b++) { var tx = textOf(bubbles[b]); if (tx) texts.push(tx); }
+          var btns = [];
+          var bl = n.querySelectorAll(".bpMessageBlocksButton");
+          for (var c = 0; c < bl.length; c++) btns.push(textOf(bl[c]));
+          if (texts.length || btns.length) items.push({ texts: texts, buttons: btns });
+        }
+        if (!rich && items.length && BP.ctx.shell && BP.ctx.shell.showReply) {
+          BP.ctx.shell.showReply(items);
+          setTimeout(reveal, 450);   // after the bubble's own slide-in
+        } else {
+          reveal();                   // media in the reply: plain cross-fade
+        }
+      }, 350);
     }
     BP.observer = new MutationObserver(check);
     BP.observer.observe(sr, { childList: true, subtree: true });
@@ -223,7 +254,11 @@ function engage(text, source) {
   if (BP.engaged) return;
   BP.engaged = true;
   ctx.shell.lock();
-  if (text) { ctx.shell.showUser(text); ctx.shell.showTyping(); }
+  if (text) {
+    ctx.shell.collapseOpener();
+    ctx.shell.showUser(text);
+    setTimeout(function () { if (!BP.revealed && !BP.mirroring) ctx.shell.showTyping(); }, 900);
+  }
   State.start(ctx.region.id, ctx.row);
   pushDataLayer({ event: "spotler_mia_start", miaSource: source, miaRegion: ctx.region.id,
                   miaPage: (ctx.row && ctx.row.page) || "default" });
@@ -231,6 +266,7 @@ function engage(text, source) {
   BP.safetyTimer = setTimeout(reveal, SETTINGS.SAFETY_REVEAL_MS);
 
   BP.sentText = null;
+  BP.mirroring = false;
   BP.pending = text ? { text: text, source: source } : null;
 
   if (!BP.loaded) { loadBotpress(text ? "new" : "open"); return; }
@@ -311,4 +347,23 @@ function sizeVideos(sr, width) {
   new MutationObserver(function () { clearTimeout(t); t = setTimeout(function () { sweep(sr); }, 100); })
     .observe(sr, { childList: true, subtree: true });
   sweep(sr);
+}
+
+// Text of a (hidden) live-chat element with its line breaks. innerText
+// can't be used: the live chat is visibility:hidden until the swap.
+function textOf(node) {
+  var out = "";
+  (function walk(n) {
+    for (var c = n.firstChild; c; c = c.nextSibling) {
+      if (c.nodeType === 3) { out += c.nodeValue; continue; }
+      if (c.nodeType !== 1) continue;
+      if (c.tagName === "BR") { out += "\n"; continue; }
+      var block = /^(P|DIV|LI|UL|OL|H[1-6]|PRE|BLOCKQUOTE)$/.test(c.tagName);
+      if (block && out && !/\n$/.test(out)) out += "\n";
+      if (c.tagName === "LI") out += "• ";
+      walk(c);
+      if (block && !/\n$/.test(out)) out += "\n";
+    }
+  })(node);
+  return trim(out.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n"));
 }

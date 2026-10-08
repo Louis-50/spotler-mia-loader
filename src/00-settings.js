@@ -21,7 +21,7 @@ var SETTINGS = {
   TIMEOUT_MS: 15 * 60 * 1000,     // must equal the Botpress inactivity timeout
   TIMEOUT_CHECK_MS: 30 * 1000,
   FORCE_SEND_MS: 4000,            // send the first message even if no conversation event came
-  SAFETY_REVEAL_MS: 12000,        // reveal live Botpress even if the fade signal never came
+  SAFETY_REVEAL_MS: 30000,        // reveal live Botpress even if no reply came (slow LLM)
 
   // ---- Rollout switch: regions the tag is allowed to run in.
   // config.json can override this with "enabledRegions".
@@ -51,15 +51,15 @@ var SETTINGS = {
   // ---- Labels (naming is still undecided: change here) ----
   LABELS: {
     "en-GB": { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
-               restart: "Restart conversation", close: "Close chat", today: "Today",
+               restart: "Restart conversation", close: "Close chat", today: "Today", delivered: "Delivered",
                botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
                powered: "Powered by Spotler AI" },
     "int":   { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
-               restart: "Restart conversation", close: "Close chat", today: "Today",
+               restart: "Restart conversation", close: "Close chat", today: "Today", delivered: "Delivered",
                botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
                powered: "Powered by Spotler AI" },
     "nl":    { title: "Spotler Assistent", pill: "Vraag het Mia", placeholder: "Stel Mia een vraag...",
-               restart: "Gesprek opnieuw starten", close: "Chat sluiten", today: "Vandaag",
+               restart: "Gesprek opnieuw starten", close: "Chat sluiten", today: "Vandaag", delivered: "Afgeleverd",
                botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
                powered: "Powered by Spotler AI" }
   },

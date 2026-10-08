@@ -48,8 +48,9 @@ function createShell(host, labels, row, handlers) {
   var list = el("div", { "class": "list" });
   var scroll = el("div", { "class": "scroll" });
   var vp = el("div", { "class": "vp", "aria-live": "polite" });
-  var openerBox = el("div", { style: "display:contents" });
+  var openerBox = el("div", { "class": "op" });
   var userBox = el("div", { style: "display:contents" });
+  var typingRow = null;
 
   vp.appendChild(el("div", { "class": "mq" }, [
     avatar("mq-av"),
@@ -150,17 +151,70 @@ function createShell(host, labels, row, handlers) {
       cmp.classList.add("off");
       buttons.forEach(function (b) { b.disabled = true; });
     },
+    // The live chat starts with no greeting (skip-greeting gate), so the
+    // shell lets the opener go: it fades, then folds away, and Mia glides
+    // down to where the live chat will have her.
+    collapseOpener: function () {
+      if (!openerBox.firstChild) return;
+      var h = openerBox.offsetHeight;
+      openerBox.style.height = h + "px";
+      void openerBox.offsetHeight; // commit the start height
+      openerBox.classList.add("going");
+      setTimeout(function () { openerBox.classList.add("fold"); openerBox.style.height = "0px"; }, 180);
+      setTimeout(function () { openerBox.style.display = "none"; }, 180 + 520);
+    },
     showUser: function (text) {
       userBox.appendChild(el("div", { "class": "m out anim" }, [
         el("div", { "class": "b" }, [el("p", { text: text })])
       ]));
       scrollDown();
+      var status = el("p", { "class": "st", text: labels.delivered || "Delivered" });
+      setTimeout(function () { userBox.appendChild(status); scrollDown(); }, 600);
     },
     showTyping: function () {
-      userBox.appendChild(el("div", { "class": "m in anim" }, [
+      typingRow = el("div", { "class": "m in anim" }, [
         avatar("av"), el("div", { "class": "typing", "aria-label": "typing" }, [el("i"), el("i"), el("i")])
-      ]));
+      ]);
+      userBox.appendChild(typingRow);
       scrollDown();
+    },
+    // Mirror the bot's first reply (text + button labels) so the swap to
+    // the live chat happens with both showing the same thing.
+    showReply: function (items) {
+      // The reply grows in where the typing dots were, so Mia and the
+      // conversation glide up instead of jumping.
+      var grow = el("div", { "class": "grow" });
+      var startH = 0;
+      if (typingRow && typingRow.parentNode) {
+        startH = typingRow.offsetHeight;
+        typingRow.parentNode.insertBefore(grow, typingRow);
+        typingRow.parentNode.removeChild(typingRow);
+      } else {
+        userBox.appendChild(grow);
+      }
+      typingRow = null;
+      items.forEach(function (it) {
+        var parts = [];
+        (it.texts || []).forEach(function (txt) { parts.push(el("div", { "class": "b" }, [el("p", { text: txt })])); });
+        var body;
+        if (it.buttons && it.buttons.length) {
+          var rowEl = el("div", { "class": "row" });
+          it.buttons.forEach(function (lbl) { rowEl.appendChild(el("button", { "class": "btn", type: "button", disabled: "", text: lbl })); });
+          parts.push(rowEl);
+          body = el("div", { "class": "col" }, parts);
+        } else {
+          body = parts.length === 1 ? parts[0] : el("div", { "class": "col" }, parts);
+        }
+        grow.appendChild(el("div", { "class": "m in anim" }, [avatar("av"), body]));
+      });
+      var endH = grow.offsetHeight;
+      grow.style.height = startH + "px";
+      void grow.offsetHeight;
+      grow.classList.add("growing");
+      grow.style.height = endH + "px";
+      var ticks = 0;
+      (function follow() { scrollDown(); if (++ticks < 24) requestAnimationFrame(follow); })();
+      setTimeout(function () { grow.style.height = ""; grow.classList.remove("growing"); }, 420);
     },
     focus: function () { try { ta.focus({ preventScroll: true }); } catch (e) {} }
   };
