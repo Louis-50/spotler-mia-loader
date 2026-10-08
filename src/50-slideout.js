@@ -75,6 +75,48 @@ function createSlideout(region, labels, handlers) {
 
   function isDesktop() { return window.innerWidth >= SETTINGS.DESKTOP_MIN_WIDTH; }
 
+  /* ---- header fit ----
+     The theme's media queries read the viewport, not the squeezed width,
+     so on laptops the header's buttons and region switcher slid under the
+     panel. Measure the squeezed header and tighten it step by step. */
+  var FIT_LEVELS = 4;
+  // Overflowing = the menu is squashed, or the CTA / region switcher reach
+  // the panel (12px clear of it, for the panel's shadow).
+  function headerOverflows(hdr, box) {
+    var limit = hdr.getBoundingClientRect().right - 12;
+    var squashed = box.querySelectorAll(".main-menu-box, .main-nav, .header-buttons-box");
+    for (var i = 0; i < squashed.length; i++) {
+      if (squashed[i].scrollWidth > squashed[i].clientWidth + 1) return true;
+    }
+    var edges = box.querySelectorAll(".header-buttons, .header-btn-wrap, .header-btn-wrap > *, .main-switcher-box");
+    for (var j = 0; j < edges.length; j++) {
+      var r = edges[j].getBoundingClientRect();
+      if (r.width && r.right > limit) return true;
+    }
+    return false;
+  }
+  function fitHeader() {
+    var body = document.body;
+    for (var i = 1; i <= FIT_LEVELS; i++) body.classList.remove("mia-fit-" + i);
+    if (!panel.classList.contains("open")) return;
+    var hdr = document.getElementById("header");
+    var box = hdr && hdr.querySelector(".header-box");
+    if (!box) return;
+    var prev = hdr.style.transition;
+    hdr.style.transition = "none";               // measure the final width, not mid-slide
+    void hdr.offsetWidth;
+    for (var lvl = 1; lvl <= FIT_LEVELS && headerOverflows(hdr, box); lvl++) {
+      body.classList.add("mia-fit-" + lvl);
+      void hdr.offsetWidth;
+    }
+    hdr.style.transition = prev;
+  }
+  var fitTimer;
+  function refit() { clearTimeout(fitTimer); fitTimer = setTimeout(fitHeader, 120); }
+  window.addEventListener("resize", refit);
+  window.addEventListener("load", refit);
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit); } catch (e) {}
+
   /* ---- open / close ---- */
   function open(instant) {
     if (instant) {
@@ -87,12 +129,14 @@ function createSlideout(region, labels, handlers) {
     hideTeaser(false);
     SS.set(PANEL_STATE_KEY, "open");
     syncBannerHeight();
+    fitHeader();
     if (handlers.onOpen) handlers.onOpen();
   }
   function close() {
     panel.classList.remove("open");
     document.body.classList.remove("agent-panel-open");
     SS.set(PANEL_STATE_KEY, "dismissed");
+    fitHeader();
     if (isDesktop()) { pill.style.display = "flex"; scheduleTeaser(); }
   }
 

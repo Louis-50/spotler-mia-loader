@@ -238,6 +238,23 @@ async def main():
         check("13e card restart brings the shell back", "FeedbackPro inside out" in (await shell_text(page) or ""))
         await ctx.close()
 
+
+        # ---------- 14. header fit next to the open panel ----------
+        for vw, expect_fit in [(1920, False), (1440, None), (1280, True), (1200, True)]:
+            ctx = await b.new_context(viewport={"width": vw, "height": 800})
+            await setup(ctx)
+            page = await ctx.new_page()
+            await page.goto("https://www.spotler.com/en-gb/")
+            await page.wait_for_timeout(900)
+            r = await page.evaluate("""() => { const hdr=document.getElementById('header'), box=hdr.querySelector('.header-box');
+                const lim=hdr.getBoundingClientRect().right; const sw=box.querySelector('.main-switcher-box').getBoundingClientRect().right;
+                const nav=box.querySelector('.main-nav'); return { levels:[1,2,3,4].filter(l=>document.body.classList.contains('mia-fit-'+l)).length,
+                  clear: Math.round(lim - sw), navOk: nav.scrollWidth <= nav.clientWidth + 1 } }""")
+            ok = r["clear"] >= 12 and r["navOk"] and (expect_fit is None or (r["levels"] > 0) == expect_fit)
+            check(f"14 header fits beside panel at {vw}px (levels {r['levels']}, {r['clear']}px clear)", ok, r)
+            await page.screenshot(path=f"{OUT}/14-header-{vw}.png", clip={"x": 0, "y": 0, "width": vw, "height": 140})
+            await ctx.close()
+
         await b.close()
 
     failed = [r for r in results if not r[1]]
