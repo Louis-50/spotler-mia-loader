@@ -92,6 +92,8 @@ The n8n form *Mia chat: page settings (marketing)* (n8n login required) does it 
 2. Edit and publish. The workflow runs the same checks as `scripts/check-config.mjs`; if one fails, nothing is published and the form lists what to fix.
 3. It commits `config/config.json` to `main` (the commit message names who changed what) and purges jsDelivr, so the change shows within a few minutes.
 
+After every publish it also refills the n8n data table *Mia chat pages* (Spotler AI project): one row per full embed, half embed and custom slide-out with its opening message, buttons and teaser, plus one "Other pages" slide-out row per region with the standard opening. The workflow's *Rebuild page list* button refills it by hand (e.g. after editing `config.json` in git).
+
 It needs a fine-grained GitHub token (this repo only, Contents read and write) as the n8n credential *GitHub: spotler-mia-loader config*. Hand edits to `config.json` still work; purge jsDelivr after pushing them.
 
 ## Not done yet

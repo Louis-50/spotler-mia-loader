@@ -1,3 +1,8 @@
+// n8n workflow "Mia chat: page settings (marketing)", n8n Workflow SDK source.
+// The live workflow in n8n is the source of truth. Added there after this file:
+// a "Rebuild page list" manual trigger and the "Page list table" group
+// (Clear page list -> Build page list -> Save page list, code in
+// n8n/build-page-list.js), fed from "Commit to GitHub" after every publish.
 import { workflow, node, trigger, sticky, newCredential, ifElse, expr } from '@n8n/workflow-sdk';
 
 const choosePage = trigger({
