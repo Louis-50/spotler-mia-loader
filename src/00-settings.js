@@ -1,0 +1,102 @@
+/* ==================================================================
+   00 · Settings
+   Everything a person might need to change in code lives here.
+   Page openers, buttons, teasers and display modes do NOT live here:
+   they come from config.json (the n8n page table). DEFAULT_ROWS below
+   are only the fallback used when config.json can't be loaded.
+   ================================================================== */
+var SETTINGS = {
+  VERSION: "1.0.0",
+
+  // ---- Page table (published by n8n) ----
+  CONFIG_URL: "https://cdn.jsdelivr.net/gh/Louis-50/spotler-mia-loader@main/config/config.json",
+  CONFIG_WAIT_MS: 1500,           // first visit: show the built-in default after this
+
+  // ---- Botpress ----
+  INJECT_URL: "https://cdn.botpress.cloud/webchat/v3.7/inject.js",
+  BOT_CONFIG_URL: "https://files.bpcontent.cloud/2026/05/27/14/20260527141930-9RFHOWXE.js",
+  CDN_ORIGINS: ["https://cdn.botpress.cloud", "https://files.bpcontent.cloud", "https://cdn.jsdelivr.net"],
+
+  // ---- Conversation lifecycle ----
+  TIMEOUT_MS: 15 * 60 * 1000,     // must equal the Botpress inactivity timeout
+  TIMEOUT_CHECK_MS: 30 * 1000,
+  FORCE_SEND_MS: 4000,            // send the first message even if no conversation event came
+  SAFETY_REVEAL_MS: 12000,        // reveal live Botpress even if the fade signal never came
+
+  // ---- Rollout switch: regions the tag is allowed to run in.
+  // config.json can override this with "enabledRegions".
+  ENABLED_REGIONS: ["en-GB"],
+
+  // ---- Slide-out panel ----
+  DESKTOP_MIN_WIDTH: 1200,
+  PANEL_WIDTH_WIDE: 400,          // at 1600px viewport and wider
+  PANEL_WIDTH: 360,
+  DEFAULT_BANNER_PX: 40,
+  TEASER_DELAY_MS: 4000,
+  TEASER_HIDE_MS: 25000,
+
+  // Paths still served by the old campaign tags. The new tag stays off them
+  // until the half-page / full-page modes ship (v2). Remove as they move over.
+  LEGACY_EXCLUDE: [
+    "/en-gb/discover/feedbackpro-x-zendesk",
+    "/en-gb/discover/customer-feedback-platform",
+    "/en-gb/discover/mailplus-video-overview",
+    "/en-gb/services"
+  ],
+
+  // ---- Regions: first match wins, last entry is the fallback ----
+  REGIONS: [
+    { id: "nl",    test: /^\/nl-nl(\/|$)/i, language: "nl" },
+    { id: "en-GB", test: /^\/en-gb(\/|$)/i, language: "en-GB" },
+    { id: "int",   test: /.*/,               language: "int" }
+  ],
+
+  // ---- Labels (naming is still undecided: change here) ----
+  LABELS: {
+    "en-GB": { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
+               restart: "Restart conversation", close: "Close chat", today: "Today",
+               botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
+               powered: "Powered by Spotler AI" },
+    "int":   { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
+               restart: "Restart conversation", close: "Close chat", today: "Today",
+               botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
+               powered: "Powered by Spotler AI" },
+    "nl":    { title: "Spotler Assistent", pill: "Vraag het Mia", placeholder: "Stel Mia een vraag...",
+               restart: "Gesprek opnieuw starten", close: "Chat sluiten", today: "Vandaag",
+               botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
+               powered: "Powered by Spotler AI" }
+  },
+
+  AVATAR_URL: "https://files.bpcontent.cloud/2026/08/20/13/20260820133357-6Q65P1JX.webp",
+
+  // ---- Built-in fallback rows (used only if config.json is unavailable) ----
+  // Blank line in an opener = a new bubble. Buttons attach to the last bubble.
+  DEFAULT_ROWS: [
+    { url_match: "*", region: "en-GB", mode: "slideout", page: "default",
+      opener: "Hi , I'm the Spotler Agent👋 What brings you to Spotler today?\nAsk me anything related to marketing and/or communication.\n\nType your question or just make a choice from the list below",
+      buttons: [
+        { label: "What can Spotler do for me?", send: "What can Spotler do for me?" },
+        { label: "Book a demo", send: "Book a demo" },
+        { label: "See pricing", send: "See pricing" },
+        { label: "Product support", send: "Product support" }
+      ],
+      teaser_text: "Questions about Spotler? Ask me anything!",
+      teaser_send: "I have a question about Spotler" },
+    { url_match: "*", region: "int", mode: "slideout", page: "default",
+      opener: "Hi , I'm the Spotler Agent👋 What brings you to Spotler today?\nAsk me anything related to marketing and/or communication.\n\nType your question or just make a choice from the list below",
+      buttons: [
+        { label: "What can Spotler do for me?", send: "What can Spotler do for me?" },
+        { label: "Book a demo", send: "Book a demo" },
+        { label: "See pricing", send: "See pricing" },
+        { label: "Product support", send: "Product support" }
+      ],
+      teaser_text: "Questions about Spotler? Ask me anything!",
+      teaser_send: "I have a question about Spotler" },
+    // TODO(NL): copy the live Dutch greeting and buttons before enabling NL.
+    { url_match: "*", region: "nl", mode: "slideout", page: "default",
+      opener: "Hoi! Ik ben Mia👋 Waarmee kan ik je helpen?",
+      buttons: [],
+      teaser_text: "Vragen over Spotler? Vraag het mij!",
+      teaser_send: "Ik heb een vraag over Spotler" }
+  ]
+};

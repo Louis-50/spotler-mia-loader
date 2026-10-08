@@ -1,0 +1,13 @@
+{
+  "name": "spotler-mia-loader",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lazy loader for the Spotler website agent (Mia): GTM tag source, build and page config",
+  "scripts": {
+    "build": "node build.mjs",
+    "check-config": "node scripts/check-config.mjs config/config.json"
+  },
+  "devDependencies": {
+    "terser": "5.36.0"
+  }
+}

@@ -1,0 +1,1746 @@
+<script>
+/* Spotler Mia lazy loader v1.0.0 · built 2026-10-08 12:32 UTC · source: github.com/Louis-50/spotler-mia-loader */
+(function () {
+"use strict";
+var CSS = {"shell":":host{all:initial;display:block}*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;border:0 solid}.c{display:flex;flex-direction:column;justify-content:space-between;position:relative;width:100%;height:100%;overflow:hidden;background:#fdfdfd;border:1px solid #DADBE0;font-family:inter,sans-serif;font-size:14px;line-height:20px;color:#202127;-webkit-font-smoothing:antialiased;text-size-adjust:100%}.list{position:relative;display:flex;flex-direction:column;flex:1 1 auto;min-height:0;margin-bottom:-25px;padding:4px;overflow:hidden}.scroll{min-height:0;flex:1 1 auto;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}.vp{display:flex;flex-direction:column;justify-content:flex-end;gap:8px;min-height:100%;padding:12px 12px 48px 12px}.mq{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:80px 0 48px}.mq-av{display:block;width:82px;height:82px;margin-bottom:12px;padding:1px;border-radius:39996px;overflow:hidden}.mq-av img,.av img{display:block;width:100%;height:100%;border-radius:39996px;object-fit:cover}.mq-txt{display:flex;flex-direction:column}.mq-title{font-size:18px;line-height:28px;font-weight:500;color:#2F323B;text-align:center}.mq-desc{margin-top:4px;font-size:14px;line-height:20px;color:#696F83;text-align:center}.m{display:flex;gap:8px;position:relative;font-size:14px;line-height:20px;color:#202127;word-break:break-word;justify-content:flex-start}.m.today{justify-content:center;margin-top:16px;font-size:12px;line-height:16px;color:#2F323B}.m.out{justify-content:flex-end}.m.anim{animation:miaIn 0.4s ease-out both}.av{display:flex;align-self:flex-end;flex-shrink:0;width:28px;height:28px;border-radius:39996px;overflow:hidden;line-height:21px}.av-fb,.mq-av .av-fb{display:flex;width:100%;height:100%;align-items:center;justify-content:center;background:#99AAB8;color:#00192E;font-weight:600;border-radius:39996px}.col{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;max-width:85%}.b{position:relative;max-width:85%;padding:8px 16px;border-radius:24px 24px 24px 2px;background:#F0F1F3;color:#202127;white-space:pre-line}.col .b{max-width:100%}.m.out .b{background:#002645;color:#F2F4F6;border-radius:24px 24px 2px 24px}.row{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px}.btn{display:block;padding:4px 12px;border-radius:24px;background:#BFCAD3;color:#001323;font:inherit;font-size:14px;line-height:20px;text-align:center;cursor:pointer;transition:background-color 0.15s ease-out}.btn:hover{background:#99AAB8}.btn:focus-visible{outline:2px solid #002645;outline-offset:2px}.btn[disabled]{cursor:default}.btn[disabled]:hover{background:#BFCAD3}.typing{display:flex;gap:6px;padding:12px;background:#F0F1F3;border-radius:32px;align-items:flex-end}.typing i{display:block;width:6px;height:6px;background:#2F323B;border-radius:50%;animation:miaJump 1s ease infinite}.typing i:nth-child(2){animation-delay:0.1s}.typing i:nth-child(3){animation-delay:0.2s}.cmp{position:relative;z-index:1;display:flex;flex-direction:column;margin:0 16px;border:1px solid #DADBE0;border-radius:24px;background:#F0F1F3;color:#696F83}.cmp.off{background:#F0F1F3;color:#696F83}.inw{position:relative;display:flex;align-items:flex-end;min-height:48px;padding:8px}textarea{display:block;flex:1 1 auto;height:20px;max-height:120px;margin:6px 32px 6px 8px;font:inherit;font-size:14px;line-height:20px;color:#202127;background:transparent;resize:none;outline:none;overflow-y:auto;white-space:pre-wrap;overflow-wrap:break-word}textarea::placeholder{color:#696F83;opacity:1}textarea:disabled{cursor:default}.ico{display:block;width:32px;height:32px;padding:8px;border-radius:9999px;cursor:pointer;fill:none;stroke-width:2px;stroke-linecap:round;stroke-linejoin:round}.send{position:absolute;right:8px;bottom:8px;background:#002645;stroke:#F2F4F6;opacity:0;transform:translateY(20%);pointer-events:none;transition:opacity 0.15s ease-out,transform 0.15s ease-out,background-color 0.15s ease-out}.send:hover{background:#00192E}.has-text .send{opacity:1;transform:translateY(0);pointer-events:auto}.mic{stroke:#5F6476;transition:opacity 0.1s ease-out}.mic:hover{background:#F0F1F3}.has-text .mic{opacity:0;pointer-events:none}.off .ico{cursor:default;pointer-events:none}.ft{align-self:center;margin:4px 20px;font-size:12px;line-height:18px;color:#8795A0;font-style:italic;text-align:center;cursor:default}@keyframes miaIn{0%{transform:translateY(20%);opacity:0}100%{transform:translateY(0);opacity:1}}@keyframes miaJump{0%,50%,100%{transform:translateY(0)}25%{background-color:#969AA8;transform:translateY(-75%)}}@media (prefers-reduced-motion:reduce){.m.anim,.typing i{animation:none}.send,.mic,.btn{transition:none}}","slideout":"#spotler-agent-panel{position:fixed;top:0;right:0;width:var(--spotler-agent-w,400px);height:100vh;height:100dvh;background:#ffffff;box-shadow:-8px 0 24px rgba(0,42,77,0.12);transform:translateX(calc(var(--spotler-agent-w,400px) + 40px));transition:transform 0.35s ease;z-index:2147483000;display:flex;flex-direction:column}#spotler-agent-panel.open{transform:translateX(0)}#spotler-agent-panel.no-anim{transition:none}body.admin-bar #spotler-agent-panel{top:32px;height:calc(100vh - 32px)}#spotler-agent-header{height:var(--spotler-banner-h,40px);flex:0 0 var(--spotler-banner-h,40px);position:relative;display:flex;align-items:center;justify-content:flex-end;padding:0 8px;background:#002a4d;color:#ffffff;transition:height 0.15s ease,flex-basis 0.15s ease}#spotler-agent-title{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:400;font-size:14px;white-space:nowrap}#spotler-agent-header-actions{display:flex;gap:2px}#spotler-agent-restart,#spotler-agent-close{border:0;background:transparent;color:#ffffff;line-height:1;cursor:pointer;width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center}#spotler-agent-restart{font-size:19px}#spotler-agent-close{font-size:17px}#spotler-agent-restart:hover,#spotler-agent-close:hover{background:rgba(255,255,255,0.15)}#spotler-agent-body{position:relative;flex:1 1 auto;min-height:0}#spotler-mia-shell{position:absolute;inset:0;opacity:1;transition:opacity 0.25s ease}#spotler-mia-shell.mia-out{opacity:0;pointer-events:none}#spotler-mia-shell.mia-gone{visibility:hidden}#bp-embedded-webchat{position:absolute;inset:0;width:100%;height:100%;opacity:0 !important;visibility:hidden !important;pointer-events:none !important;transition:opacity 0.25s ease}#bp-embedded-webchat.bp-ready{opacity:1 !important;visibility:visible !important;pointer-events:auto !important}#bp-embedded-webchat iframe,#bp-embedded-webchat>div{width:100% !important;height:100% !important;border:0}#spotler-agent-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:none}#spotler-agent-loading.on{display:flex}#spotler-agent-loading span{width:28px;height:28px;border:3px solid #E4E9EE;border-top-color:#002a4d;border-radius:50%;animation:spotler-spin 0.8s linear infinite}@keyframes spotler-spin{to{transform:rotate(360deg)}}#site-wrapper{transition:width 0.35s ease}body.agent-panel-open #site-wrapper{width:calc(100% - var(--spotler-agent-w,400px))}#header{transition:width 0.35s ease}body.agent-panel-open #header{left:0 !important;width:calc(100% - var(--spotler-agent-w,400px)) !important;max-width:none !important}@media (max-width:2055px){body.agent-panel-open .header .header-box .logo-wrapper{width:185px !important;padding:0 15px !important}body.agent-panel-open .header .header-box .main-menu-box{width:auto !important;padding:0 15px !important}body.agent-panel-open .header .header-box .header-buttons-box{flex-grow:0 !important;padding:0 15px !important}}#spotler-agent-pill{position:fixed;bottom:30px;right:24px;display:none;align-items:center;gap:8px;padding:12px 20px;border:0;border-radius:999px;background:#002a4d;color:#ffffff;font:600 15px/1 inherit;cursor:pointer;box-shadow:0 4px 14px rgba(0,42,77,0.35);z-index:2147483001;transition:transform 0.15s ease,box-shadow 0.15s ease}#spotler-agent-pill:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,42,77,0.45)}#spotler-agent-pill .pill-spark{font-size:17px}#spotler-agent-teaser{position:fixed;bottom:154px;right:24px;max-width:260px;background:#ffffff;color:#353B40;font-size:14px;line-height:1.45;padding:12px 30px 12px 14px;border:1px solid #E4E9EE;border-radius:18px 18px 4px 18px;box-shadow:0 4px 16px rgba(0,42,77,0.14);cursor:pointer;z-index:2147483001;animation:spotler-teaser-in 0.3s ease}#spotler-agent-teaser.nl{bottom:30px;right:200px}#spotler-agent-teaser[hidden]{display:none}#spotler-agent-teaser-close{position:absolute;top:6px;right:6px;width:22px;height:22px;border:0;border-radius:50%;background:transparent;color:#8795A0;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}#spotler-agent-teaser-close:hover{background:#F2F4F5}@keyframes spotler-teaser-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@media only screen and (max-width:1750px){body.agent-panel-open .resources-template .all-posts-list .post-item{flex-basis:50% !important;max-width:50% !important}}@media only screen and (min-width:1881px){body.agent-panel-open .cpt-overview-section .cpt-filters-sidebar{width:auto;flex-basis:unset;max-width:unset}body.agent-panel-open .cpt-overview-section .cpt-filters-sidebar .cpt-filters-wrap{padding-left:20px}}body.agent-panel-open .partners-section,body.agent-panel-open .partners-list-wrap .active-filters-wrap,body.agent-panel-open .partners-list-wrap .search-sort-wrap{width:auto}@media only screen and (max-width:1600px){body.agent-panel-open .partners-list .post-item{flex-basis:50% !important;max-width:50% !important}}@media (max-width:1199px){#spotler-agent-panel,#spotler-agent-pill,#spotler-agent-teaser{display:none !important}body.agent-panel-open #site-wrapper{width:100%;transform:none}body.agent-panel-open #header{width:100% !important}}@media (prefers-reduced-motion:reduce){#spotler-agent-panel,#site-wrapper,#spotler-agent-pill,#spotler-mia-shell,#bp-embedded-webchat{transition:none}}.bpFab,#fab-root{display:none !important}"};
+var HTML = {"hubspot":"<div id=\"hubspot-modal\" style=\" display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2147483647; align-items:center; justify-content:center; overflow:hidden; padding:16px; box-sizing:border-box;\"><div id=\"hubspot-modal-card\" style=\" width:min(860px, calc(100vw - 24px)); height:min(720px, calc(100dvh - 24px)); border-radius:10px; position:relative; overflow:hidden; background:#ffffff; box-shadow:0 18px 50px rgba(0,0,0,0.22);\"><button onclick=\"if (window.spotlerCloseHubSpotModal) window.spotlerCloseHubSpotModal();\" style=\"position:absolute; top:12px; right:12px; width:36px; height:36px; font-size:20px; border:none; background:rgba(0,0,0,0.55); color:#fff; border-radius:50%; cursor:pointer; line-height:1; z-index:20; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,0.25);\" aria-label=\"Close\">&times;</button><div id=\"hubspot-loading\" style=\" position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#f5f8fa; z-index:5; border-radius:10px;\"><div style=\"width:40px; height:40px; border:3px solid #e0e0e0; border-top-color:#0073b1; border-radius:50%; animation:hs-spin 0.8s linear infinite;\"></div></div><style> @keyframes hs-spin { to { transform: rotate(360deg); } } #hubspot-meeting-container, #hubspot-iframe-stage { position:absolute; inset:0; width:100%; height:100%; overflow:hidden !important; background:#ffffff; } #hubspot-iframe-stage iframe { display:block; position:absolute; /* HubSpot's embedded page adds its own ~16px outer gutter. Because the iframe is cross-origin we cannot remove that gutter with CSS inside HubSpot, so crop it at the stage instead. This makes the scheduler sit flush to our rounded modal edge rather than looking like it has a thick white border. */ top:-16px; left:-16px; width:calc(100% + 32px) !important; max-width:none !important; height:calc(100% + 32px) !important; margin:0; padding:0; border:0 !important; background:#ffffff; } /* HubSpot's meetings widget normally expects roughly a 715px iframe. Give it that space on normal screens so the sticky Confirm/Request footer is fully inside the iframe. On shorter laptops we use the available viewport. The iframe document can still scroll when needed, but its own scrollbar is clipped off-screen so only HubSpot's form scrollbar is visible. We do not scale the scheduler. */ @media (max-height: 744px) { #hubspot-modal { padding:8px !important; } #hubspot-modal-card { width:min(860px, calc(100vw - 16px)) !important; height:calc(100dvh - 16px) !important; } } @supports not (height: 100dvh) { #hubspot-modal-card { height:min(720px, calc(100vh - 24px)) !important; } @media (max-height: 744px) { #hubspot-modal-card { height:calc(100vh - 16px) !important; } } } </style><div id=\"hubspot-meeting-container\"><div id=\"hubspot-iframe-stage\"></div></div></div></div>"};
+/* ---- 00-settings.js ---- */
+/* ==================================================================
+   00 · Settings
+   Everything a person might need to change in code lives here.
+   Page openers, buttons, teasers and display modes do NOT live here:
+   they come from config.json (the n8n page table). DEFAULT_ROWS below
+   are only the fallback used when config.json can't be loaded.
+   ================================================================== */
+var SETTINGS = {
+  VERSION: "1.0.0",
+
+  // ---- Page table (published by n8n) ----
+  CONFIG_URL: "https://cdn.jsdelivr.net/gh/Louis-50/spotler-mia-loader@main/config/config.json",
+  CONFIG_WAIT_MS: 1500,           // first visit: show the built-in default after this
+
+  // ---- Botpress ----
+  INJECT_URL: "https://cdn.botpress.cloud/webchat/v3.7/inject.js",
+  BOT_CONFIG_URL: "https://files.bpcontent.cloud/2026/05/27/14/20260527141930-9RFHOWXE.js",
+  CDN_ORIGINS: ["https://cdn.botpress.cloud", "https://files.bpcontent.cloud", "https://cdn.jsdelivr.net"],
+
+  // ---- Conversation lifecycle ----
+  TIMEOUT_MS: 15 * 60 * 1000,     // must equal the Botpress inactivity timeout
+  TIMEOUT_CHECK_MS: 30 * 1000,
+  FORCE_SEND_MS: 4000,            // send the first message even if no conversation event came
+  SAFETY_REVEAL_MS: 12000,        // reveal live Botpress even if the fade signal never came
+
+  // ---- Rollout switch: regions the tag is allowed to run in.
+  // config.json can override this with "enabledRegions".
+  ENABLED_REGIONS: ["en-GB"],
+
+  // ---- Slide-out panel ----
+  DESKTOP_MIN_WIDTH: 1200,
+  PANEL_WIDTH_WIDE: 400,          // at 1600px viewport and wider
+  PANEL_WIDTH: 360,
+  DEFAULT_BANNER_PX: 40,
+  TEASER_DELAY_MS: 4000,
+  TEASER_HIDE_MS: 25000,
+
+  // Paths still served by the old campaign tags. The new tag stays off them
+  // until the half-page / full-page modes ship (v2). Remove as they move over.
+  LEGACY_EXCLUDE: [
+    "/en-gb/discover/feedbackpro-x-zendesk",
+    "/en-gb/discover/customer-feedback-platform",
+    "/en-gb/discover/mailplus-video-overview",
+    "/en-gb/services"
+  ],
+
+  // ---- Regions: first match wins, last entry is the fallback ----
+  REGIONS: [
+    { id: "nl",    test: /^\/nl-nl(\/|$)/i, language: "nl" },
+    { id: "en-GB", test: /^\/en-gb(\/|$)/i, language: "en-GB" },
+    { id: "int",   test: /.*/,               language: "int" }
+  ],
+
+  // ---- Labels (naming is still undecided: change here) ----
+  LABELS: {
+    "en-GB": { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
+               restart: "Restart conversation", close: "Close chat", today: "Today",
+               botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
+               powered: "Powered by Spotler AI" },
+    "int":   { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
+               restart: "Restart conversation", close: "Close chat", today: "Today",
+               botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
+               powered: "Powered by Spotler AI" },
+    "nl":    { title: "Spotler Assistent", pill: "Vraag het Mia", placeholder: "Stel Mia een vraag...",
+               restart: "Gesprek opnieuw starten", close: "Chat sluiten", today: "Vandaag",
+               botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
+               powered: "Powered by Spotler AI" }
+  },
+
+  AVATAR_URL: "https://files.bpcontent.cloud/2026/08/20/13/20260820133357-6Q65P1JX.webp",
+
+  // ---- Built-in fallback rows (used only if config.json is unavailable) ----
+  // Blank line in an opener = a new bubble. Buttons attach to the last bubble.
+  DEFAULT_ROWS: [
+    { url_match: "*", region: "en-GB", mode: "slideout", page: "default",
+      opener: "Hi , I'm the Spotler Agent👋 What brings you to Spotler today?\nAsk me anything related to marketing and/or communication.\n\nType your question or just make a choice from the list below",
+      buttons: [
+        { label: "What can Spotler do for me?", send: "What can Spotler do for me?" },
+        { label: "Book a demo", send: "Book a demo" },
+        { label: "See pricing", send: "See pricing" },
+        { label: "Product support", send: "Product support" }
+      ],
+      teaser_text: "Questions about Spotler? Ask me anything!",
+      teaser_send: "I have a question about Spotler" },
+    { url_match: "*", region: "int", mode: "slideout", page: "default",
+      opener: "Hi , I'm the Spotler Agent👋 What brings you to Spotler today?\nAsk me anything related to marketing and/or communication.\n\nType your question or just make a choice from the list below",
+      buttons: [
+        { label: "What can Spotler do for me?", send: "What can Spotler do for me?" },
+        { label: "Book a demo", send: "Book a demo" },
+        { label: "See pricing", send: "See pricing" },
+        { label: "Product support", send: "Product support" }
+      ],
+      teaser_text: "Questions about Spotler? Ask me anything!",
+      teaser_send: "I have a question about Spotler" },
+    // TODO(NL): copy the live Dutch greeting and buttons before enabling NL.
+    { url_match: "*", region: "nl", mode: "slideout", page: "default",
+      opener: "Hoi! Ik ben Mia👋 Waarmee kan ik je helpen?",
+      buttons: [],
+      teaser_text: "Vragen over Spotler? Vraag het mij!",
+      teaser_send: "Ik heb een vraag over Spotler" }
+  ]
+};
+
+/* ---- 10-util.js ---- */
+/* ==================================================================
+   10 · Small helpers (ES5 only: GTM Custom HTML)
+   ================================================================== */
+function log() {
+  try {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift("[Mia]");
+    console.log.apply(console, args);
+  } catch (e) {}
+}
+
+function now() { return new Date().getTime(); }
+
+// Storage that never throws (private mode, blocked storage, quota).
+function store(kind) {
+  var s = null;
+  try { s = window[kind]; s.getItem("x"); } catch (e) { s = null; }
+  return {
+    get: function (k) { try { return s ? s.getItem(k) : null; } catch (e) { return null; } },
+    set: function (k, v) { try { if (s) s.setItem(k, v); } catch (e) {} },
+    del: function (k) { try { if (s) s.removeItem(k); } catch (e) {} },
+    keys: function () {
+      var out = [];
+      try { for (var i = 0; s && i < s.length; i++) out.push(s.key(i)); } catch (e) {}
+      return out;
+    },
+    getJSON: function (k) { try { return JSON.parse(this.get(k)); } catch (e) { return null; } },
+    setJSON: function (k, v) { try { this.set(k, JSON.stringify(v)); } catch (e) {} }
+  };
+}
+var LS = store("localStorage");
+var SS = store("sessionStorage");
+
+// Build an element. attrs: {class, id, text, html? (never used with config text)}
+function el(tag, attrs, children) {
+  var e = document.createElement(tag);
+  attrs = attrs || {};
+  for (var k in attrs) {
+    if (!attrs.hasOwnProperty(k) || attrs[k] == null) continue;
+    if (k === "text") e.textContent = attrs[k];
+    else if (k === "class") e.className = attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  }
+  (children || []).forEach(function (c) { if (c) e.appendChild(c); });
+  return e;
+}
+
+function addStyle(cssText, root) {
+  var s = document.createElement("style");
+  s.textContent = cssText;
+  (root || document.head).appendChild(s);
+  return s;
+}
+
+function loadScript(src, onerror) {
+  var s = document.createElement("script");
+  s.src = src;
+  s.async = true;
+  s.onerror = onerror || function () { log("failed to load", src); };
+  document.head.appendChild(s);
+  return s;
+}
+
+function preconnect(origin) {
+  try {
+    var l = document.createElement("link");
+    l.rel = "preconnect";
+    l.href = origin;
+    l.crossOrigin = "anonymous";
+    document.head.appendChild(l);
+  } catch (e) {}
+}
+
+function trim(s) { return String(s == null ? "" : s).replace(/^\s+|\s+$/g, ""); }
+
+function pushDataLayer(obj) {
+  try { window.dataLayer = window.dataLayer || []; window.dataLayer.push(obj); } catch (e) {}
+}
+
+function onDomReady(fn) {
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+  else fn();
+}
+
+function isMobileOrTabletUA() {
+  var ua = navigator.userAgent || "";
+  if (/Mobi|Android|iPhone|iPad|iPod|Tablet|Silk|Kindle|PlayBook/i.test(ua)) return true;
+  // iPadOS in "desktop mode" reports as Mac but has touch.
+  if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;
+  return false;
+}
+
+/* ---- 20-config.js ---- */
+/* ==================================================================
+   20 · Page config: load config.json, pick the row for this page
+   - Returning visitors: cached copy used at once, refreshed in the
+     background (a change shows from their next page).
+   - First visit: wait up to CONFIG_WAIT_MS, then fall back to the
+     built-in DEFAULT_ROWS. A late response is still cached.
+   ================================================================== */
+var CONFIG_CACHE_KEY = "spotler_mia_config";
+
+function fetchConfig(cb) {
+  var done = false;
+  var xhr;
+  try {
+    xhr = new XMLHttpRequest();
+    xhr.open("GET", SETTINGS.CONFIG_URL, true);
+    xhr.timeout = 10000;
+    xhr.onload = function () {
+      if (done) return; done = true;
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try { cb(validateConfig(JSON.parse(xhr.responseText))); return; } catch (e) { log("config parse failed", e); }
+      }
+      cb(null);
+    };
+    xhr.onerror = xhr.ontimeout = function () { if (!done) { done = true; cb(null); } };
+    xhr.send();
+  } catch (e) { if (!done) { done = true; cb(null); } }
+}
+
+// Defensive: never trust the file's shape. Bad rows are dropped, not fatal.
+function validateConfig(cfg) {
+  if (!cfg || typeof cfg !== "object" || !cfg.rows || !cfg.rows.length) throw new Error("no rows");
+  var rows = [];
+  for (var i = 0; i < cfg.rows.length; i++) {
+    var r = cfg.rows[i];
+    if (!r || typeof r.url_match !== "string" || typeof r.region !== "string") continue;
+    rows.push({
+      url_match: trim(r.url_match).toLowerCase(),
+      match_type: (r.match_type === "exact" || r.match_type === "contains") ? r.match_type : "prefix",
+      region: r.region,
+      mode: (r.mode === "half" || r.mode === "full") ? r.mode : "slideout",
+      page: typeof r.page === "string" ? r.page : "",
+      route: typeof r.route === "string" ? r.route : "",
+      opener: typeof r.opener === "string" ? r.opener.slice(0, 1200) : "",
+      buttons: (r.buttons || []).filter(function (b) { return b && trim(b.label); }).slice(0, 4).map(function (b) {
+        return { label: trim(b.label).slice(0, 80), send: trim(b.send || b.label).slice(0, 300) };
+      }),
+      teaser_text: typeof r.teaser_text === "string" ? r.teaser_text.slice(0, 200) : "",
+      teaser_send: typeof r.teaser_send === "string" ? r.teaser_send.slice(0, 300) : "",
+      headline: typeof r.headline === "string" ? r.headline.slice(0, 200) : "",
+      intro: typeof r.intro === "string" ? r.intro.slice(0, 400) : ""
+    });
+  }
+  if (!rows.length) throw new Error("no valid rows");
+  return {
+    version: String(cfg.version || ""),
+    enabledRegions: (cfg.enabledRegions && cfg.enabledRegions.length) ? cfg.enabledRegions : null,
+    rows: rows
+  };
+}
+
+function loadConfig(cb) {
+  var cached = LS.getJSON(CONFIG_CACHE_KEY);
+  var answered = false;
+  function answer(cfg, source) {
+    if (answered) return;
+    answered = true;
+    log("config from " + source + (cfg && cfg.version ? " v" + cfg.version : ""));
+    cb(cfg);
+  }
+
+  if (cached && cached.rows) answer(cached, "cache");
+
+  fetchConfig(function (fresh) {
+    if (fresh) {
+      if (!cached || cached.version !== fresh.version) LS.setJSON(CONFIG_CACHE_KEY, fresh);
+      answer(fresh, "network");
+    } else {
+      answer(null, "built-in default (fetch failed)");
+    }
+  });
+
+  if (!cached) setTimeout(function () { answer(null, "built-in default (slow)"); }, SETTINGS.CONFIG_WAIT_MS);
+}
+
+function normalisePath(p) {
+  p = String(p || "/").toLowerCase().split("?")[0].split("#")[0];
+  if (p.length > 1) p = p.replace(/\/+$/, "");
+  return p || "/";
+}
+
+// Most specific match wins: exact > longest prefix > "*".
+function matchRow(rows, path, regionId) {
+  path = normalisePath(path);
+  var best = null, bestScore = -1;
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    if (r.region !== regionId) continue;
+    var m = r.url_match === "*" ? "*" : normalisePath(r.url_match);
+    var score = -1;
+    if (m === "*") score = 0;
+    else if (r.match_type === "exact") { if (path === m) score = 100000 + m.length; }
+    else if (r.match_type === "contains") { if (path.indexOf(String(r.url_match).toLowerCase()) !== -1) score = r.url_match.length; }
+    else if (path === m || path.indexOf(m + "/") === 0) score = m.length;
+    if (score > bestScore) { best = r; bestScore = score; }
+  }
+  return best;
+}
+
+function rowsFor(cfg) {
+  return (cfg && cfg.rows) ? cfg.rows : SETTINGS.DEFAULT_ROWS;
+}
+
+// A page row only needs the columns it changes: anything left blank
+// comes from that region's "*" row, then from the built-in default.
+function pickRow(cfg, path, regionId) {
+  var rows = rowsFor(cfg);
+  var row = matchRow(rows, path, regionId);
+  var base = matchRow(rows, "/__no_page__", regionId);
+  var builtIn = matchRow(SETTINGS.DEFAULT_ROWS, "/__no_page__", regionId);
+  var out = {};
+  [builtIn, base, row].forEach(function (r) {
+    if (!r) return;
+    for (var k in r) {
+      if (!r.hasOwnProperty(k)) continue;
+      var v = r[k];
+      if (k === "buttons") {
+        // No buttons on a row = inherit, unless that row sets its own opener.
+        if (v && v.length) out.buttons = v;
+        else if (r === row && r.opener) out.buttons = [];
+        continue;
+      }
+      if (v == null || v === "") continue;
+      out[k] = v;
+    }
+  });
+  return out;
+}
+
+/* ---- 30-state.js ---- */
+/* ==================================================================
+   30 · Conversation state
+   One live conversation per visitor, shared by all tabs (Botpress keeps
+   its conversation id in localStorage too). A conversation is "live"
+   from the visitor's first message until TIMEOUT_MS without activity,
+   a Restart, or a region change. Ending it clears ONLY the Botpress
+   conversation id (the Botpress user is kept) and our own chat keys.
+   ================================================================== */
+var LIVE_KEY = "spotler_mia_live";      // {region, startedAt, lastActivity, startPage}
+var PANEL_STATE_KEY = "spotlerAgentState"; // 'open' | 'dismissed' (same key as the old tags)
+var TEASED_KEY = "spotlerTeaserPages";
+
+var State = {
+  getLive: function (regionId) {
+    var live = LS.getJSON(LIVE_KEY);
+    if (!live || !live.lastActivity) return null;
+    if (now() - live.lastActivity > SETTINGS.TIMEOUT_MS) { State.end("timeout"); return null; }
+    if (regionId && live.region !== regionId) { State.end("region change"); return null; }
+    return live;
+  },
+
+  start: function (regionId, row) {
+    var live = { region: regionId, startedAt: now(), lastActivity: now(),
+                 startPage: location.pathname, page: row && row.page || "" };
+    LS.setJSON(LIVE_KEY, live);
+    return live;
+  },
+
+  touch: function () {
+    var live = LS.getJSON(LIVE_KEY);
+    if (!live) return;
+    live.lastActivity = now();
+    LS.setJSON(LIVE_KEY, live);
+  },
+
+  isExpired: function () {
+    var live = LS.getJSON(LIVE_KEY);
+    return !!(live && now() - live.lastActivity > SETTINGS.TIMEOUT_MS);
+  },
+
+  end: function (reason) {
+    log("conversation ended: " + reason);
+    LS.del(LIVE_KEY);
+    State.forgetBotpressConversation();
+    ["spotler_last_conversation_id", "spotler_lang_sent_convs", "spotler_calendar_contact"].forEach(SS.del);
+    pushDataLayer({ event: "spotler_mia_end", miaEndReason: reason });
+  },
+
+  // Botpress v3.7 stores {state:{conversationId, user:{userId,userToken}}}
+  // under bp-webchat-<clientId>-client. Drop the conversation, keep the user.
+  forgetBotpressConversation: function () {
+    LS.keys().forEach(function (k) {
+      if (/^bp-webchat-.*-client$/.test(k)) {
+        var v = LS.getJSON(k);
+        if (v && v.state && v.state.conversationId) {
+          delete v.state.conversationId;
+          LS.setJSON(k, v);
+        }
+      } else if (/^bp-webchat-message-history-conv_/.test(k)) {
+        LS.del(k);
+      }
+    });
+    SS.keys().forEach(function (k) {
+      if (/^bp-webchat-composer-files-conv_/.test(k)) SS.del(k);
+    });
+  },
+
+  // Old tags' keys that would confuse the new flow.
+  cleanLegacy: function () {
+    ["spotler_chat_region", "spotler_region_switched", "spotler_chat_last_activity"].forEach(LS.del);
+    ["spotler_lang_bootstrapped"].forEach(SS.del);
+  }
+};
+
+/* ---- 40-shell.js ---- */
+/* ==================================================================
+   40 · Static shell: a frozen copy of the Mia chat
+   Rendered in its own shadow root so site CSS can't touch it (the live
+   Botpress chat is also in a shadow root). All config text is set with
+   textContent: never parsed as HTML.
+   ================================================================== */
+var SVG_NS = "http://www.w3.org/2000/svg";
+function icon(cls, paths, rect) {
+  var s = document.createElementNS(SVG_NS, "svg");
+  s.setAttribute("viewBox", "0 0 24 24");
+  s.setAttribute("class", "ico " + cls);
+  s.setAttribute("aria-hidden", "true");
+  paths.forEach(function (d) {
+    var p = document.createElementNS(SVG_NS, "path");
+    p.setAttribute("d", d);
+    s.appendChild(p);
+  });
+  if (rect) {
+    var r = document.createElementNS(SVG_NS, "rect");
+    for (var k in rect) if (rect.hasOwnProperty(k)) r.setAttribute(k, rect[k]);
+    s.appendChild(r);
+  }
+  return s;
+}
+
+function avatar(cls) {
+  var wrap = el("span", { "class": cls });
+  if (SETTINGS.AVATAR_URL) {
+    var img = el("img", { src: SETTINGS.AVATAR_URL, alt: "" });
+    img.onerror = function () { wrap.innerHTML = ""; wrap.appendChild(el("span", { "class": "av-fb", text: "M" })); };
+    wrap.appendChild(img);
+  } else {
+    wrap.appendChild(el("span", { "class": "av-fb", text: "M" }));
+  }
+  return wrap;
+}
+
+/**
+ * createShell(host, labels, row, handlers)
+ * handlers.onSend(text, source)  source: "button" | "typed"
+ * handlers.onOpen()              mic clicked with nothing typed
+ */
+function createShell(host, labels, row, handlers) {
+  var root = host.attachShadow ? host.attachShadow({ mode: "open" }) : host;
+  addStyle(CSS.shell, root);
+
+  var container = el("div", { "class": "c", role: "region", "aria-label": labels.botName });
+  var list = el("div", { "class": "list" });
+  var scroll = el("div", { "class": "scroll" });
+  var vp = el("div", { "class": "vp", "aria-live": "polite" });
+  var openerBox = el("div", { style: "display:contents" });
+  var userBox = el("div", { style: "display:contents" });
+
+  vp.appendChild(el("div", { "class": "mq" }, [
+    avatar("mq-av"),
+    el("div", { "class": "mq-txt" }, [
+      el("h1", { "class": "mq-title", text: labels.botName }),
+      el("p", { "class": "mq-desc", text: labels.botTagline })
+    ])
+  ]));
+  vp.appendChild(el("div", { "class": "m today" }, [el("p", { text: labels.today })]));
+  vp.appendChild(openerBox);
+  vp.appendChild(userBox);
+  scroll.appendChild(vp);
+  list.appendChild(scroll);
+
+  var cmp = el("div", { "class": "cmp" });
+  var inw = el("div", { "class": "inw" });
+  var ta = el("textarea", { rows: "1", placeholder: labels.placeholder, "aria-label": labels.placeholder });
+  var send = icon("send", ["m5 12 7-7 7 7", "M12 19V5"]);
+  var mic = icon("mic", ["M12 19v3", "M19 10v2a7 7 0 0 1-14 0v-2"], { x: "9", y: "2", width: "6", height: "13", rx: "3" });
+  send.setAttribute("role", "button"); send.setAttribute("aria-label", "Send"); send.setAttribute("tabindex", "0");
+  mic.setAttribute("role", "button"); mic.setAttribute("aria-label", "Voice input"); mic.setAttribute("tabindex", "0");
+  inw.appendChild(ta); inw.appendChild(send); inw.appendChild(mic);
+  cmp.appendChild(inw);
+
+  container.appendChild(list);
+  container.appendChild(cmp);
+  container.appendChild(el("div", { "class": "ft" }, [el("p", { text: labels.powered })]));
+  root.appendChild(container);
+
+  var locked = false;
+  var buttons = [];
+
+  function scrollDown() { scroll.scrollTop = scroll.scrollHeight; }
+
+  function renderOpener(r) {
+    openerBox.innerHTML = "";
+    buttons = [];
+    var bubbles = String((r && r.opener) || "").split(/\n\s*\n/).map(trim).filter(Boolean);
+    bubbles.forEach(function (text, i) {
+      var last = i === bubbles.length - 1;
+      var bubble = el("div", { "class": "b" }, [el("p", { text: text })]);
+      var col = bubble;
+      if (last && r.buttons && r.buttons.length) {
+        col = el("div", { "class": "col" }, [bubble]);
+        var rowEl = el("div", { "class": "row" });
+        r.buttons.forEach(function (b) {
+          var btn = el("button", { "class": "btn", type: "button", text: b.label });
+          btn.addEventListener("click", function () { submit(b.send || b.label, "button"); });
+          buttons.push(btn);
+          rowEl.appendChild(btn);
+        });
+        col.appendChild(rowEl);
+      }
+      openerBox.appendChild(el("div", { "class": "m in anim" }, [avatar("av"), col]));
+    });
+    scrollDown();
+  }
+
+  function syncComposer() {
+    var has = !!trim(ta.value);
+    if (has) inw.classList.add("has-text"); else inw.classList.remove("has-text");
+    ta.style.height = "20px";
+    ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
+  }
+
+  function submit(text, source) {
+    text = trim(text);
+    if (locked || !text) return;
+    handlers.onSend(text, source);
+  }
+
+  ta.addEventListener("input", syncComposer);
+  ta.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(ta.value, "typed"); }
+  });
+  function activate(fn) {
+    return function (e) {
+      if (e.type === "keydown" && e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault(); fn();
+    };
+  }
+  var onSendClick = activate(function () { submit(ta.value, "typed"); });
+  var onMicClick = activate(function () { if (!locked && handlers.onOpen) handlers.onOpen(); });
+  send.addEventListener("click", onSendClick); send.addEventListener("keydown", onSendClick);
+  mic.addEventListener("click", onMicClick); mic.addEventListener("keydown", onMicClick);
+
+  renderOpener(row);
+
+  return {
+    host: host,
+    setRow: function (r) { if (!locked) renderOpener(r); },
+    lock: function () {
+      locked = true;
+      ta.value = ""; ta.disabled = true; syncComposer();
+      cmp.classList.add("off");
+      buttons.forEach(function (b) { b.disabled = true; });
+    },
+    showUser: function (text) {
+      userBox.appendChild(el("div", { "class": "m out anim" }, [
+        el("div", { "class": "b" }, [el("p", { text: text })])
+      ]));
+      scrollDown();
+    },
+    showTyping: function () {
+      userBox.appendChild(el("div", { "class": "m in anim" }, [
+        avatar("av"), el("div", { "class": "typing", "aria-label": "typing" }, [el("i"), el("i"), el("i")])
+      ]));
+      scrollDown();
+    },
+    focus: function () { try { ta.focus({ preventScroll: true }); } catch (e) {} }
+  };
+}
+
+/* ---- 50-slideout.js ---- */
+/* ==================================================================
+   50 · Slide-out mode: panel, pill, teaser, page squeeze
+   Behaviour matches the live slide-out tags: open on first visit,
+   remember open/dismissed for the session, teaser bubble 4 s after the
+   pill shows (once per page per session).
+   ================================================================== */
+function createSlideout(region, labels, handlers) {
+  addStyle(CSS.slideout);
+  var rootStyle = document.documentElement.style;
+
+  var title = el("span", { id: "spotler-agent-title", text: labels.title });
+  var restartBtn = el("button", { id: "spotler-agent-restart", type: "button", "aria-label": labels.restart, title: labels.restart });
+  restartBtn.innerHTML = "&#8635;";
+  var closeBtn = el("button", { id: "spotler-agent-close", type: "button", "aria-label": labels.close, title: labels.close });
+  closeBtn.innerHTML = "&#10005;";
+  var body = el("div", { id: "spotler-agent-body" });
+  var loading = el("div", { id: "spotler-agent-loading", "aria-hidden": "true" }, [el("span")]);
+  var webchat = el("div", { id: "bp-embedded-webchat" });
+  body.appendChild(loading);
+  body.appendChild(webchat);
+
+  var panel = el("div", { id: "spotler-agent-panel", "aria-label": labels.title }, [
+    el("div", { id: "spotler-agent-header" }, [
+      title,
+      el("span", { id: "spotler-agent-header-actions" }, [restartBtn, closeBtn])
+    ]),
+    body
+  ]);
+
+  var pill = el("button", { id: "spotler-agent-pill", type: "button" });
+  pill.appendChild(el("span", { "class": "pill-spark", "aria-hidden": "true" }));
+  pill.firstChild.innerHTML = "&#10022;";
+  pill.appendChild(document.createTextNode(" " + labels.pill));
+
+  var teaserText = el("span", { id: "spotler-agent-teaser-text" });
+  var teaserClose = el("button", { id: "spotler-agent-teaser-close", type: "button", "aria-label": "Dismiss" });
+  teaserClose.innerHTML = "&#10005;";
+  var teaser = el("div", { id: "spotler-agent-teaser", role: "status" }, [teaserClose, teaserText]);
+  teaser.hidden = true;
+  if (region.id === "nl") teaser.className = "nl";
+
+  document.body.appendChild(panel);
+  document.body.appendChild(teaser);
+  document.body.appendChild(pill);
+
+  /* ---- sizing ---- */
+  function syncPanelWidth() {
+    var w = window.innerWidth >= 1600 ? SETTINGS.PANEL_WIDTH_WIDE : SETTINGS.PANEL_WIDTH;
+    rootStyle.setProperty("--spotler-agent-w", w + "px");
+  }
+  function syncBannerHeight() {
+    var bar = document.querySelector(".top-header-container");
+    if (bar) {
+      var h = bar.offsetHeight;
+      if (h >= 24 && h <= 64) rootStyle.setProperty("--spotler-banner-h", h + "px");
+    }
+    var link = document.querySelector(".top-header-container a");
+    if (link) {
+      var cs = getComputedStyle(link);
+      title.style.fontSize = cs.fontSize;
+      title.style.fontWeight = cs.fontWeight;
+      title.style.fontFamily = cs.fontFamily;
+    }
+  }
+  rootStyle.setProperty("--spotler-banner-h", SETTINGS.DEFAULT_BANNER_PX + "px");
+  syncPanelWidth();
+  syncBannerHeight();
+  var rt;
+  window.addEventListener("resize", function () {
+    syncPanelWidth();
+    clearTimeout(rt); rt = setTimeout(syncBannerHeight, 150);
+  });
+  window.addEventListener("load", syncBannerHeight);
+  setTimeout(syncBannerHeight, 1500);
+
+  function isDesktop() { return window.innerWidth >= SETTINGS.DESKTOP_MIN_WIDTH; }
+
+  /* ---- open / close ---- */
+  function open(instant) {
+    if (instant) {
+      panel.classList.add("no-anim");
+      requestAnimationFrame(function () { requestAnimationFrame(function () { panel.classList.remove("no-anim"); }); });
+    }
+    panel.classList.add("open");
+    document.body.classList.add("agent-panel-open");
+    pill.style.display = "none";
+    hideTeaser(false);
+    SS.set(PANEL_STATE_KEY, "open");
+    syncBannerHeight();
+    if (handlers.onOpen) handlers.onOpen();
+  }
+  function close() {
+    panel.classList.remove("open");
+    document.body.classList.remove("agent-panel-open");
+    SS.set(PANEL_STATE_KEY, "dismissed");
+    if (isDesktop()) { pill.style.display = "flex"; scheduleTeaser(); }
+  }
+
+  /* ---- teaser ---- */
+  var teaserRow = null, teaserTimer, teaserHideTimer;
+  function teased() { return SS.getJSON(TEASED_KEY) || []; }
+  function markTeased() {
+    var list = teased();
+    if (list.indexOf(location.pathname) === -1) { list.push(location.pathname); SS.setJSON(TEASED_KEY, list); }
+  }
+  function hideTeaser(markSeen) {
+    teaser.hidden = true;
+    clearTimeout(teaserTimer); clearTimeout(teaserHideTimer);
+    if (markSeen) markTeased();
+  }
+  function scheduleTeaser() {
+    if (!isDesktop() || !teaserRow || !teaserRow.teaser_text) return;
+    if (teased().indexOf(location.pathname) !== -1) return;
+    clearTimeout(teaserTimer);
+    teaserTimer = setTimeout(function () {
+      if (panel.classList.contains("open")) return;
+      teaserText.textContent = teaserRow.teaser_text;
+      teaser.hidden = false;
+      markTeased();
+      teaserHideTimer = setTimeout(function () { hideTeaser(false); }, SETTINGS.TEASER_HIDE_MS);
+    }, SETTINGS.TEASER_DELAY_MS);
+  }
+  teaser.addEventListener("click", function (e) {
+    if (e.target === teaserClose) return;
+    hideTeaser(true);
+    open(false);
+    if (handlers.onTeaser && teaserRow) handlers.onTeaser(teaserRow.teaser_send || teaserRow.teaser_text);
+  });
+  teaserClose.addEventListener("click", function () { hideTeaser(true); });
+
+  pill.addEventListener("click", function () { open(false); });
+  closeBtn.addEventListener("click", close);
+  restartBtn.addEventListener("click", function () { if (handlers.onRestart) handlers.onRestart(); });
+
+  demoteWhatsApp();
+
+  return {
+    body: body,
+    webchat: webchat,
+    loading: loading,
+    open: open,
+    close: close,
+    isOpen: function () { return panel.classList.contains("open"); },
+    setRow: function (row) {
+      teaserRow = row;
+      if (!panel.classList.contains("open") && pill.style.display === "flex") scheduleTeaser();
+    },
+    // Restore the session's open/dismissed state (first visit: open at once).
+    restore: function () {
+      if (!isDesktop()) return;
+      var st = SS.get(PANEL_STATE_KEY);
+      if (st === "dismissed") { pill.style.display = "flex"; scheduleTeaser(); }
+      else open(true);
+    }
+  };
+}
+
+// Keep any WhatsApp widget below the panel (ported from the live tags).
+function demoteWhatsApp() {
+  var WHATSAPP_Z = "2147482000";
+  function findFixedRoot(node) {
+    var fixed = null;
+    while (node && node !== document.body && node.nodeType === 1) {
+      var pos = window.getComputedStyle(node).position;
+      if (pos === "fixed" || pos === "sticky" || pos === "absolute") fixed = node;
+      node = node.parentElement;
+    }
+    return fixed;
+  }
+  function demote() {
+    var found = document.querySelectorAll(
+      'a[href*="wa.me"], a[href*="api.whatsapp.com"], a[href*="web.whatsapp.com"],' +
+      '[class*="whatsapp" i], [id*="whatsapp" i], [class*="joinchat" i], [id*="joinchat" i]'
+    );
+    Array.prototype.forEach.call(found, function (node) {
+      if (node.closest("#spotler-agent-panel, #spotler-agent-teaser, #spotler-agent-pill, #hubspot-modal, .bpWebchat, .bpFab, #fab-root, #chatinterface")) return;
+      (findFixedRoot(node) || node).style.setProperty("z-index", WHATSAPP_Z, "important");
+    });
+  }
+  window.addEventListener("load", demote);
+  [1000, 2500, 5000, 8000].forEach(function (t) { setTimeout(demote, t); });
+}
+
+/* ---- 60-botpress.js ---- */
+/* ==================================================================
+   60 · Botpress: lazy load, handover, fade, timeout, restart
+   Nothing in here runs until the visitor engages (or already has a
+   live conversation). Modes:
+     "new"    first message pending: skip greeting, send it, fade when it
+              shows in the live chat
+     "resume" live conversation from an earlier page: load and reveal
+     "open"   mic clicked with nothing typed: load and reveal
+   ================================================================== */
+var BP = {
+  loaded: false,       // inject.js requested
+  ready: false,        // webchat:ready fired
+  revealed: false,
+  pending: null,       // {text, source} waiting for a conversation
+  awaitingConv: false, // a restart is in flight: ignore the old conversation
+  mode: null,
+  ctx: null,           // {region, labels, row, ui, shell, remountShell}
+  langSentFor: {},
+  safetyTimer: null,
+  observer: null
+};
+
+function bp() { return window.botpress; }
+
+/* ---- the event Botpress already reads ({type:"language", ...}) ----
+   New fields are additive; page/route are only sent for rows that set a
+   route, so the Studio gates for the campaign routes behave as today. */
+function startEventPayload(source) {
+  var ctx = BP.ctx, row = ctx.row || {};
+  var p = {
+    type: "language",
+    language: ctx.region.language,
+    region: ctx.region.id,
+    startPage: location.pathname,
+    startUrl: location.origin + location.pathname,
+    pageKey: row.page || "default",
+    source: source || "unknown",
+    opener: String(row.opener || "").split(/\n\s*\n/)[0].slice(0, 500)
+  };
+  if (row.route) { p.page = row.page || ""; p.route = row.route; }
+  return p;
+}
+
+function sendStartEvent(convId, attempt) {
+  attempt = attempt || 0;
+  if (!convId || BP.langSentFor[convId]) return;
+  var api = bp();
+  if (!api || typeof api.sendEvent !== "function") {
+    if (attempt < 40) setTimeout(function () { sendStartEvent(convId, attempt + 1); }, 250);
+    return;
+  }
+  BP.langSentFor[convId] = true;
+  var payload = startEventPayload(BP.pendingSource || BP.mode);
+  try {
+    Promise.resolve(api.sendEvent(payload)).then(function () {
+      log("start event confirmed", payload.language, convId);
+      var live = LS.getJSON(LIVE_KEY);
+      if (live) { live.convId = convId; LS.setJSON(LIVE_KEY, live); }
+    }, function (err) {
+      BP.langSentFor[convId] = false;
+      log("start event rejected", err);
+      if (attempt < 10) setTimeout(function () { sendStartEvent(convId, attempt + 1); }, 1000);
+    });
+  } catch (e) {
+    BP.langSentFor[convId] = false;
+    if (attempt < 10) setTimeout(function () { sendStartEvent(convId, attempt + 1); }, 1000);
+  }
+}
+
+// Trust sendMessage's promise; retry only if the API is missing or rejects
+// (same rule as the live tags, so a message is never sent twice).
+function sendAsUser(text, attempt) {
+  attempt = attempt || 0;
+  var api = bp();
+  if (!api || typeof api.sendMessage !== "function") {
+    if (attempt < 20) setTimeout(function () { sendAsUser(text, attempt + 1); }, 250);
+    return;
+  }
+  try {
+    Promise.resolve(api.sendMessage(text)).then(function () {
+      State.touch();
+      log("first message sent");
+    }, function (err) {
+      log("sendMessage rejected", err);
+      if (attempt < 5) setTimeout(function () { sendAsUser(text, attempt + 1); }, 1000);
+    });
+  } catch (e) {
+    if (attempt < 5) setTimeout(function () { sendAsUser(text, attempt + 1); }, 1000);
+  }
+}
+
+function flushPending() {
+  if (!BP.pending) return;
+  var text = BP.pending.text;
+  BP.pending = null;
+  BP.sentText = text;
+  sendAsUser(text);
+}
+
+// Skip-greeting gate in Studio reads proactiveClickAt (fresh = skip).
+function markProactive(text) {
+  var api = bp();
+  if (api && api.updateUser) {
+    try { api.updateUser({ data: { proactiveClickAt: String(now()), proactiveTopic: String(text || "") } }); } catch (e) {}
+  }
+}
+
+function attachBotpressListeners() {
+  var api = bp();
+
+  api.on("webchat:initialized", function () {
+    if (BP.pending) markProactive(BP.pending.text);
+    else if (api.updateUser) {
+      try { api.updateUser({ data: { proactiveClickAt: "0", proactiveTopic: "" } }); } catch (e) {}
+    }
+  });
+
+  api.on("conversation", function (convId) {
+    if (!convId) return;
+    var live = LS.getJSON(LIVE_KEY);
+    var known = live && live.convId === convId;
+    if (known && BP.mode === "resume") { log("resumed", convId); return; }
+    if (BP.awaitingConv && convId === BP.prevConvId) return; // old one, restart pending
+    BP.awaitingConv = false;
+    SS.del("spotler_calendar_contact");
+    SS.set("spotler_last_conversation_id", convId);
+    log("conversation", convId);
+    setTimeout(function () {
+      sendStartEvent(convId);
+      flushPending();
+      if (BP.mode === "open" && BP.ready && !BP.revealed) setTimeout(reveal, 500);
+    }, 300);
+  });
+
+  api.on("message", function () { State.touch(); });
+
+  api.on("webchat:ready", function () {
+    BP.ready = true;
+    pushDataLayer({ event: "spotler_mia_ready" });
+    if (BP.mode !== "new") {
+      setTimeout(function () { requestAnimationFrame(function () { requestAnimationFrame(reveal); }); }, 750);
+    }
+    // Fallback: no conversation event within FORCE_SEND_MS of ready.
+    setTimeout(function () {
+      if (BP.pending) { log("no conversation event, force-sending"); flushPending(); }
+    }, SETTINGS.FORCE_SEND_MS);
+    watchForUserMessage();
+  });
+}
+
+function loadBotpress(mode) {
+  BP.mode = mode;
+  if (BP.loaded) return;
+  BP.loaded = true;
+  log("loading Botpress (" + mode + ")");
+  if (mode !== "resume") State.forgetBotpressConversation();
+
+  loadScript(SETTINGS.INJECT_URL, function () { log("inject.js failed to load"); });
+  (function waitForApi(tries) {
+    var api = bp();
+    if (api && typeof api.on === "function") {
+      attachBotpressListeners();
+      initHubSpot();
+      loadScript(SETTINGS.BOT_CONFIG_URL, function () { log("bot config failed to load"); });
+      return;
+    }
+    if (tries < 300) setTimeout(function () { waitForApi(tries + 1); }, 100);
+    else log("Botpress SDK never became available");
+  })(0);
+}
+
+/* ---- fade: reveal once the visitor's message shows in the live chat ---- */
+function webchatShadow() {
+  var host = document.querySelector("#bp-embedded-webchat #webchat-root, #bp-embedded-webchat .bpEmbeddedWebchat");
+  return host && host.shadowRoot;
+}
+
+function watchForUserMessage() {
+  if (BP.observer) return;
+  var tries = 0;
+  (function attach() {
+    var sr = webchatShadow();
+    if (!sr) { if (++tries < 100) setTimeout(attach, 100); return; }
+    BP.checkForUserMessage = check;
+    function check() {
+      if (BP.mode !== "new" || BP.revealed || BP.awaitingConv || BP.pending || !BP.sentText) return;
+      var want = trim(BP.sentText);
+      var outs = sr.querySelectorAll('.bpMessageContainer[data-direction="outgoing"]');
+      for (var i = outs.length - 1; i >= 0; i--) {
+        if (trim(outs[i].textContent).indexOf(want) !== -1) {
+          // Let the message's own slide-in finish under the shell.
+          setTimeout(reveal, 250);
+          return;
+        }
+      }
+    }
+    BP.observer = new MutationObserver(check);
+    BP.observer.observe(sr, { childList: true, subtree: true });
+    check();
+  })();
+}
+
+function reveal() {
+  if (BP.revealed) return;
+  BP.revealed = true;
+  clearTimeout(BP.safetyTimer);
+  var ui = BP.ctx.ui;
+  ui.webchat.classList.add("bp-ready");
+  ui.loading.classList.remove("on");
+  document.documentElement.classList.add("bp-chat-ready");
+  var shellHost = BP.ctx.shell && BP.ctx.shell.host;
+  if (shellHost) {
+    shellHost.classList.add("mia-out");
+    setTimeout(function () { shellHost.classList.add("mia-gone"); }, 300);
+  }
+  log("revealed live chat");
+}
+
+/* ---- entry points used by main ---- */
+function engage(text, source) {
+  var ctx = BP.ctx;
+  if (BP.engaged) return;
+  BP.engaged = true;
+  ctx.shell.lock();
+  if (text) { ctx.shell.showUser(text); ctx.shell.showTyping(); }
+  State.start(ctx.region.id, ctx.row);
+  pushDataLayer({ event: "spotler_mia_start", miaSource: source, miaRegion: ctx.region.id,
+                  miaPage: (ctx.row && ctx.row.page) || "default" });
+  BP.pendingSource = source;
+  BP.safetyTimer = setTimeout(reveal, SETTINGS.SAFETY_REVEAL_MS);
+
+  BP.sentText = null;
+  BP.pending = text ? { text: text, source: source } : null;
+
+  if (!BP.loaded) { loadBotpress(text ? "new" : "open"); return; }
+
+  // Botpress already on the page (after a timeout/restart): new conversation.
+  BP.mode = text ? "new" : "open";
+  BP.awaitingConv = true;
+  BP.prevConvId = SS.get("spotler_last_conversation_id");
+  if (text) markProactive(text);
+  watchForUserMessage();
+  try {
+    Promise.resolve(bp().restartConversation()).catch(function (err) { log("restart failed", err); BP.awaitingConv = false; });
+  } catch (e) { BP.awaitingConv = false; }
+}
+
+function resume() {
+  BP.ctx.ui.loading.classList.add("on");
+  loadBotpress("resume");
+}
+
+// Teaser click: live chat → send straight in; otherwise start one.
+function teaserSend(text) {
+  if (BP.loaded && BP.revealed && LS.getJSON(LIVE_KEY)) {
+    markProactive(text);
+    sendAsUser(text);
+    return;
+  }
+  engage(text, "teaser");
+}
+
+// Restart button and timeout: end the conversation, bring the shell back.
+function resetToShell(reason) {
+  State.end(reason);
+  BP.engaged = false;
+  BP.pending = null;
+  if (BP.revealed || BP.loaded) {
+    BP.revealed = false;
+    BP.ctx.ui.webchat.classList.remove("bp-ready");
+    document.documentElement.classList.remove("bp-chat-ready");
+  }
+  BP.ctx.ui.loading.classList.remove("on");
+  BP.ctx.remountShell();
+}
+
+function startTimeoutWatch() {
+  function check() {
+    var live = LS.getJSON(LIVE_KEY);
+    if (live && now() - live.lastActivity > SETTINGS.TIMEOUT_MS) { resetToShell("timeout"); return; }
+    // Ended in another tab (timeout/restart there) while this one shows the live chat.
+    if (!live && BP.revealed) resetToShell("ended in another tab");
+  }
+  setInterval(check, SETTINGS.TIMEOUT_CHECK_MS);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) check(); });
+}
+
+/* ---- 70-hubspot.js ---- */
+/* ==================================================================
+   70 · HubSpot calendar + booking report
+   Ported VERBATIM from the live INT slide-out tag (2 Oct 2026), so the
+   booking flow behaves exactly as today. Called once, after the Botpress
+   SDK event API exists and BEFORE the bot config loads, so its
+   customEvent / message listeners are attached in time.
+   Markup lives in 70-hubspot.html.
+   ================================================================== */
+function initHubSpot() {
+  if (initHubSpot.done) return;
+  initHubSpot.done = true;
+    // ================================================================
+    // HubSpot calendar — prefills the booking form from the visitor's
+    // email, guessing first/last name and company where HubSpot hasn't
+    // supplied them.
+    // ================================================================
+    var hsCurrentKey = null;
+    var hsLastEmail = null;
+    var hsLastOwnerSlug = null;
+    var bookingReported = false;
+
+    var OWNER_EMAILS = { "isabelle-chadwick": "isabelle.chadwick@spotler.com" };
+    var OWNER_NAMES  = { "isabelle-chadwick": "Isabelle Chadwick" };
+
+    var FREE_MAIL_DOMAINS = [
+      "gmail", "googlemail", "hotmail", "outlook", "live", "yahoo",
+      "icloud", "me", "aol", "protonmail", "proton", "gmx", "mail",
+      "msn", "ymail", "hey", "zoho"
+    ];
+
+    function titleCase(s) {
+      return s.replace(/(^|[\s'-])([a-z])/g, function (m, sep, ch) {
+        return sep + ch.toUpperCase();
+      });
+    }
+
+    function guessFromEmail(email) {
+      var guess = { firstName: "", lastName: "", company: "" };
+      if (!email || email.indexOf("@") === -1) return guess;
+
+      var parts = email.toLowerCase().split("@");
+      var local = parts[0].replace(/\d+/g, "");
+      var domain = parts[1] || "";
+
+      var nameParts = local.split(/[._-]+/).filter(Boolean);
+      if (nameParts.length >= 2) {
+        guess.firstName = titleCase(nameParts[0]);
+        guess.lastName = titleCase(nameParts[nameParts.length - 1]);
+      } else if (nameParts.length === 1 && nameParts[0].length > 1) {
+        guess.firstName = titleCase(nameParts[0]);
+      }
+
+      var domainBase = domain.replace(/^www\./, "").split(".")[0];
+      if (domainBase && FREE_MAIL_DOMAINS.indexOf(domainBase) === -1) {
+        guess.company = titleCase(domainBase.replace(/[-_]+/g, " "));
+      }
+      return guess;
+    }
+
+    var CALENDAR_CONTACT_KEY = "spotler_calendar_contact";
+
+    function asCleanString(value) {
+      if (value === null || value === undefined) return "";
+      if (typeof value !== "string" && typeof value !== "number") return "";
+      return String(value).trim();
+    }
+
+    function maybeJson(value) {
+      if (typeof value !== "string") return value;
+      var text = value.trim();
+      if (!text || ((text.charAt(0) !== "{" || text.charAt(text.length - 1) !== "}") &&
+                    (text.charAt(0) !== "[" || text.charAt(text.length - 1) !== "]"))) {
+        return value;
+      }
+      try { return JSON.parse(text); } catch (err) { return value; }
+    }
+
+    function mergeCalendarContact(target, source) {
+      target = target || { email: "", firstName: "", lastName: "", company: "" };
+      source = source || {};
+      if (!target.email && source.email) target.email = asCleanString(source.email);
+      if (!target.firstName && source.firstName) target.firstName = asCleanString(source.firstName);
+      if (!target.lastName && source.lastName) target.lastName = asCleanString(source.lastName);
+      if (!target.company && source.company) target.company = asCleanString(source.company);
+      return target;
+    }
+
+    function contactFromAnything(raw) {
+      var result = { email: "", firstName: "", lastName: "", company: "" };
+      var fullName = "";
+      var seen = [];
+
+      function firstValue(obj, keys) {
+        for (var i = 0; i < keys.length; i++) {
+          var v = asCleanString(obj[keys[i]]);
+          if (v) return v;
+        }
+        return "";
+      }
+
+      function visit(value, depth) {
+        if (depth > 4 || value === null || value === undefined) return;
+        value = maybeJson(value);
+
+        if (typeof value === "string") {
+          var exactEmail = value.trim().match(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i);
+          if (exactEmail && !result.email) result.email = exactEmail[0];
+          return;
+        }
+        if (typeof value !== "object") return;
+        if (seen.indexOf(value) !== -1) return;
+        seen.push(value);
+
+        if (!result.email) {
+          result.email = firstValue(value, [
+            "email", "userEmail", "contactEmail", "emailAddress", "user_email", "contact_email"
+          ]);
+        }
+        if (!result.firstName) {
+          result.firstName = firstValue(value, [
+            "firstName", "firstname", "first_name", "userFirstName", "givenName", "given_name"
+          ]);
+        }
+        if (!result.lastName) {
+          result.lastName = firstValue(value, [
+            "lastName", "lastname", "last_name", "userLastName", "surname", "familyName", "family_name"
+          ]);
+        }
+        if (!result.company) {
+          result.company = firstValue(value, [
+            "company", "userCompany", "companyName", "company_name", "organisation", "organization"
+          ]);
+        }
+        if (!fullName) {
+          fullName = firstValue(value, ["name", "userName", "fullName", "full_name"]);
+        }
+
+        var nestedKeys = [
+          "contact", "data", "payload", "user", "userData", "profile",
+          "properties", "details", "visitor", "event"
+        ];
+        for (var j = 0; j < nestedKeys.length; j++) {
+          if (value[nestedKeys[j]] !== undefined) visit(value[nestedKeys[j]], depth + 1);
+        }
+      }
+
+      visit(raw, 0);
+
+      if (fullName && (!result.firstName || !result.lastName)) {
+        var bits = fullName.split(/\s+/).filter(Boolean);
+        if (!result.firstName && bits.length) result.firstName = bits[0];
+        if (!result.lastName && bits.length > 1) result.lastName = bits.slice(1).join(" ");
+      }
+
+      if (result.email) {
+        var guessed = guessFromEmail(result.email);
+        if (!result.firstName) result.firstName = guessed.firstName;
+        if (!result.lastName) result.lastName = guessed.lastName;
+        if (!result.company) result.company = guessed.company;
+      }
+
+      return result;
+    }
+
+    function loadCachedCalendarContact() {
+      try {
+        var raw = sessionStorage.getItem(CALENDAR_CONTACT_KEY);
+        return raw ? contactFromAnything(JSON.parse(raw)) : { email: "", firstName: "", lastName: "", company: "" };
+      } catch (err) {
+        return { email: "", firstName: "", lastName: "", company: "" };
+      }
+    }
+
+    function saveCachedCalendarContact(contact) {
+      if (!contact) return;
+      try {
+        sessionStorage.setItem(CALENDAR_CONTACT_KEY, JSON.stringify({
+          email: contact.email || "",
+          firstName: contact.firstName || "",
+          lastName: contact.lastName || "",
+          company: contact.company || ""
+        }));
+      } catch (err) {}
+    }
+
+    // The visitor normally types their email as a standalone chat message just
+    // before the calendar opens. Cache that value as a regional-flow fallback.
+    // We deliberately only accept a string that is exactly an email address so
+    // an email mentioned by Mia cannot accidentally become the visitor email.
+    function findStandaloneEmail(value, depth, seen) {
+      if (depth > 7 || value === null || value === undefined) return "";
+
+      // Some Webchat versions serialize nested payloads. Parse JSON-looking
+      // strings before testing them as plain message text.
+      value = maybeJson(value);
+
+      if (typeof value === "string") {
+        var match = value.trim().match(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i);
+        return match ? match[0] : "";
+      }
+      if (typeof value !== "object") return "";
+
+      seen = seen || [];
+      if (seen.indexOf(value) !== -1) return "";
+      seen.push(value);
+
+      if (Array.isArray(value)) {
+        for (var a = value.length - 1; a >= 0; a--) {
+          var arrayFound = findStandaloneEmail(value[a], depth + 1, seen);
+          if (arrayFound) return arrayFound;
+        }
+        return "";
+      }
+
+      var priorityKeys = [
+        "text", "value", "message", "content", "payload", "data",
+        "block", "blocks", "items", "event", "input", "raw"
+      ];
+      for (var i = 0; i < priorityKeys.length; i++) {
+        if (value[priorityKeys[i]] !== undefined) {
+          var found = findStandaloneEmail(value[priorityKeys[i]], depth + 1, seen);
+          if (found) return found;
+        }
+      }
+
+      // Final compatibility pass for message shapes we do not know about yet.
+      // Only exact email strings are accepted, so walking the remaining fields
+      // cannot accidentally cache ordinary bot copy.
+      for (var key in value) {
+        if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
+        if (priorityKeys.indexOf(key) !== -1) continue;
+        var genericFound = findStandaloneEmail(value[key], depth + 1, seen);
+        if (genericFound) return genericFound;
+      }
+      return "";
+    }
+
+    function findLatestEmailInWebchat() {
+      var host = document.getElementById("bp-embedded-webchat");
+      if (!host) return "";
+
+      var emails = [];
+      var seenRoots = [];
+
+      function addText(text) {
+        if (!text) return;
+        var matches = String(text).match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/ig) || [];
+        for (var i = 0; i < matches.length; i++) emails.push(matches[i]);
+      }
+
+      function scanRoot(root) {
+        if (!root || !root.querySelectorAll || seenRoots.indexOf(root) !== -1) return;
+        seenRoots.push(root);
+
+        // Prefer visitor/outgoing message bubbles when Botpress exposes the
+        // direction attribute. This is the same rendered message the visitor
+        // can see in the chat, so it is a reliable fallback when the event
+        // payload itself does not include the typed text.
+        var outgoing = root.querySelectorAll(
+          '[data-direction="outgoing"], [data-direction="user"], ' +
+          '.bpMessageContainer[data-direction="outgoing"], ' +
+          '.bpMessageContainer[data-direction="user"]'
+        );
+        for (var o = 0; o < outgoing.length; o++) addText(outgoing[o].textContent);
+
+        var all = root.querySelectorAll("*");
+        for (var j = 0; j < all.length; j++) {
+          if (all[j].shadowRoot) scanRoot(all[j].shadowRoot);
+        }
+      }
+
+      scanRoot(host);
+
+      // If the current Webchat build does not expose direction attributes,
+      // fall back to the host text. We choose the final email because the
+      // booking flow asks for the visitor email immediately before opening the
+      // calendar.
+      if (!emails.length) addText(host.textContent);
+
+      return emails.length ? emails[emails.length - 1] : "";
+    }
+
+    function cacheCalendarEmail(email) {
+      if (!email) return loadCachedCalendarContact();
+      var cached = loadCachedCalendarContact();
+      cached.email = email;
+      cached = contactFromAnything(cached);
+      saveCachedCalendarContact(cached);
+      return cached;
+    }
+
+    try {
+      window.botpress.on("message", function (message) {
+        var email = findStandaloneEmail(message, 0, []);
+        if (!email) email = findLatestEmailInWebchat();
+        if (!email) return;
+        cacheCalendarEmail(email);
+        console.log("[HS] cached visitor email for calendar prefill");
+      });
+    } catch (e) {}
+
+    function buildCalendarUrl(url, contact) {
+      var parsed;
+      try {
+        parsed = new URL(url, window.location.href);
+      } catch (err) {
+        console.warn("[HS] Invalid meeting URL:", url, err);
+        return url;
+      }
+
+      parsed.searchParams.set("embed", "true");
+
+      if (contact && contact.email) {
+        var guessed = guessFromEmail(contact.email);
+        var firstName = contact.firstName || contact.firstname || guessed.firstName;
+        var lastName  = contact.lastName  || contact.lastname  || guessed.lastName;
+        var company   = contact.company   || guessed.company;
+
+        // HubSpot meeting links use CRM property internal names in the query
+        // string: email, firstname, lastname and company.
+        parsed.searchParams.set("email", contact.email);
+        parsed.searchParams.delete("firstName");
+        parsed.searchParams.delete("lastName");
+        if (firstName) parsed.searchParams.set("firstname", firstName);
+        if (lastName)  parsed.searchParams.set("lastname", lastName);
+        if (company)   parsed.searchParams.set("company", company);
+      }
+
+      return parsed.toString();
+    }
+
+    function unwrapCustomEvent(raw) {
+      var data = maybeJson(raw);
+      if (!data || typeof data !== "object") return {};
+
+      // Botpress can expose a custom event directly, or wrapped/serialized in
+      // an `event` field depending on how the Studio card was configured.
+      if (data.event !== undefined) {
+        var inner = maybeJson(data.event);
+        if (inner && typeof inner === "object") {
+          var merged = {};
+          for (var k in data) {
+            if (Object.prototype.hasOwnProperty.call(data, k) && k !== "event") merged[k] = data[k];
+          }
+          for (var k2 in inner) {
+            if (Object.prototype.hasOwnProperty.call(inner, k2)) merged[k2] = inner[k2];
+          }
+          data = merged;
+        }
+      }
+      return data;
+    }
+
+    function contactFromCalendarEvent(event) {
+      return contactFromAnything(event);
+    }
+
+    function resolveCalendarContact(event) {
+      var contact = mergeCalendarContact(contactFromCalendarEvent(event), loadCachedCalendarContact());
+
+      // Regional Studio flows do not always copy the visitor's typed email into
+      // the show-calendar custom event. Read the latest rendered visitor email
+      // directly from Webchat as a browser-side fallback before opening HubSpot.
+      if (!contact.email) {
+        var renderedEmail = findLatestEmailInWebchat();
+        if (renderedEmail) contact = mergeCalendarContact(contact, cacheCalendarEmail(renderedEmail));
+      }
+
+      contact = contactFromAnything(contact);
+
+      // If the custom event omitted contact fields, use Botpress' current user
+      // profile as another fallback. getUser() is a documented Webchat method.
+      if (contact.email && contact.firstName && contact.lastName && contact.company) {
+        saveCachedCalendarContact(contact);
+        return Promise.resolve(contact);
+      }
+
+      if (!window.botpress || typeof window.botpress.getUser !== "function") {
+        saveCachedCalendarContact(contact);
+        return Promise.resolve(contact);
+      }
+
+      var userPromise;
+      try {
+        userPromise = Promise.resolve(window.botpress.getUser())
+          .then(function (user) {
+            contact = mergeCalendarContact(contact, contactFromAnything(user));
+            if (!contact.email) {
+              var renderedEmail = findLatestEmailInWebchat();
+              if (renderedEmail) contact = mergeCalendarContact(contact, cacheCalendarEmail(renderedEmail));
+            }
+            contact = contactFromAnything(contact);
+            saveCachedCalendarContact(contact);
+            return contact;
+          })
+          .catch(function () { return contact; });
+      } catch (err) {
+        return Promise.resolve(contact);
+      }
+
+      // Never hold the calendar open for a slow profile request.
+      return Promise.race([
+        userPromise,
+        new Promise(function (resolve) {
+          setTimeout(function () { resolve(contact); }, 650);
+        })
+      ]);
+    }
+
+    var hsPreviousBodyOverflow = null;
+    var hsPreviousHtmlOverflow = null;
+
+    function openHubSpotModal() {
+      var modal = document.getElementById("hubspot-modal");
+      if (!modal) return;
+
+      if (modal.style.display !== "flex") {
+        hsPreviousBodyOverflow = document.body.style.overflow;
+        hsPreviousHtmlOverflow = document.documentElement.style.overflow;
+      }
+
+      // Lock the website behind the modal. The modal itself never scrolls.
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      modal.style.display = "flex";
+
+    }
+
+    function closeHubSpotModal() {
+      var modal = document.getElementById("hubspot-modal");
+      if (modal) modal.style.display = "none";
+
+      // Restore whatever the site had before the calendar opened.
+      document.body.style.overflow = hsPreviousBodyOverflow === null ? "" : hsPreviousBodyOverflow;
+      document.documentElement.style.overflow = hsPreviousHtmlOverflow === null ? "" : hsPreviousHtmlOverflow;
+      hsPreviousBodyOverflow = null;
+      hsPreviousHtmlOverflow = null;
+    }
+
+    window.spotlerCloseHubSpotModal = closeHubSpotModal;
+
+    function showCalendar(url, contact) {
+      if (!url) return;
+
+      bookingReported = false;
+      hsLastEmail = (contact && contact.email) || hsLastEmail;
+      try {
+        var slug = new URL(url).pathname.split("/").filter(Boolean)[0] || null;
+        if (slug) hsLastOwnerSlug = slug;
+      } catch (err) { /* keep previous value */ }
+
+      var stage = document.getElementById("hubspot-iframe-stage");
+      var loading = document.getElementById("hubspot-loading");
+      var fullUrl = buildCalendarUrl(url, contact);
+
+      if (hsCurrentKey === fullUrl && stage && stage.querySelector("iframe")) {
+        openHubSpotModal();
+        return;
+      }
+
+      hsCurrentKey = fullUrl;
+      if (loading) loading.style.display = "flex";
+      if (!stage) return;
+
+      stage.innerHTML = "";
+
+      var iframe = document.createElement("iframe");
+      iframe.src = fullUrl;
+      iframe.title = "Book a meeting with Spotler";
+      iframe.setAttribute("frameborder", "0");
+      iframe.setAttribute("allowtransparency", "true");
+      iframe.setAttribute("data-hs-ignore", "true");
+
+      iframe.addEventListener("load", function () {
+        if (loading) loading.style.display = "none";
+      });
+
+      stage.appendChild(iframe);
+      openHubSpotModal();
+
+      // Safety fallback in case the browser suppresses the iframe load event.
+      setTimeout(function () {
+        if (loading) loading.style.display = "none";
+      }, 3500);
+    }
+
+    // === Listen for the bot's custom event to open the calendar ===
+    try {
+      window.botpress.on("customEvent", function (rawEvent) {
+        var event = unwrapCustomEvent(rawEvent);
+        if (event && event.action === "showHubSpotCalendar" && event.url) {
+          resolveCalendarContact(event).then(function (contact) {
+            console.log("[HS] calendar prefill:", {
+              email: !!contact.email,
+              firstName: !!contact.firstName,
+              lastName: !!contact.lastName,
+              company: !!contact.company
+            });
+            showCalendar(event.url, contact);
+          });
+        }
+      });
+    } catch (e) {}
+
+    // === Detect successful bookings and report them to Botpress ===
+    window.addEventListener("message", function (message) {
+      var origin = message.origin || "";
+      if (!/^https:\/\/meetings[^.]*\.hubspot\.com$/.test(origin)) return;
+
+      if (message.data && message.data.meetingBookSucceeded && !bookingReported) {
+        console.log('[BP] meetingBookSucceeded received from HubSpot');
+        bookingReported = true;
+
+        var mp = message.data.meetingsPayload || null;
+        var ev = (mp && mp.bookingResponse) ? mp.bookingResponse.event : null;
+
+        var bookedContact = (ev && ev.contact) ? ev.contact : null;
+        var contactEmail = (bookedContact && bookedContact.email) || hsLastEmail || null;
+        var guessed = guessFromEmail(contactEmail || "");
+        var contactFirstName = (bookedContact && (bookedContact.firstName || bookedContact.firstname)) || guessed.firstName || null;
+        var contactLastName  = (bookedContact && (bookedContact.lastName  || bookedContact.lastname))  || guessed.lastName  || null;
+        var contactName = [contactFirstName, contactLastName].filter(Boolean).join(" ") || null;
+
+        var ownerSlug = (mp && mp.userSlug) || hsLastOwnerSlug || null;
+
+        var payload = {
+          type: "demoBooked",
+          booked: true,
+          userEmail: contactEmail,
+          userName: contactName,
+          userFirstName: contactFirstName,
+          userLastName: contactLastName,
+          ownerSlug: ownerSlug,
+          ownerEmail: (ownerSlug && OWNER_EMAILS[ownerSlug]) || null,
+          ownerName: (ownerSlug && OWNER_NAMES[ownerSlug]) || null,
+          meetingDate: null,
+          meetingDateFormatted: null,
+          meetingTime: null,
+          meetingWhen: null
+        };
+
+        try {
+          var raw = ev ? ev.dateString : null;
+          if (raw) {
+            payload.meetingDate = raw;
+            var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
+            if (m) payload.meetingDateFormatted = m[3] + "/" + m[2] + "/" + m[1];
+          }
+          var ts = ev ? Number(ev.dateTime) : NaN;
+          if (ts && !isNaN(ts)) {
+            var d = new Date(ts);
+            payload.meetingTime =
+              String(d.getHours()).padStart(2, "0") + ":" +
+              String(d.getMinutes()).padStart(2, "0");
+            if (!payload.meetingDateFormatted) {
+              payload.meetingDateFormatted =
+                String(d.getDate()).padStart(2, "0") + "/" +
+                String(d.getMonth() + 1).padStart(2, "0") + "/" +
+                d.getFullYear();
+            }
+          }
+          if (payload.meetingDateFormatted) {
+            payload.meetingWhen = payload.meetingDateFormatted +
+              (payload.meetingTime ? " at " + payload.meetingTime : "");
+          }
+        } catch (err) {
+          console.warn("[BP] Could not parse HubSpot booking details", err);
+        }
+
+        console.log('[BP] sending demoBooked to botpress:', JSON.stringify(payload));
+        try {
+          window.botpress.sendEvent(payload);
+        } catch (err) {
+          console.warn("[BP] demoBooked sendEvent failed", err);
+        }
+
+        setTimeout(function () {
+          closeHubSpotModal();
+          var meetingContainer = document.getElementById("hubspot-meeting-container");
+          if (meetingContainer) meetingContainer.innerHTML = "";
+          hsCurrentKey = null;
+        }, 4000);
+      }
+    });
+
+    // Escape key closes modal
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeHubSpotModal();
+      }
+    });
+  }
+
+/* ---- 90-main.js ---- */
+/* ==================================================================
+   90 · Boot
+   v1 runs the slide-out on desktop only. Rows set to "half" or "full"
+   are left alone (their old campaign tags still serve them) until the
+   embedded modes ship.
+   ================================================================== */
+function detectRegion(path) {
+  for (var i = 0; i < SETTINGS.REGIONS.length; i++) {
+    if (SETTINGS.REGIONS[i].test.test(path)) return SETTINGS.REGIONS[i];
+  }
+  return SETTINGS.REGIONS[SETTINGS.REGIONS.length - 1];
+}
+
+function isLegacyExcluded(path) {
+  path = normalisePath(path);
+  for (var i = 0; i < SETTINGS.LEGACY_EXCLUDE.length; i++) {
+    var p = normalisePath(SETTINGS.LEGACY_EXCLUDE[i]);
+    if (path === p || path.indexOf(p + "/") === 0) return true;
+  }
+  return false;
+}
+
+function boot() {
+  if (window.__spotlerMiaStarted) return;          // GTM can fire a tag twice
+  window.__spotlerMiaStarted = SETTINGS.VERSION;
+
+  var path = location.pathname;
+  if (isLegacyExcluded(path)) { log("off: page still on a legacy campaign tag"); return; }
+
+  var region = detectRegion(path);
+  var cachedCfg = LS.getJSON(CONFIG_CACHE_KEY);
+  var enabled = (cachedCfg && cachedCfg.enabledRegions) || SETTINGS.ENABLED_REGIONS;
+  if (enabled.indexOf(region.id) === -1) { log("off: region " + region.id + " not enabled"); return; }
+
+  if (window.innerWidth < SETTINGS.DESKTOP_MIN_WIDTH || isMobileOrTabletUA()) {
+    log("off: slide-out is desktop only");
+    return;
+  }
+
+  SETTINGS.CDN_ORIGINS.forEach(preconnect);
+  State.cleanLegacy();
+
+  var labels = SETTINGS.LABELS[region.id] || SETTINGS.LABELS["en-GB"];
+  var ctx = { region: region, labels: labels, row: null, ui: null, shell: null };
+  BP.ctx = ctx;
+
+  // HubSpot booking modal markup (logic attaches when Botpress loads).
+  var hs = document.createElement("div");
+  hs.innerHTML = HTML.hubspot;
+  while (hs.firstChild) document.body.appendChild(hs.firstChild);
+
+  ctx.ui = createSlideout(region, labels, {
+    onRestart: function () {
+      if (LS.getJSON(LIVE_KEY) || BP.engaged) resetToShell("restart");
+    },
+    onTeaser: function (text) { teaserSend(text); }
+  });
+
+  function mountShell() {
+    if (ctx.shell && ctx.shell.host && ctx.shell.host.parentNode) ctx.shell.host.parentNode.removeChild(ctx.shell.host);
+    var host = el("div", { id: "spotler-mia-shell" });
+    ctx.ui.body.insertBefore(host, ctx.ui.body.firstChild);
+    ctx.shell = createShell(host, labels, ctx.row, {
+      onSend: function (text, source) { engage(text, source); },
+      onOpen: function () { engage(null, "open"); }
+    });
+  }
+  ctx.remountShell = mountShell;
+
+  var live = State.getLive(region.id);
+  if (live) {
+    // Mid-conversation from an earlier page: straight to the live chat.
+    resume();
+  } else {
+    mountShell();
+  }
+  ctx.ui.restore();
+  startTimeoutWatch();
+
+  loadConfig(function (cfg) {
+    var row = pickRow(cfg, path, region.id);
+    if (row && row.mode !== "slideout") {
+      log("row asks for mode '" + row.mode + "' (not in v1): using slide-out");
+    }
+    ctx.row = row;
+    if (ctx.shell) ctx.shell.setRow(row);
+    ctx.ui.setRow(row);
+  });
+}
+
+onDomReady(function () {
+  try { boot(); } catch (e) { log("boot failed", e); }
+});
+
+})();
+</script>

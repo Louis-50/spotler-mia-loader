@@ -1,0 +1,97 @@
+/* ==================================================================
+   40 · Static shell styles (lives inside its own shadow root)
+   Values captured from the live Botpress webchat v3.7 on spotler.com
+   (8 Oct 2026): theme --bpPrimary-* navy, --bpGray-*, radius scale 4.
+   If the Botpress dashboard look changes, update this file to match.
+   ================================================================== */
+:host { all: initial; display: block; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; border: 0 solid; }
+
+.c {
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; width: 100%; height: 100%; overflow: hidden;
+  background: #fdfdfd; border: 1px solid #DADBE0;
+  font-family: inter, sans-serif; font-size: 14px; line-height: 20px; color: #202127;
+  -webkit-font-smoothing: antialiased; text-size-adjust: 100%;
+}
+
+/* ---- Message list ---- */
+.list { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+        margin-bottom: -25px; padding: 4px; overflow: hidden; }
+.scroll { min-height: 0; flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+.vp { display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
+      min-height: 100%; padding: 12px 12px 48px 12px; }
+
+.mq { display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      gap: 8px; padding: 80px 0 48px; }
+.mq-av { display: block; width: 82px; height: 82px; margin-bottom: 12px; padding: 1px;
+         border-radius: 39996px; overflow: hidden; }
+.mq-av img, .av img { display: block; width: 100%; height: 100%; border-radius: 39996px; object-fit: cover; }
+.mq-txt { display: flex; flex-direction: column; }
+.mq-title { font-size: 18px; line-height: 28px; font-weight: 500; color: #2F323B; text-align: center; }
+.mq-desc { margin-top: 4px; font-size: 14px; line-height: 20px; color: #696F83; text-align: center; }
+
+.m { display: flex; gap: 8px; position: relative; font-size: 14px; line-height: 20px; color: #202127;
+     word-break: break-word; justify-content: flex-start; }
+.m.today { justify-content: center; margin-top: 16px; font-size: 12px; line-height: 16px; color: #2F323B; }
+.m.out { justify-content: flex-end; }
+.m.anim { animation: miaIn 0.4s ease-out both; }
+
+.av { display: flex; align-self: flex-end; flex-shrink: 0; width: 28px; height: 28px;
+      border-radius: 39996px; overflow: hidden; line-height: 21px; }
+.av-fb, .mq-av .av-fb { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;
+         background: #99AAB8; color: #00192E; font-weight: 600; border-radius: 39996px; }
+
+.col { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; max-width: 85%; }
+.b { position: relative; max-width: 85%; padding: 8px 16px; border-radius: 24px 24px 24px 2px;
+     background: #F0F1F3; color: #202127; white-space: pre-line; }
+.col .b { max-width: 100%; }
+.m.out .b { background: #002645; color: #F2F4F6; border-radius: 24px 24px 2px 24px; }
+
+.row { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px; }
+.btn { display: block; padding: 4px 12px; border-radius: 24px; background: #BFCAD3; color: #001323;
+       font: inherit; font-size: 14px; line-height: 20px; text-align: center; cursor: pointer;
+       transition: background-color 0.15s ease-out; }
+.btn:hover { background: #99AAB8; }
+.btn:focus-visible { outline: 2px solid #002645; outline-offset: 2px; }
+.btn[disabled] { cursor: default; }
+.btn[disabled]:hover { background: #BFCAD3; }
+
+.typing { display: flex; gap: 6px; padding: 12px; background: #F0F1F3; border-radius: 32px; align-items: flex-end; }
+.typing i { display: block; width: 6px; height: 6px; background: #2F323B; border-radius: 50%;
+            animation: miaJump 1s ease infinite; }
+.typing i:nth-child(2) { animation-delay: 0.1s; }
+.typing i:nth-child(3) { animation-delay: 0.2s; }
+
+/* ---- Composer ---- */
+.cmp { position: relative; z-index: 1; display: flex; flex-direction: column; margin: 0 16px;
+       border: 1px solid #DADBE0; border-radius: 24px; background: #F0F1F3; color: #696F83; }
+.cmp.off { background: #F0F1F3; color: #696F83; }
+.inw { position: relative; display: flex; align-items: flex-end; min-height: 48px; padding: 8px; }
+textarea { display: block; flex: 1 1 auto; height: 20px; max-height: 120px; margin: 6px 32px 6px 8px;
+           font: inherit; font-size: 14px; line-height: 20px; color: #202127; background: transparent;
+           resize: none; outline: none; overflow-y: auto; white-space: pre-wrap; overflow-wrap: break-word; }
+textarea::placeholder { color: #696F83; opacity: 1; }
+textarea:disabled { cursor: default; }
+.ico { display: block; width: 32px; height: 32px; padding: 8px; border-radius: 9999px; cursor: pointer;
+       fill: none; stroke-width: 2px; stroke-linecap: round; stroke-linejoin: round; }
+.send { position: absolute; right: 8px; bottom: 8px; background: #002645; stroke: #F2F4F6;
+        opacity: 0; transform: translateY(20%); pointer-events: none;
+        transition: opacity 0.15s ease-out, transform 0.15s ease-out, background-color 0.15s ease-out; }
+.send:hover { background: #00192E; }
+.has-text .send { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.mic { stroke: #5F6476; transition: opacity 0.1s ease-out; }
+.mic:hover { background: #F0F1F3; }
+.has-text .mic { opacity: 0; pointer-events: none; }
+.off .ico { cursor: default; pointer-events: none; }
+
+.ft { align-self: center; margin: 4px 20px; font-size: 12px; line-height: 18px; color: #8795A0; font-style: italic;
+      text-align: center; cursor: default; }
+
+@keyframes miaIn { 0% { transform: translateY(20%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+@keyframes miaJump { 0%, 50%, 100% { transform: translateY(0); } 25% { background-color: #969AA8; transform: translateY(-75%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .m.anim, .typing i { animation: none; }
+  .send, .mic, .btn { transition: none; }
+}
