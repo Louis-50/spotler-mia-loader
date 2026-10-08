@@ -56,7 +56,7 @@ async def main():
         page = await ctx.new_page()
         logs = []
         page.on("console", lambda m: logs.append(m.text))
-        await page.goto("https://www.spotler.com/en-gb/pricing")
+        await page.goto("https://www.spotler.com/en-gb/pricing/compare")
         await page.wait_for_timeout(1200)
         txt = await shell_text(page)
         check("1a shell renders", txt and "Mia" in txt)
@@ -79,7 +79,7 @@ async def main():
         names = [e[0] for e in bplog]
         check("2b Botpress loaded after click", bp_requests(reqs))
         ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
-        check("2c one start event with region/page fields", len(ev) == 1 and ev[0]["language"] == "en-GB" and ev[0]["startPage"] == "/en-gb/pricing" and ev[0]["source"] == "button" and ev[0]["pageKey"] == "pricing", ev)
+        check("2c one start event with region/page fields", len(ev) == 1 and ev[0]["language"] == "en-GB" and ev[0]["startPage"] == "/en-gb/pricing/compare" and ev[0]["source"] == "button" and ev[0]["pageKey"] == "pricing", ev)
         check("2d no page/route on slide-out rows", ev and "route" not in ev[0] and "page" not in ev[0], ev)
         up = [e[1] for e in bplog if e[0] == "updateUser"]
         check("2e skip-greeting flag set before start event", up and '"proactiveTopic":"Book a demo"' in up[-1] and names.index("updateUser") < names.index("sendEvent"), bplog)
@@ -168,7 +168,7 @@ async def main():
         reqs = await setup(ctx)
         page = await ctx.new_page()
         await page.add_init_script("sessionStorage.setItem('spotlerAgentState','dismissed')")
-        await page.goto("https://www.spotler.com/en-gb/pricing")
+        await page.goto("https://www.spotler.com/en-gb/pricing/compare")
         await page.wait_for_timeout(4600)
         t = await page.evaluate("document.getElementById('spotler-agent-teaser').hidden ? null : document.getElementById('spotler-agent-teaser-text').textContent")
         check("10a page teaser from config", t == "Want help comparing plans and pricing?", t)
@@ -204,7 +204,7 @@ async def main():
         check("11f start event keeps page/route for Studio gate (services/B)", ev and ev[0].get("page") == "services" and ev[0].get("route") == "B" and ev[0]["source"] == "button", ev)
         check("11g message sent", ["sendMessage", "What does it cost?"] in bplog, bplog)
         # carry over: campaign chat follows into the slide-out
-        await page.goto("https://www.spotler.com/en-gb/pricing")
+        await page.goto("https://www.spotler.com/en-gb/pricing/compare")
         await page.wait_for_function("document.getElementById('bp-embedded-webchat') && document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
         bplog = await page.evaluate("window.__bpLog")
         check("11h campaign conversation resumes in slide-out", any(e[0] == "resume" for e in bplog) and await page.evaluate("!!document.getElementById('spotler-agent-panel') && !document.getElementById('spotler-mia-shell')"), bplog)
@@ -222,7 +222,7 @@ async def main():
         await page.goto("https://www.spotler.com/en-gb/discover/feedbackpro-x-zendesk")
         await page.wait_for_timeout(1200)
         check("12b half-page off on mobile", await page.evaluate("!document.getElementById('spotler-inline-agent')"))
-        await page.goto("https://www.spotler.com/en-gb/pricing")
+        await page.goto("https://www.spotler.com/en-gb/pricing/compare")
         await page.wait_for_timeout(800)
         check("12c slide-out off on mobile", await page.evaluate("!document.getElementById('spotler-agent-panel')") and not bp_requests(reqs))
         await ctx.close()

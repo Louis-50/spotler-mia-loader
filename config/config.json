@@ -1,6 +1,6 @@
 {
-  "version": "2026-10-08.3",
-  "generatedBy": "UK, NL and INT slide-out TEASER_RULES + live default greetings + campaign openers (8 Oct 2026)",
+  "version": "2026-10-08.4",
+  "generatedBy": "UK, NL and INT slide-out TEASER_RULES + live default greetings + campaign openers (8 Oct 2026) + STAGING TEST: full on /en-gb/services, half on /en-gb/pricing",
   "rows": [
     {
       "url_match": "*",
@@ -293,6 +293,60 @@
         }
       ],
       "media_selector": "iframe[src*=\"player.vimeo.com\"], img[src*=\"services-hero\"]"
+    },
+    {
+      "url_match": "/en-gb/services",
+      "match_type": "exact",
+      "region": "en-GB",
+      "mode": "full",
+      "page": "services",
+      "headline": "Get more out of Spotler with our services",
+      "intro": "Let's chat! Ask me how our team can help you. 👋",
+      "opener": "Hi, I'm Mia 👋 Our team can help you set up, train and get the most out of Spotler.\n\nWhat would you like to know?",
+      "buttons": [
+        {
+          "label": "What services do you offer?",
+          "send": "What services do you offer?"
+        },
+        {
+          "label": "Can you help with onboarding?",
+          "send": "Can you help with onboarding?"
+        },
+        {
+          "label": "Do you offer training?",
+          "send": "Do you offer training?"
+        },
+        {
+          "label": "Book a demo",
+          "send": "Book a demo"
+        }
+      ]
+    },
+    {
+      "url_match": "/en-gb/pricing",
+      "match_type": "exact",
+      "region": "en-GB",
+      "mode": "half",
+      "page": "pricing",
+      "opener": "Hi, I'm Mia 👋 I can help you find the plan that fits.\n\nWhat would you like to compare?",
+      "buttons": [
+        {
+          "label": "Help me compare plans",
+          "send": "Help me compare plans"
+        },
+        {
+          "label": "What does Spotler cost?",
+          "send": "What does Spotler cost?"
+        },
+        {
+          "label": "Is there a free trial?",
+          "send": "Is there a free trial?"
+        },
+        {
+          "label": "Book a demo",
+          "send": "Book a demo"
+        }
+      ]
     },
     {
       "url_match": "*",
