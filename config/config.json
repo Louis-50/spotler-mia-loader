@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-08.7",
+  "version": "2026-10-08.8",
   "generatedBy": "n8n Mia page editor (louis.grieves@spotler.com)",
   "rows": [
     {
@@ -345,6 +345,32 @@
       "url_match": "/en-gb/success-stories",
       "match_type": "exact",
       "region": "en-GB"
+    },
+    {
+      "url_match": "/en-gb/blog",
+      "match_type": "exact",
+      "region": "en-GB",
+      "mode": "half",
+      "page": "blog",
+      "opener": "blog test",
+      "buttons": [
+        {
+          "label": "blog",
+          "send": "blog"
+        },
+        {
+          "label": "test",
+          "send": "test"
+        },
+        {
+          "label": "button",
+          "send": "button"
+        }
+      ],
+      "teaser_text": "teaser!",
+      "teaser_send": "nice",
+      "headline": "Enrich your marketing knowledge with our blogs",
+      "intro": "Get inspired by our articles of the wonderful world of marketing that is always evolving.  Do you want to read the latest Spotler news? View our news overview."
     },
     {
       "url_match": "*",
