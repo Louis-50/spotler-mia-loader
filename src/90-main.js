@@ -50,11 +50,16 @@ function boot() {
   var started = false;
   // The region switch lives in config.json (enabledRegions), so a region
   // can be turned on or off without a GTM publish.
-  loadConfig(function (cfg) {
+  loadConfig(function (cfg, source) {
     if (started) return;
-    started = true;
     var enabled = (cfg && cfg.enabledRegions) || SETTINGS.ENABLED_REGIONS;
-    if (enabled.indexOf(region.id) === -1) { log("off: region " + region.id + " not enabled"); return; }
+    if (enabled.indexOf(region.id) === -1) {
+      if (source === "cache") { log("cached config has region " + region.id + " off, checking the live copy"); return false; }
+      started = true;
+      log("off: region " + region.id + " not enabled");
+      return;
+    }
+    started = true;
     State.cleanLegacy();
     start(pickRow(cfg, path, region.id));
   });

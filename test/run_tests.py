@@ -140,6 +140,16 @@ async def main():
             check(name, await page.evaluate("!document.getElementById('spotler-agent-panel')") and not bp_requests(reqs))
             await ctx.close()
 
+        # a stale cached config that still has the region off must not keep it off
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+        await setup(ctx)
+        stale = json.dumps(dict(json.loads(OFF_SWITCH), version="stale"))
+        await ctx.add_init_script("localStorage.setItem('spotler_mia_config', " + json.dumps(stale) + ")")
+        page = await ctx.new_page()
+        await page.goto("https://www.spotler.com/nl-nl/"); await page.wait_for_timeout(900)
+        check("7d stale cached off-switch: live config turns NL back on", await page.evaluate("!!document.getElementById('spotler-agent-panel') && !JSON.parse(localStorage.getItem('spotler_mia_config')).enabledRegions"))
+        await ctx.close()
+
         # ---------- 8. config down: built-in default ----------
         ctx = await b.new_context(viewport={"width": 1440, "height": 900})
         reqs = await setup(ctx, config_ok=False)
@@ -320,6 +330,12 @@ async def main():
                 back = await page.evaluate("[1,2,3,4].every(l=>!document.body.classList.contains('mia-fit-'+l)) && [...document.querySelectorAll('.main-nav > li')].some(li=>li.offsetParent!==null && /About/.test(li.textContent))")
                 back = back and await page.evaluate("getComputedStyle(document.querySelector('.top-nav-container')).marginRight === document.querySelector('.top-nav-container').style.marginRight")
                 check("14 closing the panel restores the full header and top bar", back)
+                await page.click("#spotler-agent-pill"); await page.wait_for_timeout(500)
+                await page.click(".main-switcher-box"); await page.wait_for_timeout(450)
+                d = await page.evaluate("() => { const r=document.querySelector('.switch-drop').getBoundingClientRect(); return { right: Math.round(document.getElementById('header').getBoundingClientRect().right - r.right), left: Math.round(r.left) } }")
+                check("16 region switcher dropdown opens clear of the panel", d["right"] >= 12 and d["left"] >= 0, d)
+                await page.click("#spotler-agent-close"); await page.wait_for_timeout(300)
+                check("16 closing the panel puts the dropdown back", await page.evaluate("!document.querySelector('.switch-drop').style.translate"))
             await ctx.close()
 
         await b.close()

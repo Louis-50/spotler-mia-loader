@@ -1,7 +1,8 @@
 /* ==================================================================
    20 · Page config: load config.json, pick the row for this page
    - Returning visitors: cached copy used at once, refreshed in the
-     background (a change shows from their next page).
+     background (a change shows from their next page). Exception: a
+     cached copy that switches the region off waits for the live one.
    - First visit: wait up to CONFIG_WAIT_MS, then fall back to the
      built-in DEFAULT_ROWS. A late response is still cached.
    ================================================================== */
@@ -62,11 +63,13 @@ function validateConfig(cfg) {
 function loadConfig(cb) {
   var cached = LS.getJSON(CONFIG_CACHE_KEY);
   var answered = false;
+  // cb returns false to turn down a cached answer (it would switch the
+  // region off); the network copy then decides, so a stale cache can't
+  // keep a region off after it has been switched on.
   function answer(cfg, source) {
     if (answered) return;
-    answered = true;
     log("config from " + source + (cfg && cfg.version ? " v" + cfg.version : ""));
-    cb(cfg);
+    answered = cb(cfg, source) !== false;
   }
 
   if (cached && cached.rows) answer(cached, "cache");

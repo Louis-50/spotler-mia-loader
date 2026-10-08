@@ -6,7 +6,7 @@
    are only the fallback used when config.json can't be loaded.
    ================================================================== */
 var SETTINGS = {
-  VERSION: "1.2.0",
+  VERSION: "1.2.1",
 
   // ---- Page table (published by n8n) ----
   CONFIG_URL: "https://cdn.jsdelivr.net/gh/Louis-50/spotler-mia-loader@main/config/config.json",

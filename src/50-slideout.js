@@ -143,6 +143,7 @@ function createSlideout(region, labels, handlers) {
     }
     hdr.style.transition = prev;
     fitBar();
+    nudgeDropdowns();
   }
   // The top bar wraps when its links sit on more than one row.
   function barWraps(ul) {
@@ -177,6 +178,51 @@ function createSlideout(region, labels, handlers) {
   window.addEventListener("load", refit);
   try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit); } catch (e) {}
 
+  /* ---- header dropdowns ---- */
+  // The theme places its dropdowns (the region switcher above all) for the
+  // full window, so beside the panel they open half underneath it. When
+  // something in the header opens, any popup that crosses the header's
+  // right edge is shifted left until it clears it. `translate` is used so
+  // the theme's own `transform` animations are left alone.
+  var nudged = [];
+  function unnudge() {
+    for (var i = 0; i < nudged.length; i++) nudged[i].style.removeProperty("translate");
+    nudged = [];
+  }
+  function nudgeDropdowns() {
+    unnudge();
+    if (!panel.classList.contains("open")) return;
+    var hdr = document.getElementById("header");
+    if (!hdr) return;
+    var hr = hdr.getBoundingClientRect(), limit = hr.right - 12;
+    var all = hdr.querySelectorAll("*");
+    for (var i = 0; i < all.length; i++) {
+      var n = all[i], inside = false;
+      for (var j = 0; j < nudged.length; j++) if (nudged[j].contains(n)) { inside = true; break; }
+      if (inside) continue;
+      var r = n.getBoundingClientRect();
+      if (!r.width || r.right <= limit) continue;
+      var pos = getComputedStyle(n).position;
+      if (pos !== "absolute" && pos !== "fixed") continue;
+      var shift = Math.ceil(Math.min(r.right - limit, r.left - hr.left));
+      if (shift <= 0) continue;
+      n.style.setProperty("translate", -shift + "px 0", "important");
+      nudged.push(n);
+    }
+  }
+  var nudgeTimers = [];
+  function renudge() {
+    nudgeTimers.forEach(clearTimeout);
+    // Again after the theme's open animation has settled.
+    nudgeTimers = [30, 350].map(function (ms) { return setTimeout(nudgeDropdowns, ms); });
+  }
+  ["click", "focusin", "mouseover"].forEach(function (type) {
+    document.addEventListener(type, function (e) {
+      var hdr = document.getElementById("header");
+      if (hdr && e.target && hdr.contains(e.target) && panel.classList.contains("open")) renudge();
+    }, true);
+  });
+
   /* ---- open / close ---- */
   function open(instant) {
     if (instant) {
@@ -197,6 +243,7 @@ function createSlideout(region, labels, handlers) {
     document.body.classList.remove("agent-panel-open");
     SS.set(PANEL_STATE_KEY, "dismissed");
     fitHeader();
+    unnudge();
     if (isDesktop()) { pill.style.display = "flex"; scheduleTeaser(); }
   }
 
