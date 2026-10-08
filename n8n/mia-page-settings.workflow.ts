@@ -36,12 +36,9 @@ const readConfig = node({
     position: [220, 300],
     parameters: {
       method: 'GET',
-      url: 'https://api.github.com/repos/Louis-50/spotler-mia-loader/contents/config/config.json',
+      url: 'https://api.github.com/repos/Louis-50/spotler-mia-loader/contents/config/config.json?ref=main',
       authentication: 'predefinedCredentialType',
       nodeCredentialType: 'githubApi',
-      sendQuery: true,
-      specifyQuery: 'keypair',
-      queryParameters: { parameters: [{ name: 'ref', value: 'main' }] },
       sendHeaders: true,
       specifyHeaders: 'keypair',
       headerParameters: { parameters: [{ name: 'Accept', value: 'application/vnd.github+json' }] }
