@@ -19,7 +19,7 @@ Scope and decisions: *Botpress lazy loader: scope* (Claude doc) and Confluence �
 ```bash
 npm install
 node build.mjs                # → dist/mia-loader.gtm.html (≈63 KB)
-python3 test/run_tests.py     # 69 checks against a mocked Botpress
+python3 test/run_tests.py     # 70 checks against a mocked Botpress
 ```
 
 1. In GTM, create a Custom HTML tag "Mia lazy loader" and paste `dist/mia-loader.gtm.html`.

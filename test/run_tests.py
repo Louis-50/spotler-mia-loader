@@ -331,9 +331,15 @@ async def main():
                 back = back and await page.evaluate("getComputedStyle(document.querySelector('.top-nav-container')).marginRight === document.querySelector('.top-nav-container').style.marginRight")
                 check("14 closing the panel restores the full header and top bar", back)
                 await page.click("#spotler-agent-pill"); await page.wait_for_timeout(500)
-                await page.click(".main-switcher-box"); await page.wait_for_timeout(450)
-                d = await page.evaluate("() => { const r=document.querySelector('.switch-drop').getBoundingClientRect(); return { right: Math.round(document.getElementById('header').getBoundingClientRect().right - r.right), left: Math.round(r.left) } }")
+                # open it and record its shift on every frame of the open animation
+                d = await page.evaluate("""() => new Promise(res => { const drop=document.querySelector('.switch-drop'), seen=[];
+                  document.querySelector('.main-switcher-box').click();
+                  const t0=performance.now(); function f(){ seen.push(drop.style.translate);
+                    if (performance.now()-t0 < 450) return requestAnimationFrame(f);
+                    const r=drop.getBoundingClientRect();
+                    res({ right: Math.round(document.getElementById('header').getBoundingClientRect().right - r.right), left: Math.round(r.left), shifts: [...new Set(seen)] }); } requestAnimationFrame(f); })""")
                 check("16 region switcher dropdown opens clear of the panel", d["right"] >= 12 and d["left"] >= 0, d)
+                check("16 dropdown opens in place (one shift from the first frame, no jump)", len(d["shifts"]) == 1 and d["shifts"][0] != "", d)
                 await page.click("#spotler-agent-close"); await page.wait_for_timeout(300)
                 check("16 closing the panel puts the dropdown back", await page.evaluate("!document.querySelector('.switch-drop').style.translate"))
             await ctx.close()
