@@ -1,6 +1,6 @@
 {
-  "version": "2026-10-08.4",
-  "generatedBy": "UK, NL and INT slide-out TEASER_RULES + live default greetings + campaign openers (8 Oct 2026) + STAGING TEST: full on /en-gb/services, half on /en-gb/pricing",
+  "version": "2026-10-08.5",
+  "generatedBy": "n8n Mia page editor (louis.grieves@spotler.com)",
   "rows": [
     {
       "url_match": "*",
@@ -300,27 +300,21 @@
       "region": "en-GB",
       "mode": "full",
       "page": "services",
-      "headline": "Get more out of Spotler with our services",
-      "intro": "Let's chat! Ask me how our team can help you. 👋",
-      "opener": "Hi, I'm Mia 👋 Our team can help you set up, train and get the most out of Spotler.\n\nWhat would you like to know?",
+      "opener": "Test opening",
       "buttons": [
         {
-          "label": "What services do you offer?",
-          "send": "What services do you offer?"
+          "label": "enter between buttons",
+          "send": "enter between buttons"
         },
         {
-          "label": "Can you help with onboarding?",
-          "send": "Can you help with onboarding?"
-        },
-        {
-          "label": "Do you offer training?",
-          "send": "Do you offer training?"
-        },
-        {
-          "label": "Book a demo",
-          "send": "Book a demo"
+          "label": "or is it comma, Which?",
+          "send": "or is it comma, Which?"
         }
-      ]
+      ],
+      "teaser_text": "Teaser test",
+      "teaser_send": "test pass",
+      "headline": "where is this used headline",
+      "intro": "where is this used too?"
     },
     {
       "url_match": "/en-gb/pricing",
