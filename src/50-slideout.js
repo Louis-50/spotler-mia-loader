@@ -107,10 +107,14 @@ function createSlideout(region, labels, handlers) {
     }
     if (pick) pick.classList.add("mia-about");
   }
-  // Doesn't fit = the last menu item runs into the buttons, or the CTA /
-  // region switcher reach the panel (12px clear, for the panel's shadow).
+  // Doesn't fit = the logo is cut off on the left, the last menu item runs
+  // into the buttons, or the CTA / region switcher reach the panel (12px
+  // clear, for the panel's shadow).
   function headerOverflows(hdr, box) {
-    var limit = hdr.getBoundingClientRect().right - 12;
+    var hr = hdr.getBoundingClientRect();
+    var limit = hr.right - 12;
+    var logo = box.querySelector(".logo-wrapper img, .logo-wrapper svg");
+    if (logo && logo.getBoundingClientRect().width && logo.getBoundingClientRect().left < hr.left + 4) return true;
     var buttons = box.querySelector(".header-buttons") || box.querySelector(".header-buttons-box");
     var lis = box.querySelectorAll(".main-nav > li"), last = null;
     for (var i = 0; i < lis.length; i++) if (lis[i].offsetParent !== null) last = lis[i];

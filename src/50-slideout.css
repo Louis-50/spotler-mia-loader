@@ -65,6 +65,18 @@ body.agent-panel-open #header {
   max-width: none !important;
 }
 
+/* Wide screens (1801-2200px): the theme's wide header gives the logo
+   calc(50% - 600px) and the menu a fixed 1200px. Squeezed beside the panel
+   that pushes the logo off the left edge, so use the theme's own
+   1800px-and-below header layout instead (what the page would show in a
+   window the size of the squeezed page). */
+@media (min-width: 1801px) and (max-width: 2200px) {
+  body.agent-panel-open .header .header-box { justify-content: space-between !important; }
+  body.agent-panel-open .header .header-box .logo-wrapper { width: 185px !important; padding: 0 15px !important; }
+  body.agent-panel-open .header .header-box .main-menu-box { width: auto !important; padding: 0 15px !important; }
+  body.agent-panel-open .header .header-box .header-buttons-box { flex-grow: 0 !important; padding: 0 15px !important; }
+}
+
 /* Header fit levels (see fitHeader): applied only while the panel is open
    and only as many as the squeezed header needs. */
 body.agent-panel-open.mia-fit-1 .header .main-nav > li.mia-about { display: none !important; }
