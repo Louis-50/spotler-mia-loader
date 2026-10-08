@@ -1,7 +1,8 @@
 /* ==================================================================
    20 · Page config: load config.json, pick the row for this page
    - The live file wins when it arrives within CONFIG_WAIT_MS, so a
-     published change shows on the next page load. The URL carries a
+     published change shows on the next page load (GitHub's copy, ~5 min
+     after a commit; jsDelivr only as backup). The URL carries a
      5-minute stamp so the browser's HTTP cache can't serve an old copy.
    - Slow or failed fetch: the cached copy (returning visitors) or the
      built-in DEFAULT_ROWS (first visit). A late response is still cached.
@@ -11,23 +12,32 @@
 var CONFIG_CACHE_KEY = "spotler_mia_config";
 
 function fetchConfig(cb) {
-  var done = false;
-  var xhr;
-  try {
-    xhr = new XMLHttpRequest();
-    xhr.open("GET", SETTINGS.CONFIG_URL + "?t=" + Math.floor(now() / 300000), true);
-    xhr.timeout = 10000;
-    xhr.onload = function () {
+  var urls = SETTINGS.CONFIG_URLS, stamp = "?t=" + Math.floor(now() / 300000);
+  (function attempt(i) {
+    if (i >= urls.length) { cb(null); return; }
+    var done = false, xhr;
+    function fail(why) {
       if (done) return; done = true;
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try { cb(validateConfig(JSON.parse(xhr.responseText))); return; } catch (e) { log("config parse failed", e); }
-      } else log("config fetch failed: HTTP " + xhr.status);
-      cb(null);
-    };
-    xhr.onerror = function () { if (!done) { done = true; log("config fetch failed: network or blocked (CSP?)"); cb(null); } };
-    xhr.ontimeout = function () { if (!done) { done = true; log("config fetch failed: timeout"); cb(null); } };
-    xhr.send();
-  } catch (e) { if (!done) { done = true; log("config fetch failed", e); cb(null); } }
+      log("config fetch failed (" + urls[i].split("/")[2] + "): " + why);
+      attempt(i + 1);
+    }
+    try {
+      xhr = new XMLHttpRequest();
+      xhr.open("GET", urls[i] + stamp, true);
+      xhr.timeout = 5000;
+      xhr.onload = function () {
+        if (done) return;
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try { var cfg = validateConfig(JSON.parse(xhr.responseText)); done = true; cb(cfg); return; }
+          catch (e) { fail("bad file (" + e.message + ")"); return; }
+        }
+        fail("HTTP " + xhr.status);
+      };
+      xhr.onerror = function () { fail("network or blocked (CSP?)"); };
+      xhr.ontimeout = function () { fail("timeout"); };
+      xhr.send();
+    } catch (e) { fail(String(e)); }
+  })(0);
 }
 
 // Defensive: never trust the file's shape. Bad rows are dropped, not fatal.

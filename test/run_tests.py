@@ -21,7 +21,7 @@ def check(name, cond, detail=""):
     results.append((name, bool(cond), detail))
     print(("PASS " if cond else "FAIL ") + name + (("  -- " + str(detail)) if detail and not cond else ""))
 
-async def setup(ctx, config_ok=True, config=None):
+async def setup(ctx, config_ok=True, config=None, raw_down=False):
     reqs = []
     async def handler(route):
         url = route.request.url
@@ -29,7 +29,8 @@ async def setup(ctx, config_ok=True, config=None):
         if "cdn.botpress.cloud" in url: return await route.fulfill(body=INJECT, content_type="application/javascript")
         if "files.bpcontent.cloud" in url and url.endswith(".js"): return await route.fulfill(body=BOTCFG, content_type="application/javascript")
         if url.endswith(".webp"): return await route.fulfill(body=AVATAR, content_type="image/png")
-        if "cdn.jsdelivr.net" in url:
+        if "raw.githubusercontent.com" in url and raw_down: return await route.fulfill(status=503, body="")
+        if "cdn.jsdelivr.net" in url or "raw.githubusercontent.com" in url:
             if not config_ok: return await route.fulfill(status=500, body="")
             return await route.fulfill(body=config or CONFIG, content_type="application/json", headers={"access-control-allow-origin": "*"})
         if url.endswith("/logo.svg"): return await route.fulfill(body=SVG, content_type="image/svg+xml")
@@ -161,7 +162,17 @@ async def main():
         await page.goto("https://www.spotler.com/en-gb/pricing/compare"); await page.wait_for_timeout(900)
         txt = await shell_text(page) or ""
         check("7e live config wins over an older cached copy on the first load", "OLD CACHED OPENER" not in txt and "Spotler Agent" in txt, txt[:120])
-        check("7e config URL carries a cache-busting stamp", any("config.json?t=" in u for u in reqs))
+        check("7e config read from GitHub first, with a cache-busting stamp", any("raw.githubusercontent.com" in u and "config.json?t=" in u for u in reqs) and not any("cdn.jsdelivr.net" in u for u in reqs))
+        await ctx.close()
+
+        # GitHub down: the jsDelivr copy is used
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+        reqs = await setup(ctx, raw_down=True)
+        logs = []
+        page = await ctx.new_page()
+        page.on("console", lambda m: logs.append(m.text))
+        await page.goto("https://www.spotler.com/en-gb/pricing/compare"); await page.wait_for_timeout(900)
+        check("7f GitHub down: config comes from the jsDelivr backup", any("config from network" in l for l in logs) and any("cdn.jsdelivr.net" in u for u in reqs), logs)
         await ctx.close()
 
         # ---------- 8. config down: built-in default ----------

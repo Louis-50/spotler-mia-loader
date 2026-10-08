@@ -9,7 +9,7 @@ Scope and decisions: *Botpress lazy loader: scope* (Claude doc) and Confluence �
 | Path | What it is |
 | --- | --- |
 | `src/` | Tag source, joined in filename order by the build. `.css` → `CSS.<name>`, `.html` → `HTML.<name>`. ES5 only (GTM Custom HTML). |
-| `config/config.json` | The page table: opener, buttons, teaser and mode per URL. Published by n8n; the tag reads it from jsDelivr. |
+| `config/config.json` | The page table: opener, buttons, teaser and mode per URL. Published by n8n; the tag reads it from GitHub (`raw.githubusercontent.com`, live ~5 min after a commit), with jsDelivr as backup. |
 | `build.mjs` | Builds `dist/mia-loader.gtm.html`, the file you paste into GTM. |
 | `scripts/check-config.mjs` | The same row checks the n8n workflow runs before publishing. |
 | `n8n/mia-page-settings.workflow.ts` | Source of the n8n form marketing uses to edit `config.json` (n8n: *Mia chat: page settings (marketing)*, Spotler AI project). |
@@ -20,7 +20,7 @@ Scope and decisions: *Botpress lazy loader: scope* (Claude doc) and Confluence �
 ```bash
 npm install
 node build.mjs                # → dist/mia-loader.gtm.html (≈63 KB)
-python3 test/run_tests.py     # 72 checks against a mocked Botpress
+python3 test/run_tests.py     # 73 checks against a mocked Botpress
 ```
 
 1. In GTM, create a Custom HTML tag "Mia lazy loader" and paste `dist/mia-loader.gtm.html`.
@@ -90,11 +90,11 @@ The n8n form *Mia chat: page settings (marketing)* (n8n login required) does it 
 
 1. Pick the region, the page URL and which URLs it covers. The next step shows that page's current settings, prefilled.
 2. Edit and publish. The workflow runs the same checks as `scripts/check-config.mjs`; if one fails, nothing is published and the form lists what to fix.
-3. It commits `config/config.json` to `main` (the commit message names who changed what) and purges jsDelivr, so the change shows within a few minutes.
+3. It commits `config/config.json` to `main` (the commit message names who changed what) and purges the jsDelivr backup. The change shows on the site within about 5 minutes.
 
 After every publish it also refills the n8n data table *Mia chat pages* (Spotler AI project): one row per full embed, half embed and custom slide-out with its opening message, buttons and teaser, plus one "Other pages" slide-out row per region with the standard opening. The workflow's *Rebuild page list* button refills it by hand (e.g. after editing `config.json` in git).
 
-It needs a fine-grained GitHub token (this repo only, Contents read and write) as the n8n credential *GitHub: spotler-mia-loader config*. Hand edits to `config.json` still work; purge jsDelivr after pushing them.
+It needs a fine-grained GitHub token (this repo only, Contents read and write) as the n8n credential *GitHub: spotler-mia-loader config*. Hand edits to `config.json` pushed to `main` work the same way.
 
 ## Not done yet
 

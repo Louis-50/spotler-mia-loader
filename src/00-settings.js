@@ -6,16 +6,22 @@
    are only the fallback used when config.json can't be loaded.
    ================================================================== */
 var SETTINGS = {
-  VERSION: "1.2.3",
+  VERSION: "1.2.4",
 
   // ---- Page table (published by n8n) ----
-  CONFIG_URL: "https://cdn.jsdelivr.net/gh/Louis-50/spotler-mia-loader@main/config/config.json",
+  // Tried in order. GitHub's own copy is live within ~5 minutes of a commit;
+  // jsDelivr's @main alias can stay on an old commit for hours even after a
+  // purge, so it is only the backup.
+  CONFIG_URLS: [
+    "https://raw.githubusercontent.com/Louis-50/spotler-mia-loader/main/config/config.json",
+    "https://cdn.jsdelivr.net/gh/Louis-50/spotler-mia-loader@main/config/config.json"
+  ],
   CONFIG_WAIT_MS: 1500,           // first visit: show the built-in default after this
 
   // ---- Botpress ----
   INJECT_URL: "https://cdn.botpress.cloud/webchat/v3.7/inject.js",
   BOT_CONFIG_URL: "https://files.bpcontent.cloud/2026/05/27/14/20260527141930-9RFHOWXE.js",
-  CDN_ORIGINS: ["https://cdn.botpress.cloud", "https://files.bpcontent.cloud", "https://cdn.jsdelivr.net"],
+  CDN_ORIGINS: ["https://cdn.botpress.cloud", "https://files.bpcontent.cloud", "https://raw.githubusercontent.com"],
 
   // ---- Conversation lifecycle ----
   TIMEOUT_MS: 15 * 60 * 1000,     // must equal the Botpress inactivity timeout
