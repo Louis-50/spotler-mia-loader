@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-08.6",
+  "version": "2026-10-08.7",
   "generatedBy": "n8n Mia page editor (louis.grieves@spotler.com)",
   "rows": [
     {
@@ -320,7 +320,6 @@
       "url_match": "/en-gb/pricing",
       "match_type": "exact",
       "region": "en-GB",
-      "mode": "half",
       "page": "pricing",
       "opener": "Hi, I'm Mia 👋 I can help you find the plan that fits.\n\nWhat would you like to compare?",
       "buttons": [
