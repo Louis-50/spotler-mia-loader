@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-08.5",
+  "version": "2026-10-08.6",
   "generatedBy": "n8n Mia page editor (louis.grieves@spotler.com)",
   "rows": [
     {
@@ -341,6 +341,11 @@
           "send": "Book a demo"
         }
       ]
+    },
+    {
+      "url_match": "/en-gb/success-stories",
+      "match_type": "exact",
+      "region": "en-GB"
     },
     {
       "url_match": "*",
