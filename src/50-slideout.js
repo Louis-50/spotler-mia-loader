@@ -84,21 +84,66 @@ function createSlideout(region, labels, handlers) {
 
   function isDesktop() { return window.innerWidth >= SETTINGS.DESKTOP_MIN_WIDTH; }
 
-  /* ---- page width ---- */
-  function panelWidth() { return window.innerWidth >= 1600 ? SETTINGS.PANEL_WIDTH_WIDE : SETTINGS.PANEL_WIDTH; }
-  function layoutWidth() { return window.innerWidth - panelWidth(); }
-  function syncEmulation() {
-    if (panel.classList.contains("open")) WidthEmu.apply(layoutWidth());
-    else WidthEmu.restore();
+  /* ---- header fit ----
+     When the panel squeezes the page, the site header keeps its wide-screen
+     layout and, on smaller screens, the CTA and region switcher slid under
+     the panel. Measure the squeezed header and make room step by step,
+     stopping as soon as it fits:
+       1  hide "About us" (it is also in the footer)
+       2  smaller banner: smaller logo, tighter side padding
+       3  menu text 15px     4  menu text 14px
+     Wide screens need none of this and keep the header exactly as it is. */
+  var FIT_LEVELS = 4;
+  function navLabel(li) {
+    var a = li.querySelector(":scope > a, :scope > span, :scope > button, :scope > div > a");
+    return trim(a ? a.textContent : (li.firstChild && li.firstChild.textContent) || "");
   }
-  var emuTimer;
-  window.addEventListener("resize", function () {
-    clearTimeout(emuTimer);
-    emuTimer = setTimeout(function () { WidthEmu.refresh(layoutWidth()); }, 120);
-  });
-  // Stylesheets that arrive late (lazy CSS) get the same treatment.
-  window.addEventListener("load", function () { WidthEmu.refresh(layoutWidth()); });
-  setTimeout(function () { WidthEmu.refresh(layoutWidth()); }, 2500);
+  function markAboutUs(box) {
+    var nav = box.querySelector(".main-nav");
+    if (!nav || nav.querySelector(".mia-about")) return;
+    var items = nav.children, pick = null;
+    for (var i = 0; i < items.length; i++) {
+      if (/^(about|over ons|über)/i.test(navLabel(items[i]))) { pick = items[i]; break; }
+    }
+    if (pick) pick.classList.add("mia-about");
+  }
+  // Doesn't fit = the last menu item runs into the buttons, or the CTA /
+  // region switcher reach the panel (12px clear, for the panel's shadow).
+  function headerOverflows(hdr, box) {
+    var limit = hdr.getBoundingClientRect().right - 12;
+    var buttons = box.querySelector(".header-buttons") || box.querySelector(".header-buttons-box");
+    var lis = box.querySelectorAll(".main-nav > li"), last = null;
+    for (var i = 0; i < lis.length; i++) if (lis[i].offsetParent !== null) last = lis[i];
+    if (last && buttons && last.getBoundingClientRect().right > buttons.getBoundingClientRect().left - 12) return true;
+    var edges = box.querySelectorAll(".header-buttons, .header-btn-wrap, .header-btn-wrap > *, .main-switcher-box");
+    for (var j = 0; j < edges.length; j++) {
+      var r = edges[j].getBoundingClientRect();
+      if (r.width && r.right > limit) return true;
+    }
+    return false;
+  }
+  function fitHeader() {
+    var body = document.body;
+    for (var i = 1; i <= FIT_LEVELS; i++) body.classList.remove("mia-fit-" + i);
+    if (!panel.classList.contains("open")) return;
+    var hdr = document.getElementById("header");
+    var box = hdr && hdr.querySelector(".header-box");
+    if (!box) return;
+    markAboutUs(box);
+    var prev = hdr.style.transition;
+    hdr.style.transition = "none";               // measure the final width, not mid-slide
+    void hdr.offsetWidth;
+    for (var lvl = 1; lvl <= FIT_LEVELS && headerOverflows(hdr, box); lvl++) {
+      body.classList.add("mia-fit-" + lvl);
+      void hdr.offsetWidth;
+    }
+    hdr.style.transition = prev;
+  }
+  var fitTimer;
+  function refit() { clearTimeout(fitTimer); fitTimer = setTimeout(fitHeader, 120); }
+  window.addEventListener("resize", refit);
+  window.addEventListener("load", refit);
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit); } catch (e) {}
 
   /* ---- open / close ---- */
   function open(instant) {
@@ -111,15 +156,15 @@ function createSlideout(region, labels, handlers) {
     pill.style.display = "none";
     hideTeaser(false);
     SS.set(PANEL_STATE_KEY, "open");
-    syncEmulation();
     syncBannerHeight();
+    fitHeader();
     if (handlers.onOpen) handlers.onOpen();
   }
   function close() {
     panel.classList.remove("open");
     document.body.classList.remove("agent-panel-open");
     SS.set(PANEL_STATE_KEY, "dismissed");
-    syncEmulation();
+    fitHeader();
     if (isDesktop()) { pill.style.display = "flex"; scheduleTeaser(); }
   }
 

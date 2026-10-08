@@ -63,7 +63,7 @@ Each row: `url_match`, `match_type` (`exact` · `prefix` · `contains`), `region
 
 | Mode | Where | Devices | Notes |
 | --- | --- | --- | --- |
-| `slideout` | Default for every page without a row | Desktop 1200px+, no phones/tablets | Panel, pill, teaser, page squeeze. While open, the site's width-based @media rules are re-evaluated for the squeezed width, so the page lays out as it would in a window that size (`52-width-emulation.js`) |
+| `slideout` | Default for every page without a row | Desktop 1200px+, no phones/tablets | Panel, pill, teaser, page squeeze. If the squeezed header doesn't fit, "About us" is hidden first, then the banner gets smaller (logo, padding, then menu text) until it does |
 | `half` | Rows set to `half` (FeedbackPro) | 1024px+, no phones/tablets | Card overlays the hero image; copy untouched. `media_selector` overrides the image pick |
 | `full` | Rows set to `full` (Mail+) | All devices: the only mode on mobile | Hero hidden; `headline`, `intro` and a large card go after it. `media_selector` picks the hero media |
 

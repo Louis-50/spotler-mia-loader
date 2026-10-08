@@ -239,25 +239,28 @@ async def main():
         await ctx.close()
 
 
-        # ---------- 14. page-width emulation beside the open panel ----------
-        for vw, wide_menu in [(1920, True), (1280, False)]:
+        # ---------- 14. header fit beside the open panel ----------
+        for vw, expect in [(1920, 0), (1440, None), (1280, None), (1200, None)]:
             ctx = await b.new_context(viewport={"width": vw, "height": 800})
             await setup(ctx)
             page = await ctx.new_page()
             await page.goto("https://www.spotler.com/en-gb/")
             await page.wait_for_timeout(900)
-            r = await page.evaluate("""() => ({ menu: getComputedStyle(document.querySelector('.main-menu-box')).display !== 'none',
-                burger: getComputedStyle(document.querySelector('.mobile-hamburger')).display !== 'none',
-                htmlStyle: document.documentElement.getAttribute('style'),
-                panelW: document.getElementById('spotler-agent-panel').getBoundingClientRect().width })""")
-            check(f"14a {vw}px: page laid out for {vw}-panel px (desktop menu {'kept' if wide_menu else 'swapped for hamburger'})",
-                  r["menu"] == wide_menu and r["burger"] != wide_menu, r)
-            check(f"14b {vw}px: no inline style on <html> (theme scroll-lock bug)", r["htmlStyle"] is None and r["panelW"] > 300, r)
-            if not wide_menu:
-                await page.click("#spotler-agent-close")
-                await page.wait_for_timeout(300)
-                r2 = await page.evaluate("getComputedStyle(document.querySelector('.main-menu-box')).display !== 'none'")
-                check("14c closing the panel restores the full-width layout", r2)
+            r = await page.evaluate("""() => { const hdr=document.getElementById('header'), box=hdr.querySelector('.header-box');
+                const lis=[...box.querySelectorAll('.main-nav > li')].filter(li=>li.offsetParent!==null); const last=lis[lis.length-1];
+                const btn=box.querySelector('.header-buttons').getBoundingClientRect();
+                return { levels:[1,2,3,4].filter(l=>document.body.classList.contains('mia-fit-'+l)).length,
+                  aboutHidden: lis.every(li=>!/About/.test(li.textContent)), gap: Math.round(btn.left - last.getBoundingClientRect().right),
+                  clear: Math.round(hdr.getBoundingClientRect().right - box.querySelector('.main-switcher-box').getBoundingClientRect().right),
+                  htmlStyle: document.documentElement.getAttribute('style') } }""")
+            ok = r["gap"] >= 12 and r["clear"] >= 12 and r["htmlStyle"] is None and (expect is None or r["levels"] == expect)
+            if r["levels"] >= 1: ok = ok and r["aboutHidden"]
+            check(f"14 header fits beside panel at {vw}px (levels {r['levels']}, About us {'hidden' if r['aboutHidden'] else 'shown'})", ok, r)
+            await page.screenshot(path=f"{OUT}/14-header-{vw}.png", clip={"x": 0, "y": 0, "width": vw, "height": 140})
+            if vw == 1280:
+                await page.click("#spotler-agent-close"); await page.wait_for_timeout(300)
+                back = await page.evaluate("[1,2,3,4].every(l=>!document.body.classList.contains('mia-fit-'+l)) && [...document.querySelectorAll('.main-nav > li')].some(li=>li.offsetParent!==null && /About/.test(li.textContent))")
+                check("14 closing the panel restores the full header", back)
             await ctx.close()
 
         await b.close()
