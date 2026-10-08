@@ -138,7 +138,9 @@ function attachBotpressListeners() {
     BP.ready = true;
     pushDataLayer({ event: "spotler_mia_ready" });
     if (BP.mode !== "new") {
-      setTimeout(function () { requestAnimationFrame(function () { requestAnimationFrame(reveal); }); }, 750);
+      // Plain timer, not requestAnimationFrame: rAF never fires in a tab
+      // opened in the background, which left the panel on its spinner.
+      setTimeout(reveal, 800);
     }
     // Fallback: no conversation event within FORCE_SEND_MS of ready.
     setTimeout(function () {
