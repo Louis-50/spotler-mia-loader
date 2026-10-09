@@ -428,38 +428,45 @@ function initHubSpot() {
       var back = el("button", { class: "back", type: "button", text: l.calCancel || "Cancel" });
       back.addEventListener("click", function () { closeCalendar(); });
       var stage = el("div", { class: "stage" });
-      var loading = el("div", { class: "loading", "aria-hidden": "true" }, [el("i"), el("span", { text: l.calLoading || "Loading calendar..." })]);
-      var card = el("div", { class: "card" }, [stage, loading]);
+      var card = el("div", { class: "card" }, [stage]);
+      var intro = el("div", { class: "m intro" }, [avatar("av"), el("div", { class: "b", text: l.calIntro || "Pick a time that works for you." })]);
+      var typing = el("div", { class: "m typing-row" }, [avatar("av"), el("div", { class: "typing", "aria-label": "typing" }, [el("i"), el("i"), el("i")])]);
       var bar = el("div", { class: "bar" }, [back]);
       var ft = el("div", { class: "ft", text: l.powered || "" });
-      var sheet = el("div", { class: "sheet" }, [card, bar, ft]);
+      var sheet = el("div", { class: "sheet" }, [intro, typing, card, bar, ft]);
       var view = el("div", { class: "c" }, [sheet]);
       root.appendChild(view);
       host.appendChild(layer);
-      cal = { layer: layer, view: view, sheet: sheet, card: card, bar: bar, ft: ft, stage: stage, loading: loading, contentH: 0, iframe: null };
+      cal = { layer: layer, view: view, sheet: sheet, intro: intro, card: card, bar: bar, ft: ft, stage: stage, contentH: 0, iframe: null };
       return cal;
     }
-    // Card height: HubSpot's own content height (it posts it), up to the
-    // room the chat has; a compact loading card until then.
+    // Card height: what the calendar needs (HubSpot's posted height when it
+    // sends one, otherwise a size that fits its calendar view), up to the
+    // room the chat has. In HubSpot's one-column layout the "Meet with ..."
+    // header is cropped off the top.
     function fitCalendar() {
       if (!cal || !cal.layer.classList.contains("on")) return;
       var room = cal.layer.offsetHeight;
       cal.view.classList.toggle("tight", room < 720);
-      var chrome = cal.bar.offsetHeight + (cal.ft.offsetHeight ? cal.ft.offsetHeight + 10 : 8) + 20;
-      var max = Math.max(160, room - chrome);
-      var h = 132;
-      if (cal.view.classList.contains("ready")) {
-        var want = cal.contentH ? cal.contentH - 32 : (cal.card.offsetWidth < 600 ? 960 : 720);
-        h = Math.min(Math.max(want, 240), max);
-      }
-      cal.card.style.height = Math.min(h, max) + "px";
+      cal.view.classList.toggle("tiny", room < 560);
+      var narrow = cal.layer.offsetWidth < SETTINGS.CAL_ONE_COLUMN_BELOW;
+      var cut = narrow ? SETTINGS.CAL_HEADER_CUT : 0;
+      cal.view.classList.toggle("narrow", narrow);
+      cal.stage.style.setProperty("--cut", cut + "px");
+      var chrome = cal.bar.offsetHeight + (cal.ft.offsetHeight ? cal.ft.offsetHeight + 10 : 8) +
+                   (cal.intro.offsetHeight ? cal.intro.offsetHeight + 8 : 0) + 20;
+      var max = Math.max(200, room - chrome);
+      var want = cal.contentH ? cal.contentH - 32 - cut : (narrow ? SETTINGS.CAL_HEIGHT_ONE_COLUMN : SETTINGS.CAL_HEIGHT_TWO_COLUMN);
+      cal.card.style.height = Math.min(Math.max(want, 240), max) + "px";
     }
     window.addEventListener("resize", fitCalendar);
+    var hsMessagesLogged = 0;
     window.addEventListener("message", function (e) {
       if (!cal || !cal.iframe || e.source !== cal.iframe.contentWindow) return;
       var d = e.data;
+      if (hsMessagesLogged < 8) { hsMessagesLogged++; try { log("calendar: HubSpot says", typeof d === "string" ? d.slice(0, 200) : JSON.stringify(d).slice(0, 200)); } catch (err) {} }
       if (typeof d === "string") { try { d = JSON.parse(d); } catch (err) { return; } }
-      var h = d && (d.height || (d.meetingsHeight)) ;
+      var h = d && (d.height || d.meetingsHeight);
       if (typeof h === "number" && h > 100) { cal.contentH = h; fitCalendar(); }
     });
     function openInChat(c) {
@@ -469,6 +476,12 @@ function initHubSpot() {
       void c.view.offsetWidth;             // start below, then slide up like a new message
       c.view.classList.add("shown");
       try { State.touch(); } catch (e) {}
+    }
+    // HubSpot has loaded and drawn: swap the typing dots for the calendar.
+    function calendarReady(c) {
+      if (c.view.classList.contains("ready")) return;
+      fitCalendar();
+      c.view.classList.add("ready");
     }
     function closeCalendar() {
       closeHubSpotModal();
@@ -528,7 +541,7 @@ function initHubSpot() {
 
       var c = inChatCalendar();
       var stage = c ? c.stage : document.getElementById("hubspot-iframe-stage");
-      var loading = c ? c.loading : document.getElementById("hubspot-loading");
+      var loading = c ? null : document.getElementById("hubspot-loading");
       var open = function () { if (c) openInChat(c); else openHubSpotModal(); };
       var fullUrl = buildCalendarUrl(url, contact);
 
@@ -551,7 +564,7 @@ function initHubSpot() {
       iframe.setAttribute("data-hs-ignore", "true");
 
       iframe.addEventListener("load", function () {
-        if (c) { c.view.classList.add("ready"); fitCalendar(); }
+        if (c) setTimeout(function () { calendarReady(c); }, 450);   // HubSpot draws after load
         else if (loading) loading.style.display = "none";
       });
       if (c) { c.iframe = iframe; c.contentH = 0; c.view.classList.remove("ready"); }
@@ -561,9 +574,9 @@ function initHubSpot() {
 
       // Safety fallback in case the browser suppresses the iframe load event.
       setTimeout(function () {
-        if (c) { c.view.classList.add("ready"); fitCalendar(); }
+        if (c) calendarReady(c);
         else if (loading) loading.style.display = "none";
-      }, 3500);
+      }, 4000);
     }
 
     // === Listen for the bot's custom event to open the calendar ===

@@ -22,19 +22,19 @@
   .tz { margin: 10px 0 14px; color: #0091ae; font-weight: 700; font-size: 13px; }
   .slot { margin-top: 8px; padding: 12px; border: 1px solid #cbd6e2; border-radius: 3px; text-align: center; font-size: 15px; }
   #book { margin-top: 18px; width: 100%; padding: 12px; border: 0; border-radius: 3px; background: #ff7a59; color: #fff; font-weight: 700; cursor: pointer; }
-  @media (max-width: 620px) {
+  @media (max-width: 791px) {
     .w { display: block; min-height: 0; box-shadow: none; }
-    .l { width: auto; padding: 18px 12px 22px; }
-    .logo { width: 48px; height: 48px; border-width: 7px; margin-bottom: 10px; }
-    h2 { font-size: 18px; margin-bottom: 12px; } .month { font-size: 17px; margin-bottom: 16px; }
+    .l { width: auto; padding: 16px 12px 22px; }
+    .hdr { height: 134px; }   /* real one-column header: ~150px from the top of the page */
+    .logo { width: 64px; height: 64px; border-width: 9px; margin-bottom: 12px; }
+    h2 { font-size: 24px; margin-bottom: 0; } .month { font-size: 20px; margin-bottom: 16px; }
     .grid { row-gap: 14px; font-size: 13px; }
     .r { padding: 20px 12px; }
   }
 </style></head><body>
 <div class="w">
   <div class="l">
-    <div class="logo"></div>
-    <h2>Meet with Marley Caston</h2>
+    <div class="hdr"><div class="logo"></div><h2>Meet with Marley Caston</h2></div>
     <div class="month">&#8249;&nbsp; October 2026 &nbsp;&#8250;</div>
     <div class="grid">
       <b>SUN</b><b>MON</b><b>TUE</b><b>WED</b><b>THU</b><b>FRI</b><b>SAT</b>
@@ -56,8 +56,10 @@
   </div>
 </div>
 <script>
-  // Like HubSpot's embed: tell the parent how tall the content is.
-  function post() { parent.postMessage({ height: document.documentElement.scrollHeight }, "*"); }
-  addEventListener("load", post); addEventListener("resize", post);
+  // The real embed doesn't seem to report its height; ?posth=1 makes this one do it.
+  if (/posth=1/.test(location.search)) {
+    var post = function () { parent.postMessage({ height: document.documentElement.scrollHeight }, "*"); };
+    addEventListener("load", post); addEventListener("resize", post);
+  }
 </script>
 </body></html>

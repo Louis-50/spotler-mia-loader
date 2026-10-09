@@ -6,7 +6,7 @@
    are only the fallback used when config.json can't be loaded.
    ================================================================== */
 var SETTINGS = {
-  VERSION: "1.3.2",
+  VERSION: "1.3.3",
 
   // ---- Page table (published by n8n) ----
   // Tried in order. GitHub's own copy is live within ~5 minutes of a commit;
@@ -17,6 +17,12 @@ var SETTINGS = {
     "https://cdn.jsdelivr.net/gh/Louis-50/spotler-mia-loader@main/config/config.json"
   ],
   CONFIG_WAIT_MS: 1500,           // first visit: show the built-in default after this
+
+  // ---- Demo calendar (HubSpot, shown inside the chat) ----
+  CAL_ONE_COLUMN_BELOW: 760,       // HubSpot stacks into one column below this width
+  CAL_HEADER_CUT: 150,             // one column: crop "Meet with ..." off the top (px)
+  CAL_HEIGHT_ONE_COLUMN: 520,      // card height when HubSpot doesn't post one
+  CAL_HEIGHT_TWO_COLUMN: 680,
 
   // ---- Botpress ----
   INJECT_URL: "https://cdn.botpress.cloud/webchat/v3.7/inject.js",
@@ -62,15 +68,15 @@ var SETTINGS = {
     "en-GB": { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
                restart: "Restart conversation", close: "Close chat", dismiss: "Dismiss", today: "Today", delivered: "Delivered",
                botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
-               powered: "Powered by Spotler AI", calCancel: "Cancel", calTitle: "Book a meeting", calLoading: "Loading calendar..." },
+               powered: "Powered by Spotler AI", calCancel: "Cancel", calTitle: "Book a meeting", calIntro: "Pick a time that works for you." },
     "int":   { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
                restart: "Restart conversation", close: "Close chat", dismiss: "Dismiss", today: "Today", delivered: "Delivered",
                botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
-               powered: "Powered by Spotler AI", calCancel: "Cancel", calTitle: "Book a meeting", calLoading: "Loading calendar..." },
+               powered: "Powered by Spotler AI", calCancel: "Cancel", calTitle: "Book a meeting", calIntro: "Pick a time that works for you." },
     "nl":    { title: "Spotler Assistent", pill: "Vraag het Mia", placeholder: "Stel Mia een vraag...",
                restart: "Gesprek opnieuw starten", close: "Chat sluiten", dismiss: "Sluiten", today: "Today", delivered: "Delivered",
                botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
-               powered: "Powered by Spotler AI", calCancel: "Annuleren", calTitle: "Plan een afspraak", calLoading: "Agenda laden..." }
+               powered: "Powered by Spotler AI", calCancel: "Annuleren", calTitle: "Plan een afspraak", calIntro: "Kies een moment dat jou uitkomt." }
   },
 
   AVATAR_URL: "https://files.bpcontent.cloud/2026/08/20/13/20260820133357-6Q65P1JX.webp",

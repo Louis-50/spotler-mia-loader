@@ -430,11 +430,16 @@ async def main():
             hsf = next(f for f in page.frames if "meetings.hubspot.com" in f.url)
             content = await hsf.evaluate("document.documentElement.scrollHeight")
             s2 = await page.evaluate("""() => { const l=document.getElementById('spotler-cal'), r=l.shadowRoot, card=r.querySelector('.card').getBoundingClientRect(), lay=l.getBoundingClientRect(), bar=r.querySelector('.back').getBoundingClientRect();
-                return { card: Math.round(card.height), above: Math.round(card.top - lay.top), room: Math.round(lay.height), barGap: Math.round(lay.bottom - bar.bottom) } }""")
+                const f=r.querySelector('iframe'), month=f.contentDocument ? null : null;
+                return { card: Math.round(card.height), above: Math.round(card.top - lay.top), room: Math.round(lay.height), barGap: Math.round(lay.bottom - bar.bottom),
+                  bubble: getComputedStyle(r.querySelector('.intro')).display !== 'none', iframeTop: Math.round(f.getBoundingClientRect().top - card.top) } }""")
+            s2["monthTop"] = (await hsf.evaluate("Math.round(document.querySelector('.month').getBoundingClientRect().top)")) + s2["iframeTop"]
+            hdr = await hsf.evaluate("Math.round(document.querySelector('.month').getBoundingClientRect().top)")
             if w == 1920:
-                check(f"17g {w}x{h}: card as tall as the calendar (no white space), conversation visible above", abs(s2["card"] - (content - 32)) <= 4 and s2["above"] > 60, dict(s2, content=content))
+                check(f"17g {w}x{h}: compact card (calendar size, no big white space), conversation visible above, bubble shown", s2["card"] <= 540 and s2["above"] > 200 and s2["bubble"], dict(s2, content=content))
             else:
-                check(f"17g {w}x{h}: calendar fills the chat (card uses all but the Cancel row)", s2["above"] <= 16 and s2["card"] >= s2["room"] - 90, dict(s2, content=content))
+                check(f"17g {w}x{h}: calendar fills the chat", s2["card"] >= s2["room"] - 150, dict(s2, content=content))
+            check(f"17i {w}x{h}: 'Meet with ...' header cropped, the month is at the top of the card", 0 <= s2["monthTop"] <= 40, dict(s2, hdr=hdr))
             await page.screenshot(path=f"{OUT}/17g-{w}.png")
             await ctx.close()
 
