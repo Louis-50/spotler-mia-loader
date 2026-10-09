@@ -2,6 +2,7 @@
 (function () {
   var handlers = {};
   var log = window.__bpLog = [];
+  window.__bpEmit = function (name, arg) { emit(name, arg); };
   function emit(name, arg) { (handlers[name] || []).forEach(function (fn) { try { fn(arg); } catch (e) { console.error(e); } }); }
   function clientKey() { return "bp-webchat-test-client-client"; }
   var root, list;

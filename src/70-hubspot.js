@@ -407,6 +407,58 @@ function initHubSpot() {
       ]);
     }
 
+    // ---- In-chat calendar ----
+    // The scheduler opens inside the chat itself: the slide-out body (the
+    // panel widens to fit) or the half/full card. The page modal is only
+    // the fallback when there is no chat on the page.
+    addStyle(CSS.hubspot);
+    var cal = null;
+    function chatHost() {
+      return document.getElementById("spotler-agent-body") || document.getElementById("spotler-inline-body");
+    }
+    function inChatCalendar() {
+      var host = chatHost();
+      if (!host) return null;
+      if (cal && cal.layer.parentNode === host) return cal;
+      if (cal && cal.layer.parentNode) cal.layer.parentNode.removeChild(cal.layer);
+      var l = (BP.ctx && BP.ctx.labels) || SETTINGS.LABELS["en-GB"];
+      var back = el("button", { id: "spotler-cal-back", type: "button" });
+      back.innerHTML = "&#8592; ";
+      back.appendChild(document.createTextNode(l.calBack || "Back to chat"));
+      back.addEventListener("click", function () { closeCalendar(); });
+      var stage = el("div", { id: "spotler-cal-stage" });
+      var loading = el("div", { id: "spotler-cal-loading", "aria-hidden": "true" }, [el("span")]);
+      var layer = el("div", { id: "spotler-cal", role: "dialog", "aria-label": l.calTitle || "Book a meeting" }, [
+        el("div", { id: "spotler-cal-bar" }, [back, el("span", { id: "spotler-cal-title", text: l.calTitle || "Book a meeting" })]),
+        el("div", { id: "spotler-cal-body" }, [stage, loading])
+      ]);
+      host.appendChild(layer);
+      cal = { layer: layer, stage: stage, loading: loading };
+      return cal;
+    }
+    function openInChat(c) {
+      var panel = document.getElementById("spotler-agent-panel");
+      if (panel && panel.contains(c.layer)) panel.classList.add("mia-cal");
+      c.layer.classList.add("on");
+      void c.layer.offsetWidth;            // let the fade-in run
+      c.layer.classList.add("shown");
+    }
+    function closeCalendar() {
+      closeHubSpotModal();
+      var panel = document.getElementById("spotler-agent-panel");
+      if (panel) panel.classList.remove("mia-cal");
+      if (cal && cal.layer.classList.contains("on")) {
+        var layer = cal.layer;
+        layer.classList.remove("shown");
+        setTimeout(function () { if (!layer.classList.contains("shown")) layer.classList.remove("on"); }, 260);
+      }
+    }
+    // Closing the slide-out also closes the calendar.
+    document.addEventListener("click", function (e) {
+      var t = e.target;
+      if (t && t.closest && t.closest("#spotler-agent-close")) closeCalendar();
+    }, true);
+
     var hsPreviousBodyOverflow = null;
     var hsPreviousHtmlOverflow = null;
 
@@ -437,7 +489,7 @@ function initHubSpot() {
       hsPreviousHtmlOverflow = null;
     }
 
-    window.spotlerCloseHubSpotModal = closeHubSpotModal;
+    window.spotlerCloseHubSpotModal = closeCalendar;
 
     function showCalendar(url, contact) {
       if (!url) return;
@@ -449,12 +501,14 @@ function initHubSpot() {
         if (slug) hsLastOwnerSlug = slug;
       } catch (err) { /* keep previous value */ }
 
-      var stage = document.getElementById("hubspot-iframe-stage");
-      var loading = document.getElementById("hubspot-loading");
+      var c = inChatCalendar();
+      var stage = c ? c.stage : document.getElementById("hubspot-iframe-stage");
+      var loading = c ? c.loading : document.getElementById("hubspot-loading");
+      var open = function () { if (c) openInChat(c); else openHubSpotModal(); };
       var fullUrl = buildCalendarUrl(url, contact);
 
       if (hsCurrentKey === fullUrl && stage && stage.querySelector("iframe")) {
-        openHubSpotModal();
+        open();
         return;
       }
 
@@ -476,7 +530,7 @@ function initHubSpot() {
       });
 
       stage.appendChild(iframe);
-      openHubSpotModal();
+      open();
 
       // Safety fallback in case the browser suppresses the iframe load event.
       setTimeout(function () {
@@ -574,10 +628,13 @@ function initHubSpot() {
           console.warn("[BP] demoBooked sendEvent failed", err);
         }
 
+        // HubSpot shows its own confirmation; then back to the chat, where
+        // the bot answers the demoBooked event.
         setTimeout(function () {
-          closeHubSpotModal();
-          var meetingContainer = document.getElementById("hubspot-meeting-container");
-          if (meetingContainer) meetingContainer.innerHTML = "";
+          closeCalendar();
+          var modalStage = document.getElementById("hubspot-iframe-stage");
+          if (modalStage) modalStage.innerHTML = "";
+          if (cal) cal.stage.innerHTML = "";
           hsCurrentKey = null;
         }, 4000);
       }
@@ -586,7 +643,7 @@ function initHubSpot() {
     // Escape key closes modal
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") {
-        closeHubSpotModal();
+        closeCalendar();
       }
     });
   }
