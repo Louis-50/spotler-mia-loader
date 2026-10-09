@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-08.8",
+  "version": "2026-10-09.1",
   "generatedBy": "n8n Mia page editor (louis.grieves@spotler.com)",
   "rows": [
     {
@@ -371,6 +371,23 @@
       "teaser_send": "nice",
       "headline": "Enrich your marketing knowledge with our blogs",
       "intro": "Get inspired by our articles of the wonderful world of marketing that is always evolving.  Do you want to read the latest Spotler news? View our news overview."
+    },
+    {
+      "url_match": "/en-gb",
+      "match_type": "exact",
+      "region": "en-GB",
+      "mode": "half",
+      "opener": "tets half",
+      "buttons": [
+        {
+          "label": "dd",
+          "send": "dd"
+        }
+      ],
+      "teaser_text": "dd",
+      "teaser_send": "dd",
+      "headline": "hi carl",
+      "intro": "dd"
     },
     {
       "url_match": "*",
