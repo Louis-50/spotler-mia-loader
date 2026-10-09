@@ -9,8 +9,7 @@ PAGE = open(os.path.join(ROOT, "test/mock/page.html")).read().replace("<!--TAG--
 FULL = open(os.path.join(ROOT, "test/mock/campaign-full.html")).read().replace("<!--TAG-->", TAG)
 # Blog-style header: centred copy, a big decorative image behind the headline, no hero picture.
 BLOG = PAGE.replace('<div class="hero"><h1>Spotler test page</h1>', '<section class="header-section" style="position:relative;text-align:center;padding:80px 0"><img src="/deco-circles.png" width="900" height="500" style="position:absolute;left:50%;top:0;transform:translateX(-50%);width:900px;height:500px;z-index:0" alt=""><div style="position:relative"><h1>Enrich your marketing knowledge with our blogs</h1><p>Get inspired by our articles.</p></div></section><div class="hero" style="display:none"><h1>x</h1>', 1)
-# Stand-in for the HubSpot meetings page: "Book" posts HubSpot's success message to the parent.
-HS_PAGE = """<!doctype html><body style="margin:0;font:14px Arial"><div style="padding:30px">Pick a time</div><button id="book" onclick="parent.postMessage({meetingBookSucceeded:true,meetingsPayload:{userSlug:'test-owner',bookingResponse:{event:{dateString:'2026-10-12',dateTime:Date.UTC(2026,9,12,13,30),contact:{email:'jo.bloggs@acme.com',firstName:'Jo',lastName:'Bloggs'}}}}},'*')">Book</button></body>"""
+HS_PAGE = open(os.path.join(ROOT, "test/mock/hubspot-meetings.html")).read()
 HALF = open(os.path.join(ROOT, "test/mock/campaign-half.html")).read().replace("<!--TAG-->", TAG)
 SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40"><rect width="120" height="40" fill="#002a4d"/></svg>'
 MOBILE_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
@@ -394,27 +393,42 @@ async def main():
         await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
         await page.evaluate("window.__bpEmit('customEvent', { action: 'showHubSpotCalendar', url: 'https://meetings.hubspot.com/test-owner' })")
         await page.wait_for_timeout(1200)
-        c = await page.evaluate("""() => { const l=document.getElementById('spotler-cal'), p=document.getElementById('spotler-agent-panel'), f=l && l.querySelector('iframe');
-            return { inPanel: !!l && document.getElementById('spotler-agent-body').contains(l), shown: !!l && l.classList.contains('shown') && getComputedStyle(l).opacity === '1',
-              wide: Math.round(p.getBoundingClientRect().width), src: f ? f.src : '', modal: getComputedStyle(document.getElementById('hubspot-modal')).display,
-              back: (document.getElementById('spotler-cal-back') || {}).textContent || '', squeeze: getComputedStyle(document.getElementById('site-wrapper')).width } }""")
-        check("17a calendar opens inside the slide-out (no page modal), panel widens to fit", c["inPanel"] and c["shown"] and c["wide"] >= 800 and "meetings.hubspot.com/test-owner" in c["src"] and c["modal"] == "none" and "Back to chat" in c["back"], c)
+        c = await page.evaluate("""() => { const l=document.getElementById('spotler-cal'), r=l && l.shadowRoot, v=r && r.querySelector('.c'), f=r && r.querySelector('iframe'), p=document.getElementById('spotler-agent-panel');
+            return { inPanel: !!l && document.getElementById('spotler-agent-body').contains(l), shown: !!v && v.classList.contains('shown') && getComputedStyle(v).opacity === '1',
+              w: Math.round(p.getBoundingClientRect().width), src: f ? f.src : '', modal: getComputedStyle(document.getElementById('hubspot-modal')).display,
+              back: r ? r.querySelector('.back').textContent : '', bubble: r ? r.querySelector('.intro').textContent : '' } }""")
+        check("17a calendar opens inside the chat as a message (Mia bubble, card, Back to chat), no page modal, panel keeps its width", c["inPanel"] and c["shown"] and c["w"] <= 400 and "meetings.hubspot.com/test-owner" in c["src"] and c["modal"] == "none" and "Back to chat" in c["back"] and "Pick a time" in c["bubble"], c)
         await page.screenshot(path=f"{OUT}/17-calendar.png")
-        await page.click("#spotler-cal-back"); await page.wait_for_timeout(600)
+        await page.click("#spotler-cal .back"); await page.wait_for_timeout(600)
         back = await page.evaluate("() => ({ hidden: !document.getElementById('spotler-cal').classList.contains('on'), w: Math.round(document.getElementById('spotler-agent-panel').getBoundingClientRect().width), ready: document.getElementById('bp-embedded-webchat').classList.contains('bp-ready') })")
-        check("17b Back to chat: calendar closes, panel back to normal width, chat still there", back["hidden"] and back["w"] <= 400 and back["ready"], back)
+        check("17b Back to chat: calendar closes, chat still there", back["hidden"] and back["ready"], back)
         await page.evaluate("window.__bpEmit('customEvent', { action: 'showHubSpotCalendar', url: 'https://meetings.hubspot.com/test-owner' })")
         await page.wait_for_timeout(900)
         hs = next(f for f in page.frames if "meetings.hubspot.com" in f.url)
-        await hs.evaluate("document.getElementById('book').click()")
+        await hs.evaluate("document.getElementById('book').click()")  # stand-in's Confirm
         await page.wait_for_timeout(600)
         bplog = await page.evaluate("window.__bpLog")
         booked = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent" and "demoBooked" in e[1]]
         check("17c booking reported to the bot (demoBooked with date, time and contact)", booked and booked[0]["meetingWhen"] and booked[0]["userEmail"] == "jo.bloggs@acme.com", booked)
         await page.wait_for_timeout(4200)
-        done = await page.evaluate("() => ({ hidden: !document.getElementById('spotler-cal').classList.contains('on'), empty: !document.querySelector('#spotler-cal-stage iframe'), w: Math.round(document.getElementById('spotler-agent-panel').getBoundingClientRect().width) })")
-        check("17d after booking the chat comes back on its own", done["hidden"] and done["empty"] and done["w"] <= 400, done)
+        done = await page.evaluate("() => ({ hidden: !document.getElementById('spotler-cal').classList.contains('on'), empty: !document.getElementById('spotler-cal').shadowRoot.querySelector('iframe') })")
+        check("17d after booking the chat comes back on its own", done["hidden"] and done["empty"], done)
         await ctx.close()
+
+        # no sideways scroll on tablets and phones with a full card (open calendar included)
+        for w, h, ua in [(768, 1024, None), (390, 844, MOBILE_UA)]:
+            opts = {"viewport": {"width": w, "height": h}}
+            if ua: opts.update(user_agent=ua, is_mobile=True, has_touch=True)
+            ctx = await b.new_context(**opts); await setup(ctx)
+            page = await ctx.new_page()
+            await page.goto("https://www.spotler.com/en-gb/discover/mailplus-video-overview"); await page.wait_for_timeout(1800)
+            await page.evaluate("() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; sr.querySelector('.btn').click(); }")
+            await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=9000)
+            await page.evaluate("window.__bpEmit('customEvent', { action: 'showHubSpotCalendar', url: 'https://meetings.hubspot.com/test-owner' })")
+            await page.wait_for_timeout(1200)
+            m = await page.evaluate("() => ({ sw: document.documentElement.scrollWidth, vw: " + str(w) + ", inCard: document.getElementById('spotler-inline-body').contains(document.getElementById('spotler-cal')), card: Math.round(document.getElementById('spotler-cal').shadowRoot.querySelector('.card').getBoundingClientRect().height) })")
+            check(f"17f full card at {w}px: calendar inside the card, card at least 300px tall, no sideways page scroll", m["inCard"] and m["card"] >= 300 and m["sw"] <= w, m)
+            await ctx.close()
 
         # the half card hosts the calendar too
         ctx = await b.new_context(viewport={"width": 1440, "height": 900})

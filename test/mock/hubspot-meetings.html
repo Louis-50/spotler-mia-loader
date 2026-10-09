@@ -1,0 +1,58 @@
+<!doctype html>
+<!-- Stand-in for HubSpot's meetings embed (tests only). Mirrors its look from a
+     real screenshot: 16px outer gutter, two columns when wide, stacked when
+     narrow. "Confirm" posts HubSpot's success message to the parent. -->
+<html><head><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; }
+  body { padding: 16px; font: 14px/1.45 Arial, sans-serif; color: #33475b; background: #fff; }
+  .w { display: flex; min-height: 600px; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 24px rgba(45,62,80,.12); }
+  .l { width: 50%; background: #425b76; color: #fff; padding: 40px 28px; text-align: center; }
+  .r { flex: 1; padding: 36px 28px; }
+  .logo { width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 50%; background: #0b2440; border: 10px solid #fff; box-sizing: border-box; }
+  h2 { margin: 0 0 18px; font-weight: 400; font-size: 24px; }
+  .month { margin-bottom: 26px; font-weight: 700; font-size: 21px; }
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 22px; font-size: 14px; }
+  .grid b { font-size: 12px; } .grid span { opacity: .45; } .grid .on { opacity: 1; font-weight: 700; }
+  .grid .sel { width: 36px; height: 36px; line-height: 36px; margin: -8px auto 0; border-radius: 50%; background: #fff; color: #425b76; opacity: 1; }
+  h3 { margin: 0 0 12px; font-size: 15px; }
+  .dur { display: flex; margin-bottom: 30px; border: 1px solid #cbd6e2; border-radius: 3px; }
+  .dur div { flex: 1; padding: 8px 0; border-left: 1px solid #cbd6e2; text-align: center; font-size: 13px; }
+  .dur div:first-child { border: 0; background: #cbd6e2; }
+  .tz { margin: 10px 0 14px; color: #0091ae; font-weight: 700; font-size: 13px; }
+  .slot { margin-top: 8px; padding: 12px; border: 1px solid #cbd6e2; border-radius: 3px; text-align: center; font-size: 15px; }
+  #book { margin-top: 18px; width: 100%; padding: 12px; border: 0; border-radius: 3px; background: #ff7a59; color: #fff; font-weight: 700; cursor: pointer; }
+  @media (max-width: 620px) {
+    .w { display: block; min-height: 0; box-shadow: none; }
+    .l { width: auto; padding: 18px 12px 22px; }
+    .logo { width: 48px; height: 48px; border-width: 7px; margin-bottom: 10px; }
+    h2 { font-size: 18px; margin-bottom: 12px; } .month { font-size: 17px; margin-bottom: 16px; }
+    .grid { row-gap: 14px; font-size: 13px; }
+    .r { padding: 20px 12px; }
+  }
+</style></head><body>
+<div class="w">
+  <div class="l">
+    <div class="logo"></div>
+    <h2>Meet with Marley Caston</h2>
+    <div class="month">&#8249;&nbsp; October 2026 &nbsp;&#8250;</div>
+    <div class="grid">
+      <b>SUN</b><b>MON</b><b>TUE</b><b>WED</b><b>THU</b><b>FRI</b><b>SAT</b>
+      <span></span><span></span><span></span><span></span><span>1</span><span>2</span><span>3</span>
+      <span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+      <span>11</span><span class="sel">12</span><span class="on">13</span><span class="on">14</span><span class="on">15</span><span class="on">16</span><span>17</span>
+      <span>18</span><span class="on">19</span><span class="on">20</span><span class="on">21</span><span class="on">22</span><span class="on">23</span><span>24</span>
+      <span>25</span><span class="on">26</span><span class="on">27</span><span class="on">28</span><span class="on">29</span><span class="on">30</span><span>31</span>
+    </div>
+  </div>
+  <div class="r">
+    <h3>How long do you need?</h3>
+    <div class="dur"><div>30 mins</div><div>1 hour</div><div>45 mins</div></div>
+    <h3>What time works best?</h3>
+    <div>Showing times for <b>October 12, 2026</b></div>
+    <div class="tz">UTC +01:00 Dublin, London, Lisbon &#9662;</div>
+    <div class="slot">2:30 pm</div><div class="slot">3:00 pm</div><div class="slot">3:30 pm</div>
+    <button id="book" onclick="parent.postMessage({meetingBookSucceeded:true,meetingsPayload:{userSlug:'test-owner',bookingResponse:{event:{dateString:'2026-10-12',dateTime:Date.UTC(2026,9,12,13,30),contact:{email:'jo.bloggs@acme.com',firstName:'Jo',lastName:'Bloggs'}}}}},'*')">Confirm</button>
+  </div>
+</div>
+</body></html>

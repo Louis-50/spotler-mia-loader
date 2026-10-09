@@ -422,35 +422,46 @@ function initHubSpot() {
       if (cal && cal.layer.parentNode === host) return cal;
       if (cal && cal.layer.parentNode) cal.layer.parentNode.removeChild(cal.layer);
       var l = (BP.ctx && BP.ctx.labels) || SETTINGS.LABELS["en-GB"];
-      var back = el("button", { id: "spotler-cal-back", type: "button" });
-      back.innerHTML = "&#8592; ";
-      back.appendChild(document.createTextNode(l.calBack || "Back to chat"));
-      back.addEventListener("click", function () { closeCalendar(); });
-      var stage = el("div", { id: "spotler-cal-stage" });
-      var loading = el("div", { id: "spotler-cal-loading", "aria-hidden": "true" }, [el("span")]);
-      var layer = el("div", { id: "spotler-cal", role: "dialog", "aria-label": l.calTitle || "Book a meeting" }, [
-        el("div", { id: "spotler-cal-bar" }, [back, el("span", { id: "spotler-cal-title", text: l.calTitle || "Book a meeting" })]),
-        el("div", { id: "spotler-cal-body" }, [stage, loading])
+      var layer = el("div", { id: "spotler-cal", role: "dialog", "aria-label": l.calTitle || "Book a meeting" });
+      var root = layer.attachShadow ? layer.attachShadow({ mode: "open" }) : layer;
+      addStyle(CSS.calendar, root);
+      var back = el("button", { class: "back", type: "button" }, [
+        icon("arr", ["M19 12H5", "m12 19-7-7 7-7"]),
+        el("span", { text: l.calBack || "Back to chat" })
       ]);
+      back.addEventListener("click", function () { closeCalendar(); });
+      var stage = el("div", { class: "stage" });
+      var loading = el("div", { class: "loading", "aria-hidden": "true" }, [el("i"), el("span", { text: l.calLoading || "Loading calendar..." })]);
+      var intro = el("div", { class: "m intro" }, [avatar("av"), el("div", { class: "b", text: l.calIntro || "Pick a time that works for you." })]);
+      var card = el("div", { class: "card" }, [stage, loading]);
+      var view = el("div", { class: "c" }, [
+        el("div", { class: "list" }, [intro, card]),
+        el("div", { class: "bar" }, [back]),
+        el("div", { class: "ft", text: l.powered || "" })
+      ]);
+      root.appendChild(view);
       host.appendChild(layer);
-      cal = { layer: layer, stage: stage, loading: loading };
+      cal = { layer: layer, view: view, intro: intro, card: card, stage: stage, loading: loading };
       return cal;
     }
+    function fitCalendar() {
+      // Under ~560px of height, drop the bubble and footer for the scheduler.
+      if (cal && cal.layer.classList.contains("on")) cal.view.classList.toggle("tight", cal.layer.offsetHeight < 560);
+    }
+    window.addEventListener("resize", fitCalendar);
     function openInChat(c) {
-      var panel = document.getElementById("spotler-agent-panel");
-      if (panel && panel.contains(c.layer)) panel.classList.add("mia-cal");
       c.layer.classList.add("on");
-      void c.layer.offsetWidth;            // let the fade-in run
-      c.layer.classList.add("shown");
+      fitCalendar();
+      [c.intro, c.card].forEach(function (n) { n.classList.remove("in"); void n.offsetWidth; n.classList.add("in"); });
+      void c.view.offsetWidth;             // let the fade-in run
+      c.view.classList.add("shown");
     }
     function closeCalendar() {
       closeHubSpotModal();
-      var panel = document.getElementById("spotler-agent-panel");
-      if (panel) panel.classList.remove("mia-cal");
       if (cal && cal.layer.classList.contains("on")) {
-        var layer = cal.layer;
-        layer.classList.remove("shown");
-        setTimeout(function () { if (!layer.classList.contains("shown")) layer.classList.remove("on"); }, 260);
+        var c = cal;
+        c.view.classList.remove("shown");
+        setTimeout(function () { if (!c.view.classList.contains("shown")) c.layer.classList.remove("on"); }, 240);
       }
     }
     // Closing the slide-out also closes the calendar.

@@ -1,51 +1,8 @@
 /* ==================================================================
-   70 · In-chat calendar: the HubSpot scheduler opens inside the chat
-   (slide-out body or the half/full card), not as a page modal. The
-   slide-out widens while it is open so HubSpot can use its two-column
-   layout, then shrinks back.
+   70 · In-chat calendar host. It covers the chat body (slide-out) or
+   the card body (half/full); its content lives in a shadow root styled
+   by 71-calendar.css, so it looks like part of the conversation and the
+   site's CSS can't reach it.
    ================================================================== */
-#spotler-cal {
-  position: absolute; inset: 0; z-index: 40;
-  display: none; flex-direction: column;
-  background: #ffffff;
-  opacity: 0; transition: opacity 0.25s ease;
-}
-#spotler-cal.on { display: flex; }
-#spotler-cal.shown { opacity: 1; }
-#spotler-cal-bar {
-  flex: 0 0 44px; display: flex; align-items: center;
-  padding: 0 8px 0 6px;
-  border-bottom: 1px solid #E4E9EE; background: #ffffff;
-  font-size: 14px; line-height: 1;
-}
-#spotler-cal-back {
-  border: 0; background: transparent; color: #002a4d;
-  font: inherit; font-weight: 600; cursor: pointer;
-  padding: 8px 10px; border-radius: 8px;
-}
-#spotler-cal-back:hover { background: #F2F4F5; }
-#spotler-cal-back:focus-visible { outline: 2px solid #002a4d; outline-offset: 1px; }
-#spotler-cal-title { margin-left: auto; padding-right: 8px; color: #5F6476; }
-#spotler-cal-body { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; }
-#spotler-cal-stage { position: absolute; inset: 0; overflow: hidden; background: #ffffff; }
-/* HubSpot's page has its own ~16px gutter; crop it so the scheduler sits flush. */
-#spotler-cal-stage iframe {
-  position: absolute; top: -16px; left: -16px;
-  width: calc(100% + 32px); height: calc(100% + 32px);
-  border: 0; display: block; background: #ffffff;
-}
-#spotler-cal-loading {
-  position: absolute; inset: 0; z-index: 2;
-  display: flex; align-items: center; justify-content: center;
-  background: #ffffff;
-}
-#spotler-cal-loading span {
-  width: 28px; height: 28px; border: 3px solid #E4E9EE; border-top-color: #002a4d;
-  border-radius: 50%; animation: spotler-cal-spin 0.8s linear infinite;
-}
-@keyframes spotler-cal-spin { to { transform: rotate(360deg); } }
-
-/* Slide-out: widen over the page (the page squeeze stays as it is). */
-#spotler-agent-panel.mia-cal { width: min(860px, calc(100vw - 48px)); }
-
-@media (prefers-reduced-motion: reduce) { #spotler-cal { transition: none; } }
+#spotler-cal { position: absolute; inset: 0; z-index: 40; display: none; }
+#spotler-cal.on { display: block; }

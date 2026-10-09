@@ -1,0 +1,73 @@
+/* ==================================================================
+   71 · Calendar view (inside #spotler-cal's shadow root). Same look as
+   the chat: background, Mia bubble, card like a rich message, the
+   composer slot holds "Back to chat", footer kept.
+   ================================================================== */
+:host { all: initial; display: block; width: 100%; height: 100%; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; border: 0 solid; }
+
+.c {
+  display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden;
+  background: #fdfdfd;
+  font-family: inter, sans-serif; font-size: 14px; line-height: 20px; color: #202127;
+  -webkit-font-smoothing: antialiased; text-size-adjust: 100%;
+  opacity: 0; transition: opacity 0.22s ease-out;
+}
+.c.shown { opacity: 1; }
+
+.list { display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; min-height: 0; padding: 12px 12px 10px; }
+
+.m { display: flex; gap: 8px; flex: 0 0 auto; }
+.av { display: flex; align-self: flex-end; flex-shrink: 0; width: 28px; height: 28px; border-radius: 39996px; overflow: hidden; }
+.av img { display: block; width: 100%; height: 100%; border-radius: 39996px; object-fit: cover; }
+.av-fb { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;
+         background: #99AAB8; color: #00192E; font-weight: 600; border-radius: 39996px; }
+.b { max-width: 85%; padding: 8px 16px; border-radius: 24px 24px 24px 2px; background: #F0F1F3; color: #202127; }
+
+/* The scheduler, shown like a rich message. */
+.card {
+  position: relative; flex: 1 1 auto; min-height: 0;
+  border: 1px solid #DADBE0; border-radius: 16px; background: #ffffff; overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 38, 69, 0.04);
+}
+.stage { position: absolute; inset: 0; overflow: hidden; }
+/* HubSpot's page has its own 16px gutter (and its scrollbar sits in it): crop it. */
+.stage iframe {
+  position: absolute; top: -16px; left: -16px;
+  width: calc(100% + 32px); height: calc(100% + 32px);
+  border: 0; display: block; background: #ffffff;
+}
+.loading {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; gap: 12px;
+  align-items: center; justify-content: center; background: #ffffff; color: #696F83; font-size: 13px;
+}
+.loading i { width: 28px; height: 28px; border: 3px solid #E4E9EE; border-top-color: #002645;
+             border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.in { animation: miaIn 0.4s ease-out both; }
+.card.in { animation-delay: 0.08s; }
+@keyframes miaIn { 0% { transform: translateY(16px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+
+/* Where the composer sits in the chat. */
+.bar { flex: 0 0 auto; margin: 0 16px; }
+.back {
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px;
+  padding: 8px 16px; border: 1px solid #DADBE0; border-radius: 24px; background: #F0F1F3;
+  font: inherit; font-weight: 500; color: #202127; cursor: pointer;
+  transition: background-color 0.15s ease-out;
+}
+.back:hover { background: #E4E7EB; }
+.back:focus-visible { outline: 2px solid #002645; outline-offset: 2px; }
+.back svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2px; stroke-linecap: round; stroke-linejoin: round; }
+.ft { flex: 0 0 auto; align-self: center; margin: 4px 20px; font-size: 12px; line-height: 18px;
+      color: #8795A0; font-style: italic; text-align: center; }
+
+/* Tight spaces: give the scheduler every pixel. */
+.tight .list { padding: 8px 8px 8px; }
+.tight .intro { display: none; }
+.tight .bar { margin: 0 8px; }
+.tight .back { min-height: 40px; }
+.tight .ft { display: none; }
+
+@media (prefers-reduced-motion: reduce) { .c { transition: none; } .in { animation: none; } }

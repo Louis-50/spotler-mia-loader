@@ -127,6 +127,11 @@
 .mia-full #spotler-inline-body, .mia-full #spotler-inline-loading { border-radius: 24px; }
 .mia-full #spotler-load-logo img, .mia-full #spotler-load-logo svg { width: clamp(150px, 17vw, 220px); max-height: 64px; }
 body.mia-full-page .header-section .header-text-wrap { padding-top: 0 !important; padding-bottom: 0 !important; }
+/* The 40px glow only fits beside the card from ~1160px up; below that it
+   pushed the page wider than the screen (sideways scroll on tablets/phones). */
+@media (max-width: 1160px) {
+  .mia-full #spotler-agent-glow { inset: -14px; border-radius: 36px; filter: blur(18px); }
+}
 @media (max-width: 768px) {
   #spotler-inline-agent.mia-full { margin: .75rem auto 1.5rem; }
   .mia-full #spotler-agent-shell { height: calc(100vh - 160px); min-height: 440px; border-radius: 16px; }
