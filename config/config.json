@@ -1,6 +1,6 @@
 {
-  "version": "2026-10-09.1",
-  "generatedBy": "n8n Mia page editor (louis.grieves@spotler.com)",
+  "version": "2026-10-09.2",
+  "generatedBy": "Reset: slide-out everywhere, full card on /en-gb/services (Louis, 9 Oct 2026)",
   "rows": [
     {
       "url_match": "*",
@@ -194,7 +194,6 @@
       "url_match": "/en-gb/discover/feedbackpro-x-zendesk",
       "match_type": "exact",
       "region": "en-GB",
-      "mode": "half",
       "page": "feedbackpro-zendesk",
       "route": "C",
       "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
@@ -229,7 +228,6 @@
       "url_match": "/en-gb/discover/customer-feedback-platform",
       "match_type": "exact",
       "region": "en-GB",
-      "mode": "half",
       "page": "feedbackpro-platform",
       "route": "C",
       "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
@@ -264,11 +262,8 @@
       "url_match": "/en-gb/discover/mailplus-video-overview",
       "match_type": "exact",
       "region": "en-GB",
-      "mode": "full",
       "page": "services",
       "route": "B",
-      "headline": "Mail+ – built to make marketers lives easier",
-      "intro": "Let’s chat! I’ll show you how Mail+ can help you. 👋",
       "opener": "You clicked to see how it all comes together. Here it is in just 45 seconds.\n\n[video] https://files.bpcontent.cloud/2026/08/10/16/20260810160832-27BW9XR8.mov\n\nI'm Mia. I know Mail+ inside out, so ask me anything the video didn't cover.",
       "buttons": [
         {
@@ -291,8 +286,7 @@
           "label": "Book a Demo",
           "send": "Book a Demo"
         }
-      ],
-      "media_selector": "iframe[src*=\"player.vimeo.com\"], img[src*=\"services-hero\"]"
+      ]
     },
     {
       "url_match": "/en-gb/services",
@@ -300,94 +294,27 @@
       "region": "en-GB",
       "mode": "full",
       "page": "services",
-      "opener": "Test opening",
+      "opener": "Hi, I'm Mia 👋 Our team can help you set up, train and get the most out of Spotler.\n\nWhat would you like to know?",
       "buttons": [
         {
-          "label": "enter between buttons",
-          "send": "enter between buttons"
+          "label": "What services do you offer?",
+          "send": "What services do you offer?"
         },
         {
-          "label": "or is it comma, Which?",
-          "send": "or is it comma, Which?"
-        }
-      ],
-      "teaser_text": "Teaser test",
-      "teaser_send": "test pass",
-      "headline": "where is this used headline",
-      "intro": "where is this used too?"
-    },
-    {
-      "url_match": "/en-gb/pricing",
-      "match_type": "exact",
-      "region": "en-GB",
-      "page": "pricing",
-      "opener": "Hi, I'm Mia 👋 I can help you find the plan that fits.\n\nWhat would you like to compare?",
-      "buttons": [
-        {
-          "label": "Help me compare plans",
-          "send": "Help me compare plans"
+          "label": "Can you help with onboarding?",
+          "send": "Can you help with onboarding?"
         },
         {
-          "label": "What does Spotler cost?",
-          "send": "What does Spotler cost?"
-        },
-        {
-          "label": "Is there a free trial?",
-          "send": "Is there a free trial?"
+          "label": "Do you offer training?",
+          "send": "Do you offer training?"
         },
         {
           "label": "Book a demo",
           "send": "Book a demo"
         }
-      ]
-    },
-    {
-      "url_match": "/en-gb/success-stories",
-      "match_type": "exact",
-      "region": "en-GB"
-    },
-    {
-      "url_match": "/en-gb/blog",
-      "match_type": "exact",
-      "region": "en-GB",
-      "mode": "half",
-      "page": "blog",
-      "opener": "blog test",
-      "buttons": [
-        {
-          "label": "blog",
-          "send": "blog"
-        },
-        {
-          "label": "test",
-          "send": "test"
-        },
-        {
-          "label": "button",
-          "send": "button"
-        }
       ],
-      "teaser_text": "teaser!",
-      "teaser_send": "nice",
-      "headline": "Enrich your marketing knowledge with our blogs",
-      "intro": "Get inspired by our articles of the wonderful world of marketing that is always evolving.  Do you want to read the latest Spotler news? View our news overview."
-    },
-    {
-      "url_match": "/en-gb",
-      "match_type": "exact",
-      "region": "en-GB",
-      "mode": "half",
-      "opener": "tets half",
-      "buttons": [
-        {
-          "label": "dd",
-          "send": "dd"
-        }
-      ],
-      "teaser_text": "dd",
-      "teaser_send": "dd",
-      "headline": "hi carl",
-      "intro": "dd"
+      "headline": "Get more out of Spotler with our services",
+      "intro": "Let's chat! Ask me how our team can help you. 👋"
     },
     {
       "url_match": "*",
