@@ -435,7 +435,10 @@ async def main():
                   bubble: getComputedStyle(r.querySelector('.intro')).display !== 'none', iframeTop: Math.round(f.getBoundingClientRect().top - card.top) } }""")
             s2["monthTop"] = (await hsf.evaluate("Math.round(document.querySelector('.month').getBoundingClientRect().top)")) + s2["iframeTop"]
             hdr = await hsf.evaluate("Math.round(document.querySelector('.month').getBoundingClientRect().top)")
-            check(f"17g {w}x{h}: calendar fills the chat under Mia's line (no blank area)", s2["card"] >= s2["room"] - 160 and s2["bubble"], dict(s2, content=content))
+            if w == 1920:
+                check(f"17g {w}x{h}: tall screen: card stops at HubSpot's two-column height (no white block inside it)", 700 <= s2["card"] <= 722 and s2["bubble"], dict(s2, content=content))
+            else:
+                check(f"17g {w}x{h}: calendar fills the chat under Mia's line", s2["card"] >= s2["room"] - 160 and s2["bubble"], dict(s2, content=content))
             two = await hsf.evaluate("getComputedStyle(document.querySelector('.w')).display === 'flex'")
             check(f"17i {w}x{h}: HubSpot uncropped and in its two-column layout", -17 <= s2["iframeTop"] <= -15 and two, dict(s2, twoColumn=two))
             await page.screenshot(path=f"{OUT}/17g-{w}.png")

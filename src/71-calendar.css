@@ -43,6 +43,9 @@
   box-shadow: 0 1px 3px rgba(0, 38, 69, 0.06);
 }
 .ready .card { display: block; flex: 1 1 auto; min-height: 0; animation: miaIn 0.42s cubic-bezier(.2, .8, .2, 1) both; }
+/* Two columns (wide chat): HubSpot's page is ~700px tall; on tall screens
+   don't stretch the card past it, the spare room sits above Mia's line. */
+.wide.ready .card { flex: 0 1 720px; }
 @keyframes miaIn { 0% { transform: translateY(18px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
 .stage { position: absolute; inset: 0; overflow: hidden; }
 /* HubSpot's page has its own 16px gutter (its scrollbar sits in it): crop it. */

@@ -446,6 +446,7 @@ function initHubSpot() {
       var room = cal.layer.offsetHeight;
       cal.view.classList.toggle("tight", room < 720);
       cal.view.classList.toggle("tiny", room < 560);
+      cal.view.classList.toggle("wide", cal.layer.offsetWidth >= 760);   // HubSpot's two-column layout
     }
     window.addEventListener("resize", fitCalendar);
     function openInChat(c) {
