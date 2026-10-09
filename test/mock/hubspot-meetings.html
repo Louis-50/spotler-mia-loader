@@ -55,4 +55,9 @@
     <button id="book" onclick="parent.postMessage({meetingBookSucceeded:true,meetingsPayload:{userSlug:'test-owner',bookingResponse:{event:{dateString:'2026-10-12',dateTime:Date.UTC(2026,9,12,13,30),contact:{email:'jo.bloggs@acme.com',firstName:'Jo',lastName:'Bloggs'}}}}},'*')">Confirm</button>
   </div>
 </div>
+<script>
+  // Like HubSpot's embed: tell the parent how tall the content is.
+  function post() { parent.postMessage({ height: document.documentElement.scrollHeight }, "*"); }
+  addEventListener("load", post); addEventListener("resize", post);
+</script>
 </body></html>

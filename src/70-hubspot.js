@@ -425,43 +425,57 @@ function initHubSpot() {
       var layer = el("div", { id: "spotler-cal", role: "dialog", "aria-label": l.calTitle || "Book a meeting" });
       var root = layer.attachShadow ? layer.attachShadow({ mode: "open" }) : layer;
       addStyle(CSS.calendar, root);
-      var back = el("button", { class: "back", type: "button" }, [
-        icon("arr", ["M19 12H5", "m12 19-7-7 7-7"]),
-        el("span", { text: l.calBack || "Back to chat" })
-      ]);
+      var back = el("button", { class: "back", type: "button", text: l.calCancel || "Cancel" });
       back.addEventListener("click", function () { closeCalendar(); });
       var stage = el("div", { class: "stage" });
       var loading = el("div", { class: "loading", "aria-hidden": "true" }, [el("i"), el("span", { text: l.calLoading || "Loading calendar..." })]);
-      var intro = el("div", { class: "m intro" }, [avatar("av"), el("div", { class: "b", text: l.calIntro || "Pick a time that works for you." })]);
       var card = el("div", { class: "card" }, [stage, loading]);
-      var view = el("div", { class: "c" }, [
-        el("div", { class: "list" }, [intro, card]),
-        el("div", { class: "bar" }, [back]),
-        el("div", { class: "ft", text: l.powered || "" })
-      ]);
+      var bar = el("div", { class: "bar" }, [back]);
+      var ft = el("div", { class: "ft", text: l.powered || "" });
+      var sheet = el("div", { class: "sheet" }, [card, bar, ft]);
+      var view = el("div", { class: "c" }, [sheet]);
       root.appendChild(view);
       host.appendChild(layer);
-      cal = { layer: layer, view: view, intro: intro, card: card, stage: stage, loading: loading };
+      cal = { layer: layer, view: view, sheet: sheet, card: card, bar: bar, ft: ft, stage: stage, loading: loading, contentH: 0, iframe: null };
       return cal;
     }
+    // Card height: HubSpot's own content height (it posts it), up to the
+    // room the chat has; a compact loading card until then.
     function fitCalendar() {
-      // Under ~560px of height, drop the bubble and footer for the scheduler.
-      if (cal && cal.layer.classList.contains("on")) cal.view.classList.toggle("tight", cal.layer.offsetHeight < 560);
+      if (!cal || !cal.layer.classList.contains("on")) return;
+      var room = cal.layer.offsetHeight;
+      cal.view.classList.toggle("tight", room < 720);
+      var chrome = cal.bar.offsetHeight + (cal.ft.offsetHeight ? cal.ft.offsetHeight + 10 : 8) + 20;
+      var max = Math.max(160, room - chrome);
+      var h = 132;
+      if (cal.view.classList.contains("ready")) {
+        var want = cal.contentH ? cal.contentH - 32 : (cal.card.offsetWidth < 600 ? 960 : 720);
+        h = Math.min(Math.max(want, 240), max);
+      }
+      cal.card.style.height = Math.min(h, max) + "px";
     }
     window.addEventListener("resize", fitCalendar);
+    window.addEventListener("message", function (e) {
+      if (!cal || !cal.iframe || e.source !== cal.iframe.contentWindow) return;
+      var d = e.data;
+      if (typeof d === "string") { try { d = JSON.parse(d); } catch (err) { return; } }
+      var h = d && (d.height || (d.meetingsHeight)) ;
+      if (typeof h === "number" && h > 100) { cal.contentH = h; fitCalendar(); }
+    });
     function openInChat(c) {
       c.layer.classList.add("on");
+      c.view.classList.remove("shown");
       fitCalendar();
-      [c.intro, c.card].forEach(function (n) { n.classList.remove("in"); void n.offsetWidth; n.classList.add("in"); });
-      void c.view.offsetWidth;             // let the fade-in run
+      void c.view.offsetWidth;             // start below, then slide up like a new message
       c.view.classList.add("shown");
+      try { State.touch(); } catch (e) {}
     }
     function closeCalendar() {
       closeHubSpotModal();
       if (cal && cal.layer.classList.contains("on")) {
         var c = cal;
         c.view.classList.remove("shown");
-        setTimeout(function () { if (!c.view.classList.contains("shown")) c.layer.classList.remove("on"); }, 240);
+        setTimeout(function () { if (!c.view.classList.contains("shown")) c.layer.classList.remove("on"); }, 320);
       }
     }
     // Closing the slide-out also closes the calendar.
@@ -524,7 +538,7 @@ function initHubSpot() {
       }
 
       hsCurrentKey = fullUrl;
-      if (loading) loading.style.display = "flex";
+      if (loading && !c) loading.style.display = "flex";
       if (!stage) return;
 
       stage.innerHTML = "";
@@ -537,15 +551,18 @@ function initHubSpot() {
       iframe.setAttribute("data-hs-ignore", "true");
 
       iframe.addEventListener("load", function () {
-        if (loading) loading.style.display = "none";
+        if (c) { c.view.classList.add("ready"); fitCalendar(); }
+        else if (loading) loading.style.display = "none";
       });
+      if (c) { c.iframe = iframe; c.contentH = 0; c.view.classList.remove("ready"); }
 
       stage.appendChild(iframe);
       open();
 
       // Safety fallback in case the browser suppresses the iframe load event.
       setTimeout(function () {
-        if (loading) loading.style.display = "none";
+        if (c) { c.view.classList.add("ready"); fitCalendar(); }
+        else if (loading) loading.style.display = "none";
       }, 3500);
     }
 
@@ -632,6 +649,14 @@ function initHubSpot() {
           console.warn("[BP] Could not parse HubSpot booking details", err);
         }
 
+        // The bot's flow sees demoBooked as a new event; with the click from
+        // minutes ago no longer "fresh" its gate would run the greeting.
+        // Refresh the skip-greeting flag first.
+        try {
+          if (window.botpress.updateUser) window.botpress.updateUser({ data: { proactiveClickAt: String(now()), proactiveTopic: "demoBooked" } });
+        } catch (err) {}
+        try { State.touch(); } catch (err) {}
+        log("calendar: booking reported (conversation " + (SS.get("spotler_last_conversation_id") || "?") + ")");
         console.log('[BP] sending demoBooked to botpress:', JSON.stringify(payload));
         try {
           window.botpress.sendEvent(payload);
@@ -639,15 +664,15 @@ function initHubSpot() {
           console.warn("[BP] demoBooked sendEvent failed", err);
         }
 
-        // HubSpot shows its own confirmation; then back to the chat, where
-        // the bot answers the demoBooked event.
+        // A beat to see HubSpot's confirmation, then back to the chat,
+        // where the bot answers the demoBooked event.
         setTimeout(function () {
           closeCalendar();
           var modalStage = document.getElementById("hubspot-iframe-stage");
           if (modalStage) modalStage.innerHTML = "";
-          if (cal) cal.stage.innerHTML = "";
+          if (cal) { cal.stage.innerHTML = ""; cal.iframe = null; }
           hsCurrentKey = null;
-        }, 4000);
+        }, 1500);
       }
     });
 

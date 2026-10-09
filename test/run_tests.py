@@ -396,12 +396,12 @@ async def main():
         c = await page.evaluate("""() => { const l=document.getElementById('spotler-cal'), r=l && l.shadowRoot, v=r && r.querySelector('.c'), f=r && r.querySelector('iframe'), p=document.getElementById('spotler-agent-panel');
             return { inPanel: !!l && document.getElementById('spotler-agent-body').contains(l), shown: !!v && v.classList.contains('shown') && getComputedStyle(v).opacity === '1',
               w: Math.round(p.getBoundingClientRect().width), src: f ? f.src : '', modal: getComputedStyle(document.getElementById('hubspot-modal')).display,
-              back: r ? r.querySelector('.back').textContent : '', bubble: r ? r.querySelector('.intro').textContent : '' } }""")
-        check("17a calendar opens inside the chat as a message (Mia bubble, card, Back to chat), no page modal, panel keeps its width", c["inPanel"] and c["shown"] and c["w"] <= 400 and "meetings.hubspot.com/test-owner" in c["src"] and c["modal"] == "none" and "Back to chat" in c["back"] and "Pick a time" in c["bubble"], c)
+              back: r ? r.querySelector('.back').textContent : '' } }""")
+        check("17a calendar opens inside the chat like a message (card + Cancel in the composer slot), no page modal, panel keeps its width", c["inPanel"] and c["shown"] and c["w"] <= 400 and "meetings.hubspot.com/test-owner" in c["src"] and c["modal"] == "none" and c["back"] == "Cancel", c)
         await page.screenshot(path=f"{OUT}/17-calendar.png")
         await page.click("#spotler-cal .back"); await page.wait_for_timeout(600)
         back = await page.evaluate("() => ({ hidden: !document.getElementById('spotler-cal').classList.contains('on'), w: Math.round(document.getElementById('spotler-agent-panel').getBoundingClientRect().width), ready: document.getElementById('bp-embedded-webchat').classList.contains('bp-ready') })")
-        check("17b Back to chat: calendar closes, chat still there", back["hidden"] and back["ready"], back)
+        check("17b Cancel: calendar closes, chat still there", back["hidden"] and back["ready"], back)
         await page.evaluate("window.__bpEmit('customEvent', { action: 'showHubSpotCalendar', url: 'https://meetings.hubspot.com/test-owner' })")
         await page.wait_for_timeout(900)
         hs = next(f for f in page.frames if "meetings.hubspot.com" in f.url)
@@ -410,10 +410,33 @@ async def main():
         bplog = await page.evaluate("window.__bpLog")
         booked = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent" and "demoBooked" in e[1]]
         check("17c booking reported to the bot (demoBooked with date, time and contact)", booked and booked[0]["meetingWhen"] and booked[0]["userEmail"] == "jo.bloggs@acme.com", booked)
-        await page.wait_for_timeout(4200)
+        names = [e[0] + (e[1] if e[0] == "updateUser" else "") for e in bplog]
+        di = next(i for i, e in enumerate(bplog) if e[0] == "sendEvent" and "demoBooked" in e[1])
+        check("17h skip-greeting flag refreshed right before demoBooked (no greeting after booking)", any(e[0] == "updateUser" and '"proactiveTopic":"demoBooked"' in e[1] for e in bplog[:di]), bplog[-4:])
+        await page.wait_for_timeout(2000)
         done = await page.evaluate("() => ({ hidden: !document.getElementById('spotler-cal').classList.contains('on'), empty: !document.getElementById('spotler-cal').shadowRoot.querySelector('iframe') })")
-        check("17d after booking the chat comes back on its own", done["hidden"] and done["empty"], done)
+        check("17d after booking the chat comes back on its own (no Cancel needed)", done["hidden"] and done["empty"], done)
         await ctx.close()
+
+        # sizing: as tall as HubSpot's content on a big screen (chat visible above), fills a small one
+        for w, h in [(1920, 1080), (1200, 700)]:
+            ctx = await b.new_context(viewport={"width": w, "height": h}); await setup(ctx)
+            page = await ctx.new_page()
+            await page.goto("https://www.spotler.com/en-gb/pricing/compare"); await page.wait_for_timeout(1200)
+            await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; sr.querySelector('.btn').click(); }""")
+            await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
+            await page.evaluate("window.__bpEmit('customEvent', { action: 'showHubSpotCalendar', url: 'https://meetings.hubspot.com/test-owner' })")
+            await page.wait_for_timeout(1600)
+            hsf = next(f for f in page.frames if "meetings.hubspot.com" in f.url)
+            content = await hsf.evaluate("document.documentElement.scrollHeight")
+            s2 = await page.evaluate("""() => { const l=document.getElementById('spotler-cal'), r=l.shadowRoot, card=r.querySelector('.card').getBoundingClientRect(), lay=l.getBoundingClientRect(), bar=r.querySelector('.back').getBoundingClientRect();
+                return { card: Math.round(card.height), above: Math.round(card.top - lay.top), room: Math.round(lay.height), barGap: Math.round(lay.bottom - bar.bottom) } }""")
+            if w == 1920:
+                check(f"17g {w}x{h}: card as tall as the calendar (no white space), conversation visible above", abs(s2["card"] - (content - 32)) <= 4 and s2["above"] > 60, dict(s2, content=content))
+            else:
+                check(f"17g {w}x{h}: calendar fills the chat (card uses all but the Cancel row)", s2["above"] <= 16 and s2["card"] >= s2["room"] - 90, dict(s2, content=content))
+            await page.screenshot(path=f"{OUT}/17g-{w}.png")
+            await ctx.close()
 
         # no sideways scroll on tablets and phones with a full card (open calendar included)
         for w, h, ua in [(768, 1024, None), (390, 844, MOBILE_UA)]:

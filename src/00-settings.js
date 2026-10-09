@@ -6,7 +6,7 @@
    are only the fallback used when config.json can't be loaded.
    ================================================================== */
 var SETTINGS = {
-  VERSION: "1.3.1",
+  VERSION: "1.3.2",
 
   // ---- Page table (published by n8n) ----
   // Tried in order. GitHub's own copy is live within ~5 minutes of a commit;
@@ -62,15 +62,15 @@ var SETTINGS = {
     "en-GB": { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
                restart: "Restart conversation", close: "Close chat", dismiss: "Dismiss", today: "Today", delivered: "Delivered",
                botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
-               powered: "Powered by Spotler AI", calBack: "Back to chat", calTitle: "Book a meeting", calIntro: "Pick a time that works for you.", calLoading: "Loading calendar..." },
+               powered: "Powered by Spotler AI", calCancel: "Cancel", calTitle: "Book a meeting", calLoading: "Loading calendar..." },
     "int":   { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
                restart: "Restart conversation", close: "Close chat", dismiss: "Dismiss", today: "Today", delivered: "Delivered",
                botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
-               powered: "Powered by Spotler AI", calBack: "Back to chat", calTitle: "Book a meeting", calIntro: "Pick a time that works for you.", calLoading: "Loading calendar..." },
+               powered: "Powered by Spotler AI", calCancel: "Cancel", calTitle: "Book a meeting", calLoading: "Loading calendar..." },
     "nl":    { title: "Spotler Assistent", pill: "Vraag het Mia", placeholder: "Stel Mia een vraag...",
                restart: "Gesprek opnieuw starten", close: "Chat sluiten", dismiss: "Sluiten", today: "Today", delivered: "Delivered",
                botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
-               powered: "Powered by Spotler AI", calBack: "Terug naar de chat", calTitle: "Plan een afspraak", calIntro: "Kies een moment dat jou uitkomt.", calLoading: "Agenda laden..." }
+               powered: "Powered by Spotler AI", calCancel: "Annuleren", calTitle: "Plan een afspraak", calLoading: "Agenda laden..." }
   },
 
   AVATAR_URL: "https://files.bpcontent.cloud/2026/08/20/13/20260820133357-6Q65P1JX.webp",
