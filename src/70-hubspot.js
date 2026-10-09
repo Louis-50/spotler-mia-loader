@@ -437,39 +437,20 @@ function initHubSpot() {
       var view = el("div", { class: "c" }, [sheet]);
       root.appendChild(view);
       host.appendChild(layer);
-      cal = { layer: layer, view: view, sheet: sheet, intro: intro, card: card, bar: bar, ft: ft, stage: stage, contentH: 0, iframe: null };
+      cal = { layer: layer, view: view, sheet: sheet, intro: intro, card: card, bar: bar, ft: ft, stage: stage, iframe: null };
       return cal;
     }
-    // Card height: what the calendar needs (HubSpot's posted height when it
-    // sends one, otherwise a size that fits its calendar view), up to the
-    // room the chat has. In HubSpot's one-column layout the "Meet with ..."
-    // header is cropped off the top.
+    // The card fills the chat (CSS); short chats drop the footer, then Mia's line.
     function fitCalendar() {
       if (!cal || !cal.layer.classList.contains("on")) return;
       var room = cal.layer.offsetHeight;
       cal.view.classList.toggle("tight", room < 720);
       cal.view.classList.toggle("tiny", room < 560);
-      var narrow = cal.layer.offsetWidth < SETTINGS.CAL_ONE_COLUMN_BELOW;
-      var cut = narrow ? SETTINGS.CAL_HEADER_CUT : 0;
-      cal.view.classList.toggle("narrow", narrow);
-      cal.stage.style.setProperty("--cut", cut + "px");
-      var chrome = cal.bar.offsetHeight + (cal.ft.offsetHeight ? cal.ft.offsetHeight + 10 : 8) +
-                   (cal.intro.offsetHeight ? cal.intro.offsetHeight + 8 : 0) + 20;
-      var max = Math.max(200, room - chrome);
-      var want = cal.contentH ? cal.contentH - 32 - cut : (narrow ? SETTINGS.CAL_HEIGHT_ONE_COLUMN : SETTINGS.CAL_HEIGHT_TWO_COLUMN);
-      cal.card.style.height = Math.min(Math.max(want, 240), max) + "px";
     }
     window.addEventListener("resize", fitCalendar);
-    var hsMessagesLogged = 0;
-    window.addEventListener("message", function (e) {
-      if (!cal || !cal.iframe || e.source !== cal.iframe.contentWindow) return;
-      var d = e.data;
-      if (hsMessagesLogged < 8) { hsMessagesLogged++; try { log("calendar: HubSpot says", typeof d === "string" ? d.slice(0, 200) : JSON.stringify(d).slice(0, 200)); } catch (err) {} }
-      if (typeof d === "string") { try { d = JSON.parse(d); } catch (err) { return; } }
-      var h = d && (d.height || d.meetingsHeight);
-      if (typeof h === "number" && h > 100) { cal.contentH = h; fitCalendar(); }
-    });
     function openInChat(c) {
+      var panel = document.getElementById("spotler-agent-panel");
+      if (panel && panel.contains(c.layer)) panel.classList.add("mia-cal");
       c.layer.classList.add("on");
       c.view.classList.remove("shown");
       fitCalendar();
@@ -485,6 +466,8 @@ function initHubSpot() {
     }
     function closeCalendar() {
       closeHubSpotModal();
+      var panel = document.getElementById("spotler-agent-panel");
+      if (panel) panel.classList.remove("mia-cal");
       if (cal && cal.layer.classList.contains("on")) {
         var c = cal;
         c.view.classList.remove("shown");
@@ -567,7 +550,7 @@ function initHubSpot() {
         if (c) setTimeout(function () { calendarReady(c); }, 450);   // HubSpot draws after load
         else if (loading) loading.style.display = "none";
       });
-      if (c) { c.iframe = iframe; c.contentH = 0; c.view.classList.remove("ready"); }
+      if (c) { c.iframe = iframe; c.view.classList.remove("ready"); }
 
       stage.appendChild(iframe);
       open();

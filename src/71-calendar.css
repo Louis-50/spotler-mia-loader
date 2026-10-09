@@ -1,30 +1,24 @@
 /* ==================================================================
-   71 · Calendar view (inside #spotler-cal's shadow root). It sits at the
-   bottom of the chat like the newest message: the conversation stays
-   visible above it, the card is as tall as HubSpot's content (up to the
-   room there is), and "Cancel" takes the composer's place.
+   71 · Calendar view (inside #spotler-cal's shadow root), styled like
+   the chat: Mia's line, the scheduler as a message card filling the chat
+   (HubSpot's own page, never cropped or squeezed), "Cancel" in the
+   composer's place, the footer below.
    ================================================================== */
 :host { all: initial; display: block; width: 100%; height: 100%; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; border: 0 solid; }
 
 .c {
-  display: flex; flex-direction: column; justify-content: flex-end;
-  width: 100%; height: 100%; overflow: hidden; pointer-events: none;
+  display: flex; flex-direction: column;
+  width: 100%; height: 100%; overflow: hidden;
   font-family: inter, sans-serif; font-size: 14px; line-height: 20px; color: #202127;
   -webkit-font-smoothing: antialiased; text-size-adjust: 100%;
 }
 .sheet {
-  position: relative; pointer-events: auto;
-  display: flex; flex-direction: column; gap: 8px; padding: 6px 12px 0;
+  position: relative; flex: 1 1 auto; min-height: 0;
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; padding: 12px 12px 0;
   background: #fdfdfd;
   transform: translateY(24px); opacity: 0;
   transition: transform 0.42s cubic-bezier(.2, .8, .2, 1), opacity 0.3s ease-out;
-}
-/* Blend into the conversation above. */
-.sheet::before {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 28px;
-  background: linear-gradient(to bottom, rgba(253, 253, 253, 0), #fdfdfd);
-  pointer-events: none;
 }
 .shown .sheet { transform: translateY(0); opacity: 1; }
 
@@ -48,14 +42,13 @@
   border: 1px solid #DADBE0; border-radius: 16px; background: #ffffff; overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 38, 69, 0.06);
 }
-.ready .card { display: block; animation: miaIn 0.42s cubic-bezier(.2, .8, .2, 1) both; }
+.ready .card { display: block; flex: 1 1 auto; min-height: 0; animation: miaIn 0.42s cubic-bezier(.2, .8, .2, 1) both; }
 @keyframes miaIn { 0% { transform: translateY(18px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
 .stage { position: absolute; inset: 0; overflow: hidden; }
-/* HubSpot's page has its own 16px gutter (its scrollbar sits in it): crop
-   it, and in its one-column layout also the "Meet with ..." header (--cut). */
+/* HubSpot's page has its own 16px gutter (its scrollbar sits in it): crop it. */
 .stage iframe {
-  position: absolute; top: calc(-16px - var(--cut, 0px)); left: -16px;
-  width: calc(100% + 32px); height: calc(100% + 32px + var(--cut, 0px));
+  position: absolute; top: -16px; left: -16px;
+  width: calc(100% + 32px); height: calc(100% + 32px);
   border: 0; display: block; background: #ffffff;
 }
 

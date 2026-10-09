@@ -6,7 +6,7 @@
    are only the fallback used when config.json can't be loaded.
    ================================================================== */
 var SETTINGS = {
-  VERSION: "1.3.3",
+  VERSION: "1.3.4",
 
   // ---- Page table (published by n8n) ----
   // Tried in order. GitHub's own copy is live within ~5 minutes of a commit;
@@ -17,12 +17,6 @@ var SETTINGS = {
     "https://cdn.jsdelivr.net/gh/Louis-50/spotler-mia-loader@main/config/config.json"
   ],
   CONFIG_WAIT_MS: 1500,           // first visit: show the built-in default after this
-
-  // ---- Demo calendar (HubSpot, shown inside the chat) ----
-  CAL_ONE_COLUMN_BELOW: 760,       // HubSpot stacks into one column below this width
-  CAL_HEADER_CUT: 150,             // one column: crop "Meet with ..." off the top (px)
-  CAL_HEIGHT_ONE_COLUMN: 520,      // card height when HubSpot doesn't post one
-  CAL_HEIGHT_TWO_COLUMN: 680,
 
   // ---- Botpress ----
   INJECT_URL: "https://cdn.botpress.cloud/webchat/v3.7/inject.js",

@@ -397,11 +397,11 @@ async def main():
             return { inPanel: !!l && document.getElementById('spotler-agent-body').contains(l), shown: !!v && v.classList.contains('shown') && getComputedStyle(v).opacity === '1',
               w: Math.round(p.getBoundingClientRect().width), src: f ? f.src : '', modal: getComputedStyle(document.getElementById('hubspot-modal')).display,
               back: r ? r.querySelector('.back').textContent : '' } }""")
-        check("17a calendar opens inside the chat like a message (card + Cancel in the composer slot), no page modal, panel keeps its width", c["inPanel"] and c["shown"] and c["w"] <= 400 and "meetings.hubspot.com/test-owner" in c["src"] and c["modal"] == "none" and c["back"] == "Cancel", c)
+        check("17a calendar opens inside the chat (Mia's line, card, Cancel in the composer slot), no page modal, panel widens for HubSpot's two columns", c["inPanel"] and c["shown"] and c["w"] >= 860 and "meetings.hubspot.com/test-owner" in c["src"] and c["modal"] == "none" and c["back"] == "Cancel", c)
         await page.screenshot(path=f"{OUT}/17-calendar.png")
         await page.click("#spotler-cal .back"); await page.wait_for_timeout(600)
         back = await page.evaluate("() => ({ hidden: !document.getElementById('spotler-cal').classList.contains('on'), w: Math.round(document.getElementById('spotler-agent-panel').getBoundingClientRect().width), ready: document.getElementById('bp-embedded-webchat').classList.contains('bp-ready') })")
-        check("17b Cancel: calendar closes, chat still there", back["hidden"] and back["ready"], back)
+        check("17b Cancel: calendar closes, panel back to its width, chat still there", back["hidden"] and back["ready"] and back["w"] <= 400, back)
         await page.evaluate("window.__bpEmit('customEvent', { action: 'showHubSpotCalendar', url: 'https://meetings.hubspot.com/test-owner' })")
         await page.wait_for_timeout(900)
         hs = next(f for f in page.frames if "meetings.hubspot.com" in f.url)
@@ -435,11 +435,9 @@ async def main():
                   bubble: getComputedStyle(r.querySelector('.intro')).display !== 'none', iframeTop: Math.round(f.getBoundingClientRect().top - card.top) } }""")
             s2["monthTop"] = (await hsf.evaluate("Math.round(document.querySelector('.month').getBoundingClientRect().top)")) + s2["iframeTop"]
             hdr = await hsf.evaluate("Math.round(document.querySelector('.month').getBoundingClientRect().top)")
-            if w == 1920:
-                check(f"17g {w}x{h}: compact card (calendar size, no big white space), conversation visible above, bubble shown", s2["card"] <= 540 and s2["above"] > 200 and s2["bubble"], dict(s2, content=content))
-            else:
-                check(f"17g {w}x{h}: calendar fills the chat", s2["card"] >= s2["room"] - 150, dict(s2, content=content))
-            check(f"17i {w}x{h}: 'Meet with ...' header cropped, the month is at the top of the card", 0 <= s2["monthTop"] <= 40, dict(s2, hdr=hdr))
+            check(f"17g {w}x{h}: calendar fills the chat under Mia's line (no blank area)", s2["card"] >= s2["room"] - 160 and s2["bubble"], dict(s2, content=content))
+            two = await hsf.evaluate("getComputedStyle(document.querySelector('.w')).display === 'flex'")
+            check(f"17i {w}x{h}: HubSpot uncropped and in its two-column layout", -17 <= s2["iframeTop"] <= -15 and two, dict(s2, twoColumn=two))
             await page.screenshot(path=f"{OUT}/17g-{w}.png")
             await ctx.close()
 

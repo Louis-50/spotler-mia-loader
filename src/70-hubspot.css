@@ -1,8 +1,9 @@
 /* ==================================================================
    70 · In-chat calendar host. It covers the chat body (slide-out) or
    the card body (half/full); its content lives in a shadow root styled
-   by 71-calendar.css, so it looks like part of the conversation and the
-   site's CSS can't reach it.
+   by 71-calendar.css. On desktop the slide-out widens while it is open
+   so HubSpot can use its two-column layout (the page squeeze stays).
    ================================================================== */
 #spotler-cal { position: absolute; inset: 0; z-index: 40; display: none; }
 #spotler-cal.on { display: block; }
+#spotler-agent-panel.mia-cal { width: min(880px, calc(100vw - 320px)); }
