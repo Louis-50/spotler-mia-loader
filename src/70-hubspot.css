@@ -12,3 +12,6 @@
    not inline styles: the theme's scroll lock breaks on a styled <html>. */
 html.mia-scroll-lock { overflow: hidden !important; scrollbar-gutter: stable; }
 html.mia-scroll-lock body { overflow: hidden !important; }
+/* The wide panel covers the top bar's links (right-aligned), leaving a
+   stray first letter showing at its edge: hide them while it is open. */
+html.mia-scroll-lock .top-header-container .top-nav-container { visibility: hidden !important; }
