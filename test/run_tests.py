@@ -15,7 +15,8 @@ SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40"><rect wid
 MOBILE_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
 INJECT = open(os.path.join(ROOT, "test/mock/inject.js")).read()
 BOTCFG = open(os.path.join(ROOT, "test/mock/botconfig.js")).read()
-CONFIG = open(os.path.join(ROOT, "config/config.json")).read()
+# A fixed copy of the page table (with half/full campaign rows), so tests do not depend on the live config.json.
+CONFIG = open(os.path.join(ROOT, "test/mock/config.json")).read()
 OUT = os.path.join(ROOT, "test/out"); os.makedirs(OUT, exist_ok=True)
 AVATAR = bytes.fromhex("89504e470d0a1a0a0000000d4948445200000001000000010806000000" "1f15c4890000000d49444154789c63f8cfc0f01f0005000201a5f6e0540000000049454e44ae426082")
 
