@@ -1,14 +1,7 @@
 /* ==================================================================
-   70 · In-chat calendar host. It covers the chat body (slide-out) or
-   the card body (half/full); its content lives in a shadow root styled
-   by 71-calendar.css. On desktop the slide-out widens while it is open
-   so HubSpot can use its two-column layout (the page squeeze stays).
+   70 · HubSpot calendar modal: page scroll lock while it is open.
    ================================================================== */
-#spotler-cal { position: absolute; inset: 0; z-index: 40; display: none; }
-#spotler-cal.on { display: block; }
-#spotler-agent-panel.mia-cal { width: min(880px, calc(100vw - 320px)); }
-/* While the calendar is open the page doesn't scroll: a scroll that runs
-   past the end of HubSpot's frame would otherwise move the page. A class,
-   not inline styles: the theme's scroll lock breaks on a styled <html>. */
 html.mia-scroll-lock { overflow: hidden !important; scrollbar-gutter: stable; }
 html.mia-scroll-lock body { overflow: hidden !important; }
+/* A scroll that reaches the end of the calendar stays in the modal. */
+#hubspot-modal { overscroll-behavior: contain; }

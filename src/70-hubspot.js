@@ -407,113 +407,25 @@ function initHubSpot() {
       ]);
     }
 
-    // ---- In-chat calendar ----
-    // The scheduler opens inside the chat itself: the slide-out body (the
-    // panel widens to fit) or the half/full card. The page modal is only
-    // the fallback when there is no chat on the page.
+    // Lock the website behind the modal so a scroll over the calendar can't
+    // move the page (a scroll past the end of HubSpot's frame chains to it).
+    // A class, not inline styles: the theme's scroll lock breaks on a styled <html>.
     addStyle(CSS.hubspot);
-    var cal = null;
-    function chatHost() {
-      return document.getElementById("spotler-agent-body") || document.getElementById("spotler-inline-body");
-    }
-    function inChatCalendar() {
-      var host = chatHost();
-      if (!host) return null;
-      if (cal && cal.layer.parentNode === host) return cal;
-      if (cal && cal.layer.parentNode) cal.layer.parentNode.removeChild(cal.layer);
-      var l = (BP.ctx && BP.ctx.labels) || SETTINGS.LABELS["en-GB"];
-      var layer = el("div", { id: "spotler-cal", role: "dialog", "aria-label": l.calTitle || "Book a meeting" });
-      var root = layer.attachShadow ? layer.attachShadow({ mode: "open" }) : layer;
-      addStyle(CSS.calendar, root);
-      var back = el("button", { class: "back", type: "button", text: l.calCancel || "Cancel" });
-      back.addEventListener("click", function () { closeCalendar(); });
-      var stage = el("div", { class: "stage" });
-      var card = el("div", { class: "card" }, [stage]);
-      var intro = el("div", { class: "m intro" }, [avatar("av"), el("div", { class: "b", text: l.calIntro || "Pick a time that works for you." })]);
-      var typing = el("div", { class: "m typing-row" }, [avatar("av"), el("div", { class: "typing", "aria-label": "typing" }, [el("i"), el("i"), el("i")])]);
-      var bar = el("div", { class: "bar" }, [back]);
-      var ft = el("div", { class: "ft", text: l.powered || "" });
-      var sheet = el("div", { class: "sheet" }, [intro, typing, card, bar, ft]);
-      var view = el("div", { class: "c" }, [sheet]);
-      root.appendChild(view);
-      host.appendChild(layer);
-      cal = { layer: layer, view: view, sheet: sheet, intro: intro, card: card, bar: bar, ft: ft, stage: stage, iframe: null };
-      return cal;
-    }
-    // The card fills the chat (CSS); short chats drop the footer, then Mia's line.
-    function fitCalendar() {
-      if (!cal || !cal.layer.classList.contains("on")) return;
-      var room = cal.layer.offsetHeight;
-      cal.view.classList.toggle("tight", room < 720);
-      cal.view.classList.toggle("tiny", room < 560);
-      cal.view.classList.toggle("wide", cal.layer.offsetWidth >= 760);   // HubSpot's two-column layout
-    }
-    window.addEventListener("resize", fitCalendar);
-    function openInChat(c) {
-      var panel = document.getElementById("spotler-agent-panel");
-      if (panel && panel.contains(c.layer)) panel.classList.add("mia-cal");
-      c.layer.classList.add("on");
-      document.documentElement.classList.add("mia-scroll-lock");
-      c.view.classList.remove("shown");
-      fitCalendar();
-      void c.view.offsetWidth;             // start below, then slide up like a new message
-      c.view.classList.add("shown");
-      try { State.touch(); } catch (e) {}
-    }
-    // HubSpot has loaded and drawn: swap the typing dots for the calendar.
-    function calendarReady(c) {
-      if (c.view.classList.contains("ready")) return;
-      fitCalendar();
-      c.view.classList.add("ready");
-    }
-    function closeCalendar() {
-      closeHubSpotModal();
-      var panel = document.getElementById("spotler-agent-panel");
-      if (panel) panel.classList.remove("mia-cal");
-      document.documentElement.classList.remove("mia-scroll-lock");
-      if (cal && cal.layer.classList.contains("on")) {
-        var c = cal;
-        c.view.classList.remove("shown");
-        setTimeout(function () { if (!c.view.classList.contains("shown")) c.layer.classList.remove("on"); }, 320);
-      }
-    }
-    // Closing the slide-out also closes the calendar.
-    document.addEventListener("click", function (e) {
-      var t = e.target;
-      if (t && t.closest && t.closest("#spotler-agent-close")) closeCalendar();
-    }, true);
-
-    var hsPreviousBodyOverflow = null;
-    var hsPreviousHtmlOverflow = null;
-
     function openHubSpotModal() {
       var modal = document.getElementById("hubspot-modal");
       if (!modal) return;
-
-      if (modal.style.display !== "flex") {
-        hsPreviousBodyOverflow = document.body.style.overflow;
-        hsPreviousHtmlOverflow = document.documentElement.style.overflow;
-      }
-
-      // Lock the website behind the modal. The modal itself never scrolls.
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
+      document.documentElement.classList.add("mia-scroll-lock");
       modal.style.display = "flex";
-
+      try { State.touch(); } catch (e) {}
     }
 
     function closeHubSpotModal() {
       var modal = document.getElementById("hubspot-modal");
       if (modal) modal.style.display = "none";
-
-      // Restore whatever the site had before the calendar opened.
-      document.body.style.overflow = hsPreviousBodyOverflow === null ? "" : hsPreviousBodyOverflow;
-      document.documentElement.style.overflow = hsPreviousHtmlOverflow === null ? "" : hsPreviousHtmlOverflow;
-      hsPreviousBodyOverflow = null;
-      hsPreviousHtmlOverflow = null;
+      document.documentElement.classList.remove("mia-scroll-lock");
     }
 
-    window.spotlerCloseHubSpotModal = closeCalendar;
+    window.spotlerCloseHubSpotModal = closeHubSpotModal;
 
     function showCalendar(url, contact) {
       if (!url) return;
@@ -525,19 +437,17 @@ function initHubSpot() {
         if (slug) hsLastOwnerSlug = slug;
       } catch (err) { /* keep previous value */ }
 
-      var c = inChatCalendar();
-      var stage = c ? c.stage : document.getElementById("hubspot-iframe-stage");
-      var loading = c ? null : document.getElementById("hubspot-loading");
-      var open = function () { if (c) openInChat(c); else openHubSpotModal(); };
+      var stage = document.getElementById("hubspot-iframe-stage");
+      var loading = document.getElementById("hubspot-loading");
       var fullUrl = buildCalendarUrl(url, contact);
 
       if (hsCurrentKey === fullUrl && stage && stage.querySelector("iframe")) {
-        open();
+        openHubSpotModal();
         return;
       }
 
       hsCurrentKey = fullUrl;
-      if (loading && !c) loading.style.display = "flex";
+      if (loading) loading.style.display = "flex";
       if (!stage) return;
 
       stage.innerHTML = "";
@@ -550,19 +460,16 @@ function initHubSpot() {
       iframe.setAttribute("data-hs-ignore", "true");
 
       iframe.addEventListener("load", function () {
-        if (c) setTimeout(function () { calendarReady(c); }, 450);   // HubSpot draws after load
-        else if (loading) loading.style.display = "none";
+        if (loading) loading.style.display = "none";
       });
-      if (c) { c.iframe = iframe; c.view.classList.remove("ready"); }
 
       stage.appendChild(iframe);
-      open();
+      openHubSpotModal();
 
       // Safety fallback in case the browser suppresses the iframe load event.
       setTimeout(function () {
-        if (c) calendarReady(c);
-        else if (loading) loading.style.display = "none";
-      }, 4000);
+        if (loading) loading.style.display = "none";
+      }, 3500);
     }
 
     // === Listen for the bot's custom event to open the calendar ===
@@ -663,22 +570,23 @@ function initHubSpot() {
           console.warn("[BP] demoBooked sendEvent failed", err);
         }
 
-        // A beat to see HubSpot's confirmation, then back to the chat,
-        // where the bot answers the demoBooked event.
+        // HubSpot shows its own confirmation; then back to the chat, where
+        // the bot answers the demoBooked event. Only the iframe is cleared:
+        // emptying #hubspot-meeting-container removed the stage itself and
+        // broke a second booking in the same visit.
         setTimeout(function () {
-          closeCalendar();
+          closeHubSpotModal();
           var modalStage = document.getElementById("hubspot-iframe-stage");
           if (modalStage) modalStage.innerHTML = "";
-          if (cal) { cal.stage.innerHTML = ""; cal.iframe = null; }
           hsCurrentKey = null;
-        }, 1500);
+        }, 4000);
       }
     });
 
     // Escape key closes modal
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") {
-        closeCalendar();
+        closeHubSpotModal();
       }
     });
   }

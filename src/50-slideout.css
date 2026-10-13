@@ -11,7 +11,7 @@
   background: #ffffff;
   box-shadow: -8px 0 24px rgba(0, 42, 77, 0.12);
   transform: translateX(calc(var(--spotler-agent-w, 400px) + 40px));
-  transition: transform 0.35s ease, width 0.35s ease;
+  transition: transform 0.35s ease;
   z-index: 2147483000;
   display: flex; flex-direction: column;
 }
