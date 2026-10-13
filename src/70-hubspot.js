@@ -453,6 +453,7 @@ function initHubSpot() {
       var panel = document.getElementById("spotler-agent-panel");
       if (panel && panel.contains(c.layer)) panel.classList.add("mia-cal");
       c.layer.classList.add("on");
+      document.documentElement.classList.add("mia-scroll-lock");
       c.view.classList.remove("shown");
       fitCalendar();
       void c.view.offsetWidth;             // start below, then slide up like a new message
@@ -469,6 +470,7 @@ function initHubSpot() {
       closeHubSpotModal();
       var panel = document.getElementById("spotler-agent-panel");
       if (panel) panel.classList.remove("mia-cal");
+      document.documentElement.classList.remove("mia-scroll-lock");
       if (cal && cal.layer.classList.contains("on")) {
         var c = cal;
         c.view.classList.remove("shown");

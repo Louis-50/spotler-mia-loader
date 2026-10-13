@@ -89,7 +89,7 @@ function createSlideout(region, labels, handlers) {
      layout and, on smaller screens, the CTA and region switcher slid under
      the panel. Measure the squeezed header and make room step by step,
      stopping as soon as it fits:
-       1  hide "About us" (it is also in the footer)
+       1  hide "Success stories" (also reachable via Resources)
        2  smaller banner: smaller logo, tighter side padding
        3  menu text 15px     4  menu text 14px
      Wide screens need none of this and keep the header exactly as it is. */
@@ -98,14 +98,15 @@ function createSlideout(region, labels, handlers) {
     var a = li.querySelector(":scope > a, :scope > span, :scope > button, :scope > div > a");
     return trim(a ? a.textContent : (li.firstChild && li.firstChild.textContent) || "");
   }
-  function markAboutUs(box) {
+  // The menu item hidden first when the squeezed header doesn't fit.
+  function markFirstOut(box) {
     var nav = box.querySelector(".main-nav");
-    if (!nav || nav.querySelector(".mia-about")) return;
+    if (!nav || nav.querySelector(".mia-drop")) return;
     var items = nav.children, pick = null;
     for (var i = 0; i < items.length; i++) {
-      if (/^(about|over ons|über)/i.test(navLabel(items[i]))) { pick = items[i]; break; }
+      if (/^(success stories|succesverhalen|klantverhalen|kundengeschichten|kundenstories)/i.test(navLabel(items[i]))) { pick = items[i]; break; }
     }
-    if (pick) pick.classList.add("mia-about");
+    if (pick) pick.classList.add("mia-drop");
   }
   // Doesn't fit = the logo is cut off on the left, the last menu item runs
   // into the buttons, or the CTA / region switcher reach the panel (12px
@@ -133,7 +134,7 @@ function createSlideout(region, labels, handlers) {
     var hdr = document.getElementById("header");
     var box = hdr && hdr.querySelector(".header-box");
     if (!box) return;
-    markAboutUs(box);
+    markFirstOut(box);
     var prev = hdr.style.transition;
     hdr.style.transition = "none";               // measure the final width, not mid-slide
     void hdr.offsetWidth;

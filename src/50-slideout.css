@@ -79,7 +79,7 @@ body.agent-panel-open #header {
 
 /* Header fit levels (see fitHeader): applied only while the panel is open
    and only as many as the squeezed header needs. */
-body.agent-panel-open.mia-fit-1 .header .main-nav > li.mia-about { display: none !important; }
+body.agent-panel-open.mia-fit-1 .header .main-nav > li.mia-drop { display: none !important; }
 body.agent-panel-open.mia-fit-2 .header .header-box .logo-wrapper { width: auto !important; padding: 0 14px !important; }
 body.agent-panel-open.mia-fit-2 .header .logo-wrapper img { max-width: 110px !important; height: auto !important; }
 body.agent-panel-open.mia-fit-2 .header .header-box .main-menu-box { padding: 0 8px !important; }

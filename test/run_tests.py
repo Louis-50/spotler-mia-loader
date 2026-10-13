@@ -356,19 +356,20 @@ async def main():
                 const lis=[...box.querySelectorAll('.main-nav > li')].filter(li=>li.offsetParent!==null); const last=lis[lis.length-1];
                 const btn=box.querySelector('.header-buttons').getBoundingClientRect();
                 return { levels:[1,2,3,4].filter(l=>document.body.classList.contains('mia-fit-'+l)).length,
-                  aboutHidden: lis.every(li=>!/About/.test(li.textContent)), gap: Math.round(btn.left - last.getBoundingClientRect().right),
+                  storiesHidden: lis.every(li=>!/Success stories/.test(li.textContent)), aboutShown: lis.some(li=>/About/.test(li.textContent)), gap: Math.round(btn.left - last.getBoundingClientRect().right),
                   clear: Math.round(hdr.getBoundingClientRect().right - box.querySelector('.main-switcher-box').getBoundingClientRect().right),
                   logoLeft: Math.round(box.querySelector('.logo-wrapper img').getBoundingClientRect().left - hdr.getBoundingClientRect().left),
                   htmlStyle: document.documentElement.getAttribute('style'),
                   barRows: new Set([...document.querySelectorAll('.top-nav > li')].map(li=>Math.round(li.getBoundingClientRect().top))).size,
                   barRight: Math.round(hdr.getBoundingClientRect().right - document.querySelector('.top-nav > li:last-child').getBoundingClientRect().right) } }""")
             ok = r["barRows"] == 1 and r["barRight"] >= 12 and r["gap"] >= 12 and r["clear"] >= 12 and r["logoLeft"] >= 4 and r["htmlStyle"] is None and (expect is None or r["levels"] == expect)
-            if r["levels"] >= 1: ok = ok and r["aboutHidden"]
-            check(f"14 header + top bar fit beside panel at {vw}px (levels {r['levels']}, About us {'hidden' if r['aboutHidden'] else 'shown'})", ok, r)
+            ok = ok and r["aboutShown"]
+            if r["levels"] >= 1: ok = ok and r["storiesHidden"]
+            check(f"14 header + top bar fit beside panel at {vw}px (levels {r['levels']}, Success stories {'hidden' if r['storiesHidden'] else 'shown'}, About us shown)", ok, r)
             await page.screenshot(path=f"{OUT}/14-header-{vw}.png", clip={"x": 0, "y": 0, "width": vw, "height": 140})
             if vw == 1280:
                 await page.click("#spotler-agent-close"); await page.wait_for_timeout(300)
-                back = await page.evaluate("[1,2,3,4].every(l=>!document.body.classList.contains('mia-fit-'+l)) && [...document.querySelectorAll('.main-nav > li')].some(li=>li.offsetParent!==null && /About/.test(li.textContent))")
+                back = await page.evaluate("[1,2,3,4].every(l=>!document.body.classList.contains('mia-fit-'+l)) && [...document.querySelectorAll('.main-nav > li')].some(li=>li.offsetParent!==null && /Success stories/.test(li.textContent))")
                 back = back and await page.evaluate("getComputedStyle(document.querySelector('.top-nav-container')).marginRight === document.querySelector('.top-nav-container').style.marginRight")
                 check("14 closing the panel restores the full header and top bar", back)
                 await page.click("#spotler-agent-pill"); await page.wait_for_timeout(500)
@@ -400,9 +401,16 @@ async def main():
               back: r ? r.querySelector('.back').textContent : '' } }""")
         check("17a calendar opens inside the chat (Mia's line, card, Cancel in the composer slot), no page modal, panel widens for HubSpot's two columns", c["inPanel"] and c["shown"] and c["w"] >= 860 and "meetings.hubspot.com/test-owner" in c["src"] and c["modal"] == "none" and c["back"] == "Cancel", c)
         await page.screenshot(path=f"{OUT}/17-calendar.png")
+        await page.evaluate("document.body.style.minHeight = '3000px'")
+        await page.mouse.move(900, 500); await page.mouse.wheel(0, 800); await page.wait_for_timeout(300)
+        lock = await page.evaluate("() => ({ overflow: getComputedStyle(document.documentElement).overflow, scrollY: Math.round(scrollY), htmlStyle: document.documentElement.getAttribute('style') })")
+        check("17j page doesn't scroll while the calendar is open (class lock, no inline style on <html>)", lock["overflow"] == "hidden" and lock["scrollY"] == 0 and lock["htmlStyle"] is None, lock)
         await page.click("#spotler-cal .back"); await page.wait_for_timeout(600)
         back = await page.evaluate("() => ({ hidden: !document.getElementById('spotler-cal').classList.contains('on'), w: Math.round(document.getElementById('spotler-agent-panel').getBoundingClientRect().width), ready: document.getElementById('bp-embedded-webchat').classList.contains('bp-ready') })")
         check("17b Cancel: calendar closes, panel back to its width, chat still there", back["hidden"] and back["ready"] and back["w"] <= 400, back)
+        await page.mouse.move(300, 500); await page.mouse.wheel(0, 400); await page.wait_for_timeout(300)
+        check("17k after Cancel the page scrolls again", await page.evaluate("getComputedStyle(document.documentElement).overflow !== 'hidden' && scrollY > 0"))
+        await page.evaluate("scrollTo(0, 0)")
         await page.evaluate("window.__bpEmit('customEvent', { action: 'showHubSpotCalendar', url: 'https://meetings.hubspot.com/test-owner' })")
         await page.wait_for_timeout(900)
         hs = next(f for f in page.frames if "meetings.hubspot.com" in f.url)

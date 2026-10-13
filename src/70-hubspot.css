@@ -7,3 +7,8 @@
 #spotler-cal { position: absolute; inset: 0; z-index: 40; display: none; }
 #spotler-cal.on { display: block; }
 #spotler-agent-panel.mia-cal { width: min(880px, calc(100vw - 320px)); }
+/* While the calendar is open the page doesn't scroll: a scroll that runs
+   past the end of HubSpot's frame would otherwise move the page. A class,
+   not inline styles: the theme's scroll lock breaks on a styled <html>. */
+html.mia-scroll-lock { overflow: hidden !important; scrollbar-gutter: stable; }
+html.mia-scroll-lock body { overflow: hidden !important; }
