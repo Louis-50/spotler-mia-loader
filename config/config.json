@@ -1,6 +1,6 @@
 {
-  "version": "2026-10-09.2",
-  "generatedBy": "Reset: slide-out everywhere, full card on /en-gb/services (Louis, 9 Oct 2026)",
+  "version": "2026-10-14.1",
+  "generatedBy": "Go-live: approved copy from the live tags (8 Oct 2026) - slide-out everywhere, campaign pages FeedbackPro (half) and Mail+ video (full)",
   "rows": [
     {
       "url_match": "*",
@@ -194,6 +194,7 @@
       "url_match": "/en-gb/discover/feedbackpro-x-zendesk",
       "match_type": "exact",
       "region": "en-GB",
+      "mode": "half",
       "page": "feedbackpro-zendesk",
       "route": "C",
       "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
@@ -228,6 +229,7 @@
       "url_match": "/en-gb/discover/customer-feedback-platform",
       "match_type": "exact",
       "region": "en-GB",
+      "mode": "half",
       "page": "feedbackpro-platform",
       "route": "C",
       "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
@@ -262,8 +264,11 @@
       "url_match": "/en-gb/discover/mailplus-video-overview",
       "match_type": "exact",
       "region": "en-GB",
+      "mode": "full",
       "page": "services",
       "route": "B",
+      "headline": "Mail+ – built to make marketers lives easier",
+      "intro": "Let’s chat! I’ll show you how Mail+ can help you. 👋",
       "opener": "You clicked to see how it all comes together. Here it is in just 45 seconds.\n\n[video] https://files.bpcontent.cloud/2026/08/10/16/20260810160832-27BW9XR8.mov\n\nI'm Mia. I know Mail+ inside out, so ask me anything the video didn't cover.",
       "buttons": [
         {
@@ -286,35 +291,8 @@
           "label": "Book a Demo",
           "send": "Book a Demo"
         }
-      ]
-    },
-    {
-      "url_match": "/en-gb/services",
-      "match_type": "exact",
-      "region": "en-GB",
-      "mode": "full",
-      "page": "services",
-      "opener": "Hi, I'm Mia 👋 Our team can help you set up, train and get the most out of Spotler.\n\nWhat would you like to know?",
-      "buttons": [
-        {
-          "label": "What services do you offer?",
-          "send": "What services do you offer?"
-        },
-        {
-          "label": "Can you help with onboarding?",
-          "send": "Can you help with onboarding?"
-        },
-        {
-          "label": "Do you offer training?",
-          "send": "Do you offer training?"
-        },
-        {
-          "label": "Book a demo",
-          "send": "Book a demo"
-        }
       ],
-      "headline": "Get more out of Spotler with our services",
-      "intro": "Let's chat! Ask me how our team can help you. 👋"
+      "media_selector": "iframe[src*=\"player.vimeo.com\"], img[src*=\"services-hero\"]"
     },
     {
       "url_match": "*",
