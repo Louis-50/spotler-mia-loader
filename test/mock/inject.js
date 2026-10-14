@@ -18,14 +18,19 @@
   var convId = null;
   window.botpress = {
     on: function (n, fn) { (handlers[n] = handlers[n] || []).push(fn); },
-    init: function () {
-      log.push(["init"]);
+    init: function (props) {
+      var cfg = (props && props.configuration) || {};
+      log.push(["init", JSON.stringify(cfg)]);
       var host = document.querySelector("#bp-embedded-webchat");
       root = document.createElement("div"); root.id = "webchat-root"; root.className = "bpEmbeddedWebchat";
       host.appendChild(root);
       var sr = root.attachShadow({ mode: "open" });
-      sr.innerHTML = '<div class="bpContainer" style="height:100%;background:#fdfdfd;font:14px sans-serif"><div class="list" style="padding:12px"></div></div>';
+      sr.innerHTML = '<div class="bpContainer" style="height:100%;background:#fdfdfd;font:14px sans-serif"><div class="bpHeader"><b></b> <span class="desc"></span></div><div class="list" style="padding:12px"><div class="bpDate">Today</div></div><textarea class="bpComposer"></textarea><div class="bpFooter"></div></div>';
       list = sr.querySelector(".list");
+      sr.querySelector(".bpHeader b").textContent = cfg.botName || "";
+      sr.querySelector(".desc").textContent = cfg.botDescription || "";
+      sr.querySelector(".bpComposer").setAttribute("placeholder", cfg.composerPlaceholder || "");
+      sr.querySelector(".bpFooter").textContent = (cfg.footer || "").replace(/^\[(.*)\]\(.*\)$/, "$1");
       setTimeout(function () { emit("webchat:initialized"); }, 50);
       setTimeout(function () {
         var stored = JSON.parse(localStorage.getItem(clientKey()) || "null") || { state: { user: { userId: "u1" } }, version: 1 };
@@ -39,7 +44,7 @@
     sendEvent: function (e) { log.push(["sendEvent", JSON.stringify(e)]); if (e.type === "language" && !e.__quiet && !window.__skipGreeting) { addMsg("incoming", "Greeting from Botpress"); } return Promise.resolve(); },
     sendMessage: function (t) {
       log.push(["sendMessage", t]);
-      setTimeout(function () { addMsg("outgoing", t); emit("message", { text: t }); }, 200);
+      setTimeout(function () { addMsg("outgoing", t); var d = document.createElement("span"); d.className = "bpStatus"; d.textContent = "Delivered"; list.appendChild(d); emit("message", { text: t }); }, 200);
       setTimeout(function () { addMsg("incoming", window.__replyText || ("Bot reply to: " + t)); emit("message", { text: "reply" }); }, window.__replyDelay || 700);
       return Promise.resolve();
     },

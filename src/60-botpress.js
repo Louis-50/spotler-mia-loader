@@ -162,6 +162,7 @@ function loadBotpress(mode) {
     var api = bp();
     if (api && typeof api.on === "function") {
       attachBotpressListeners();
+      localiseInit(api);
       initHubSpot();
       loadScript(SETTINGS.BOT_CONFIG_URL, function () { log("bot config failed to load"); });
       return;
@@ -169,6 +170,70 @@ function loadBotpress(mode) {
     if (tries < 300) setTimeout(function () { waitForApi(tries + 1); }, 100);
     else log("Botpress SDK never became available");
   })(0);
+}
+
+/* ---- Botpress's own text in the visitor's language ----
+   The bot's config script is English. For another language we hand our
+   labels to botpress.init, and swap the strings Botpress doesn't let us
+   set (the "Today" line, "Delivered") in its shadow DOM as they appear. */
+var LOCAL_KEYS = ["today", "delivered", "botTagline", "powered", "placeholder"];
+
+function localMap() {
+  var L = BP.ctx.labels, E = SETTINGS.LABELS["en-GB"], map = null;
+  for (var i = 0; i < LOCAL_KEYS.length; i++) {
+    var k = LOCAL_KEYS[i];
+    if (L[k] && E[k] && L[k] !== E[k]) { map = map || {}; map[E[k]] = L[k]; }
+  }
+  if (map && map[E.placeholder]) map[E.placeholder.replace(/\.+$/, "")] = L.placeholder;
+  // A footer written as "Powered by [Spotler AI](link)" splits into two text nodes.
+  var tail = " Spotler AI";
+  if (map && map[E.powered] && E.powered.slice(-tail.length) === tail && L.powered.slice(-tail.length) === tail) {
+    map[E.powered.slice(0, -tail.length)] = L.powered.slice(0, -tail.length);
+  }
+  return map;
+}
+
+function localiseInit(api) {
+  if (!localMap() || typeof api.init !== "function" || api.init.__mia) return;
+  var L = BP.ctx.labels, E = SETTINGS.LABELS["en-GB"], orig = api.init;
+  var wrapped = function (props) {
+    try {
+      var c = props && (props.configuration = props.configuration || {});
+      if (c) {
+        c.botDescription = L.botTagline;
+        c.composerPlaceholder = L.placeholder;
+        if (typeof c.footer === "string") c.footer = c.footer.split(E.powered).join(L.powered);
+      }
+    } catch (e) {}
+    return orig.apply(this, arguments);
+  };
+  wrapped.__mia = true;
+  try { api.init = wrapped; } catch (e) {}
+}
+
+function localiseWebchat(sr) {
+  var map = localMap();
+  if (!map) return;
+  var today = SETTINGS.LABELS["en-GB"].today, queued = false;
+  function swapText(n) {
+    var v = n.nodeValue, t = trim(v);
+    if (!t) return;
+    if (map.hasOwnProperty(t)) n.nodeValue = v.replace(t, map[t]);
+    else if (t.indexOf(today + " ") === 0 && map[today]) n.nodeValue = v.replace(today, map[today]);
+  }
+  function run() {
+    queued = false;
+    var w = document.createTreeWalker(sr, NodeFilter.SHOW_TEXT, null, false), n;
+    while ((n = w.nextNode())) swapText(n);
+    var ph = sr.querySelectorAll("[placeholder]");
+    for (var i = 0; i < ph.length; i++) {
+      var p = trim(ph[i].getAttribute("placeholder"));
+      if (map.hasOwnProperty(p)) ph[i].setAttribute("placeholder", map[p]);
+    }
+  }
+  new MutationObserver(function () { if (!queued) { queued = true; setTimeout(run, 0); } })
+    .observe(sr, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["placeholder"] });
+  run();
 }
 
 /* ---- fade: reveal once the visitor's message shows in the live chat ---- */
@@ -184,6 +249,7 @@ function watchForUserMessage() {
     var sr = webchatShadow();
     if (!sr) { if (++tries < 100) setTimeout(attach, 100); return; }
     BP.checkForUserMessage = check;
+    localiseWebchat(sr);
     if (BP.ctx.ui.videoWidth) sizeVideos(sr, BP.ctx.ui.videoWidth);
     // Swap only once the bot's reply is in: mirror it into the shell,
     // let it slide in there, then cross-fade to the identical live chat.

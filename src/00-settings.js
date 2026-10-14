@@ -6,7 +6,7 @@
    are only the fallback used when config.json can't be loaded.
    ================================================================== */
 var SETTINGS = {
-  VERSION: "1.3.9",
+  VERSION: "1.4.0",
 
   // ---- Page table (published by n8n) ----
   // Tried in order. GitHub's own copy is live within ~5 minutes of a commit;
@@ -68,9 +68,9 @@ var SETTINGS = {
                botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
                powered: "Powered by Spotler AI", calCancel: "Cancel", calTitle: "Book a meeting", calIntro: "Pick a time that works for you." },
     "nl":    { title: "Spotler Assistent", pill: "Vraag het Mia", placeholder: "Stel Mia een vraag...",
-               restart: "Gesprek opnieuw starten", close: "Chat sluiten", dismiss: "Sluiten", today: "Today", delivered: "Delivered",
-               botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
-               powered: "Powered by Spotler AI", calCancel: "Annuleren", calTitle: "Plan een afspraak", calIntro: "Kies een moment dat jou uitkomt." }
+               restart: "Gesprek opnieuw starten", close: "Chat sluiten", dismiss: "Sluiten", today: "Vandaag", delivered: "Afgeleverd",
+               botName: "Mia", botTagline: "Jouw Marketing Intelligence Assistent.",
+               powered: "Mogelijk gemaakt door Spotler AI", calCancel: "Annuleren", calTitle: "Plan een afspraak", calIntro: "Kies een moment dat jou uitkomt." }
   },
 
   AVATAR_URL: "https://files.bpcontent.cloud/2026/08/20/13/20260820133357-6Q65P1JX.webp",

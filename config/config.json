@@ -1,6 +1,6 @@
 {
-  "version": "2026-10-14.1",
-  "generatedBy": "Go-live: approved copy from the live tags (8 Oct 2026) - slide-out everywhere, campaign pages FeedbackPro (half) and Mail+ video (full)",
+  "version": "2026-10-14.2",
+  "generatedBy": "Go-live copy + services test: custom opener and buttons on /services (en-GB, int)",
   "rows": [
     {
       "url_match": "*",
@@ -180,7 +180,26 @@
       "region": "en-GB",
       "page": "services",
       "teaser_text": "Curious about what we do to help you use our software efficiently?",
-      "teaser_send": "Tell me about your services"
+      "teaser_send": "Tell me about your services",
+      "opener": "Hey 👋 Looking for a hand with Spotler?\nOur services team helps you get set up, trained and getting more out of the software.\n\nWhat would you like help with?",
+      "buttons": [
+        {
+          "label": "Onboarding & set-up",
+          "send": "I'd like help with onboarding and setting up Spotler"
+        },
+        {
+          "label": "Training for my team",
+          "send": "What training do you offer for my team?"
+        },
+        {
+          "label": "Strategy & campaign support",
+          "send": "Can your team help with marketing strategy and campaigns?"
+        },
+        {
+          "label": "Talk to the services team",
+          "send": "I'd like to talk to the services team"
+        }
+      ]
     },
     {
       "url_match": "/resources",
@@ -660,7 +679,26 @@
       "region": "int",
       "page": "services",
       "teaser_text": "Curious about what we do to help you use our software efficiently?",
-      "teaser_send": "Tell me about your services"
+      "teaser_send": "Tell me about your services",
+      "opener": "Hey 👋 Looking for a hand with Spotler?\nOur services team helps you get set up, trained and getting more out of the software.\n\nWhat would you like help with?",
+      "buttons": [
+        {
+          "label": "Onboarding & set-up",
+          "send": "I'd like help with onboarding and setting up Spotler"
+        },
+        {
+          "label": "Training for my team",
+          "send": "What training do you offer for my team?"
+        },
+        {
+          "label": "Strategy & campaign support",
+          "send": "Can your team help with marketing strategy and campaigns?"
+        },
+        {
+          "label": "Talk to the services team",
+          "send": "I'd like to talk to the services team"
+        }
+      ]
     },
     {
       "url_match": "/resources",
