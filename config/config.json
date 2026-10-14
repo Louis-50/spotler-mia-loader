@@ -1,6 +1,6 @@
 {
-  "version": "2026-10-14.2",
-  "generatedBy": "Go-live copy + services test: custom opener and buttons on /services (en-GB, int)",
+  "version": "2026-10-14.3",
+  "generatedBy": "Campaign pages: no Studio route (fixes the repeated intro), Mail+ opener without the video; services test greeting",
   "rows": [
     {
       "url_match": "*",
@@ -215,7 +215,6 @@
       "region": "en-GB",
       "mode": "half",
       "page": "feedbackpro-zendesk",
-      "route": "C",
       "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
       "buttons": [
         {
@@ -250,7 +249,6 @@
       "region": "en-GB",
       "mode": "half",
       "page": "feedbackpro-platform",
-      "route": "C",
       "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
       "buttons": [
         {
@@ -284,11 +282,10 @@
       "match_type": "exact",
       "region": "en-GB",
       "mode": "full",
-      "page": "services",
-      "route": "B",
+      "page": "mailplus-video-overview",
       "headline": "Mail+ – built to make marketers lives easier",
       "intro": "Let’s chat! I’ll show you how Mail+ can help you. 👋",
-      "opener": "You clicked to see how it all comes together. Here it is in just 45 seconds.\n\n[video] https://files.bpcontent.cloud/2026/08/10/16/20260810160832-27BW9XR8.mov\n\nI'm Mia. I know Mail+ inside out, so ask me anything the video didn't cover.",
+      "opener": "Hey, I’m Mia 👋 I know Mail+ inside out.\n\nWhether it’s automations, landing pages or segmentation, ask me anything.",
       "buttons": [
         {
           "label": "How do the automations save me time?",
