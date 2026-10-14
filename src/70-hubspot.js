@@ -428,12 +428,12 @@ function initHubSpot() {
       var back = el("button", { class: "back", type: "button", text: l.calCancel || "Cancel" });
       back.addEventListener("click", function () { closeCalendar(); });
       var stage = el("div", { class: "stage" });
-      var card = el("div", { class: "card" }, [stage]);
+      var pending = el("div", { class: "m pending" }, [avatar("av"), el("div", { class: "typing", "aria-label": "typing" }, [el("i"), el("i"), el("i")])]);
+      var card = el("div", { class: "card" }, [stage, pending]);
       var intro = el("div", { class: "m intro" }, [avatar("av"), el("div", { class: "b", text: l.calIntro || "Pick a time that works for you." })]);
-      var typing = el("div", { class: "m typing-row" }, [avatar("av"), el("div", { class: "typing", "aria-label": "typing" }, [el("i"), el("i"), el("i")])]);
       var bar = el("div", { class: "bar" }, [back]);
       var ft = el("div", { class: "ft", text: l.powered || "" });
-      var sheet = el("div", { class: "sheet" }, [intro, typing, card, bar, ft]);
+      var sheet = el("div", { class: "sheet" }, [intro, card, bar, ft]);
       var view = el("div", { class: "c" }, [sheet]);
       root.appendChild(view);
       host.appendChild(layer);
@@ -465,6 +465,13 @@ function initHubSpot() {
       if (c.view.classList.contains("ready")) return;
       fitCalendar();
       c.view.classList.add("ready");
+      // Safety net: a 1px width change is a real resize inside the frame,
+      // which makes HubSpot re-pick its layout for the width it now has.
+      var f = c.iframe;
+      if (f) {
+        f.style.width = "calc(100% + 31px)";
+        setTimeout(function () { f.style.width = ""; }, 120);
+      }
     }
     function closeCalendar() {
       closeHubSpotModal();
@@ -543,13 +550,18 @@ function initHubSpot() {
       stage.innerHTML = "";
 
       var iframe = document.createElement("iframe");
-      iframe.src = fullUrl;
+      // In the chat, HubSpot starts loading only once the panel has its final
+      // width: it picks its layout from the width it sees when it starts.
+      var panelEl = document.getElementById("spotler-agent-panel");
+      var widening = !!(c && panelEl && panelEl.contains(c.layer) && !panelEl.classList.contains("mia-cal"));
+      if (!widening) iframe.src = fullUrl;
       iframe.title = "Book a meeting with Spotler";
       iframe.setAttribute("frameborder", "0");
       iframe.setAttribute("allowtransparency", "true");
       iframe.setAttribute("data-hs-ignore", "true");
 
       iframe.addEventListener("load", function () {
+        if (!iframe.getAttribute("src")) return;                       // the empty frame before src is set
         if (c) setTimeout(function () { calendarReady(c); }, 450);   // HubSpot draws after load
         else if (loading) loading.style.display = "none";
       });
@@ -557,6 +569,7 @@ function initHubSpot() {
 
       stage.appendChild(iframe);
       open();
+      if (widening) setTimeout(function () { iframe.src = fullUrl; }, 400);   // panel width animates 0.35s
 
       // Safety fallback in case the browser suppresses the iframe load event.
       setTimeout(function () {

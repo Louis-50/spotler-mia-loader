@@ -451,6 +451,8 @@ async def main():
                 check(f"17g {w}x{h}: calendar fills the chat under Mia's line", s2["card"] >= s2["room"] - 160 and s2["bubble"], dict(s2, content=content))
             two = await hsf.evaluate("getComputedStyle(document.querySelector('.w')).display === 'flex'")
             check(f"17i {w}x{h}: HubSpot uncropped and in its two-column layout", -17 <= s2["iframeTop"] <= -15 and two, dict(s2, twoColumn=two))
+            widths = await hsf.evaluate("window.__widths")
+            check(f"17m {w}x{h}: HubSpot first loads at its real width (not 0 or mid-widen), so it picks two columns on first view", widths[0] >= 792 and min(widths) >= 792, widths)
             await page.screenshot(path=f"{OUT}/17g-{w}.png")
             await ctx.close()
 

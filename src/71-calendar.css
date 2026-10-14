@@ -34,18 +34,26 @@
 .typing i:nth-child(2) { animation-delay: 0.1s; }
 .typing i:nth-child(3) { animation-delay: 0.2s; }
 @keyframes miaJump { 0%, 50%, 100% { transform: translateY(0); } 25% { background-color: #969AA8; transform: translateY(-75%); } }
-.ready .typing-row { display: none; }
 
-/* The scheduler, shown like a rich message: it arrives once, at its size. */
+/* The scheduler, shown like a rich message: it arrives once, at its size.
+   The card is laid out at its final size from the start (only invisible
+   while HubSpot loads): a frame that loads with no size makes HubSpot pick
+   its one-column layout and keep it. Mia's typing dots sit in its place. */
 .card {
-  position: relative; display: none; flex: 0 0 auto;
-  border: 1px solid #DADBE0; border-radius: 16px; background: #ffffff; overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 38, 69, 0.06);
+  position: relative; display: block; flex: 1 1 auto; min-height: 0;
+  border: 1px solid transparent; border-radius: 16px; background: transparent; overflow: hidden;
 }
-.ready .card { display: block; flex: 1 1 auto; min-height: 0; animation: miaIn 0.42s cubic-bezier(.2, .8, .2, 1) both; }
 /* Two columns (wide chat): HubSpot's page is ~700px tall; on tall screens
    don't stretch the card past it, the spare room sits above Mia's line. */
-.wide.ready .card { flex: 0 1 720px; }
+.wide .card { flex: 0 1 720px; }
+.ready .card {
+  border-color: #DADBE0; background: #ffffff; box-shadow: 0 1px 3px rgba(0, 38, 69, 0.06);
+  animation: miaIn 0.42s cubic-bezier(.2, .8, .2, 1) both;
+}
+.pending { position: absolute; left: 0; top: 0; }
+.ready .pending { display: none; }
+.stage { visibility: hidden; }
+.ready .stage { visibility: visible; }
 @keyframes miaIn { 0% { transform: translateY(18px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
 .stage { position: absolute; inset: 0; overflow: hidden; }
 /* HubSpot's page has its own 16px gutter (its scrollbar sits in it): crop it. */
