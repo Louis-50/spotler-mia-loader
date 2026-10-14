@@ -326,6 +326,7 @@ function createSlideout(region, labels, handlers) {
     isOpen: function () { return panel.classList.contains("open"); },
     setRow: function (row) {
       teaserRow = row;
+      if (!teaser.hidden) { if (row.teaser_text) teaserText.textContent = row.teaser_text; else hideTeaser(false); }
       if (!panel.classList.contains("open") && pill.style.display === "flex") scheduleTeaser();
     },
     // Restore the session's open/dismissed state (first visit: open at once).

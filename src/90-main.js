@@ -51,6 +51,7 @@ function boot() {
   // The region switch lives in config.json (enabledRegions), so a region
   // can be turned on or off without a GTM publish.
   loadConfig(function (cfg, source) {
+    if (source === "late") { if (started) catchUp(pickRow(cfg, path, region.id)); return; }
     if (started) return;
     var enabled = (cfg && cfg.enabledRegions) || SETTINGS.ENABLED_REGIONS;
     if (enabled.indexOf(region.id) === -1) {
@@ -91,6 +92,19 @@ function boot() {
       // The page has nowhere to put the card: the slide-out still offers the chat.
       if (modeAllowed("slideout")) slideout();
     });
+  }
+
+  // The live config arrived after the page started on an older copy:
+  // take its teaser and opener, unless the chat is already in use or the
+  // page would need a different layout (that waits for the next page).
+  function catchUp(row) {
+    if (!ctx.ui || !ctx.row || (row.mode || "slideout") !== (ctx.row.mode || "slideout")) return;
+    if (BP.engaged || BP.loaded || State.getLive(region.id)) return;
+    ctx.row = row;
+    log("page settings updated from the live config, page " + (row.page || "default"));
+    if (ctx.ui.setRow) ctx.ui.setRow(row);
+    var sr = ctx.shell && ctx.shell.host && ctx.shell.host.shadowRoot, ta = sr && sr.querySelector("textarea");
+    if (ctx.shell && !(ta && (trim(ta.value) || sr.activeElement === ta))) mountShell();   // never under the visitor's typing
   }
 
   function mountShell() {

@@ -25,7 +25,7 @@ def check(name, cond, detail=""):
     results.append((name, bool(cond), detail))
     print(("PASS " if cond else "FAIL ") + name + (("  -- " + str(detail)) if detail and not cond else ""))
 
-async def setup(ctx, config_ok=True, config=None, raw_down=False):
+async def setup(ctx, config_ok=True, config=None, raw_down=False, slow_ms=0):
     reqs = []
     async def handler(route):
         url = route.request.url
@@ -36,6 +36,7 @@ async def setup(ctx, config_ok=True, config=None, raw_down=False):
         if "raw.githubusercontent.com" in url and raw_down: return await route.fulfill(status=503, body="")
         if "cdn.jsdelivr.net" in url or "raw.githubusercontent.com" in url:
             if not config_ok: return await route.fulfill(status=500, body="")
+            if slow_ms: await asyncio.sleep(slow_ms / 1000)
             return await route.fulfill(body=config or CONFIG, content_type="application/json", headers={"access-control-allow-origin": "*"})
         if url.endswith("/logo.svg"): return await route.fulfill(body=SVG, content_type="image/svg+xml")
         if url.endswith(".png"): return await route.fulfill(body=AVATAR, content_type="image/png")
@@ -169,6 +170,26 @@ async def main():
         txt = await shell_text(page) or ""
         check("7e live config wins over an older cached copy on the first load", "OLD CACHED OPENER" not in txt and "Spotler Agent" in txt, txt[:120])
         check("7e config read from GitHub first, with a cache-busting stamp", any("raw.githubusercontent.com" in u and "config.json?t=" in u for u in reqs) and not any("cdn.jsdelivr.net" in u for u in reqs))
+        await ctx.close()
+
+        # slow network: the page starts on an old cached copy, then catches up when the live file lands
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+        await setup(ctx, slow_ms=2600)
+        old = json.loads(CONFIG); old["version"] = "old"
+        for r in old["rows"]:
+            if r["region"] == "en-GB" and r["url_match"] == "*": r["opener"] = "OLD CACHED OPENER"
+            if r["region"] == "en-GB" and r.get("teaser_text") and r["url_match"] != "*": r["teaser_text"] = "OLD TEASER"
+        await ctx.add_init_script("localStorage.setItem('spotler_mia_config', " + json.dumps(json.dumps(old)) + ")")
+        await ctx.add_init_script("sessionStorage.setItem('spotlerAgentState','dismissed')")
+        logs = []
+        page = await ctx.new_page()
+        page.on("console", lambda m: logs.append(m.text))
+        await page.goto("https://www.spotler.com/en-gb/pricing/compare"); await page.wait_for_timeout(1900)
+        before = await shell_text(page) or ""
+        await page.wait_for_timeout(4800)
+        after = await shell_text(page) or ""
+        tz = await page.evaluate("[document.getElementById('spotler-agent-teaser').hidden, document.getElementById('spotler-agent-teaser-text').textContent]")
+        check("7g slow network: starts on the cached copy, then takes the live opener and teaser", "OLD CACHED OPENER" in before and "OLD CACHED OPENER" not in after and "Spotler Agent" in after and not tz[0] and tz[1] != "OLD TEASER" and tz[1], [tz, [l for l in logs if "config" in l]])
         await ctx.close()
 
         # GitHub down: the jsDelivr copy is used

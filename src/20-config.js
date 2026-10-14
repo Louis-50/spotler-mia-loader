@@ -5,7 +5,9 @@
      after a commit; jsDelivr only as backup). The URL carries a
      5-minute stamp so the browser's HTTP cache can't serve an old copy.
    - Slow or failed fetch: the cached copy (returning visitors) or the
-     built-in DEFAULT_ROWS (first visit). A late response is still cached.
+     built-in DEFAULT_ROWS (first visit). A late response is cached and
+     handed over too: the page swaps in its teaser and opener if the
+     visitor hasn't started chatting yet.
    - A cached copy that switches the region off never decides alone:
      the live one is awaited.
    ================================================================== */
@@ -79,15 +81,24 @@ function loadConfig(cb) {
   var answered = false;
   // cb returns false to turn down a cached answer (it would switch the
   // region off); the network copy then decides.
+  var usedVersion = null;
   function answer(cfg, source) {
     if (answered) return;
     log("config from " + source + (cfg && cfg.version ? " v" + cfg.version : ""));
     answered = cb(cfg, source) !== false;
+    if (answered) usedVersion = cfg ? cfg.version : "";
   }
 
   fetchConfig(function (fresh) {
     if (fresh) {
       if (!cached || cached.version !== fresh.version) LS.setJSON(CONFIG_CACHE_KEY, fresh);
+      // Slow network: the page already started on an older copy (or the
+      // built-in default). Hand over the live one so the page can catch up.
+      if (answered && usedVersion !== fresh.version) {
+        log("config from late network v" + fresh.version + " (was " + (usedVersion || "built-in") + ")");
+        cb(fresh, "late");
+        return;
+      }
       answer(fresh, "network");
     } else {
       if (cached) answer(cached, "cache");
