@@ -1,6 +1,6 @@
 {
-  "version": "2026-10-14.3",
-  "generatedBy": "Campaign pages: no Studio route (fixes the repeated intro), Mail+ opener without the video; services test greeting",
+  "version": "2026-10-14.4",
+  "generatedBy": "Go-live copy, campaign pages without Studio routes; services test greeting removed",
   "rows": [
     {
       "url_match": "*",
@@ -180,26 +180,7 @@
       "region": "en-GB",
       "page": "services",
       "teaser_text": "Curious about what we do to help you use our software efficiently?",
-      "teaser_send": "Tell me about your services",
-      "opener": "Hey 👋 Looking for a hand with Spotler?\nOur services team helps you get set up, trained and getting more out of the software.\n\nWhat would you like help with?",
-      "buttons": [
-        {
-          "label": "Onboarding & set-up",
-          "send": "I'd like help with onboarding and setting up Spotler"
-        },
-        {
-          "label": "Training for my team",
-          "send": "What training do you offer for my team?"
-        },
-        {
-          "label": "Strategy & campaign support",
-          "send": "Can your team help with marketing strategy and campaigns?"
-        },
-        {
-          "label": "Talk to the services team",
-          "send": "I'd like to talk to the services team"
-        }
-      ]
+      "teaser_send": "Tell me about your services"
     },
     {
       "url_match": "/resources",
@@ -676,26 +657,7 @@
       "region": "int",
       "page": "services",
       "teaser_text": "Curious about what we do to help you use our software efficiently?",
-      "teaser_send": "Tell me about your services",
-      "opener": "Hey 👋 Looking for a hand with Spotler?\nOur services team helps you get set up, trained and getting more out of the software.\n\nWhat would you like help with?",
-      "buttons": [
-        {
-          "label": "Onboarding & set-up",
-          "send": "I'd like help with onboarding and setting up Spotler"
-        },
-        {
-          "label": "Training for my team",
-          "send": "What training do you offer for my team?"
-        },
-        {
-          "label": "Strategy & campaign support",
-          "send": "Can your team help with marketing strategy and campaigns?"
-        },
-        {
-          "label": "Talk to the services team",
-          "send": "I'd like to talk to the services team"
-        }
-      ]
+      "teaser_send": "Tell me about your services"
     },
     {
       "url_match": "/resources",
