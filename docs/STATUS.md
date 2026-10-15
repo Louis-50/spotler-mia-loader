@@ -9,6 +9,7 @@ Last updated: 15 Oct 2026
 | Lazy loader tag (GTM) | this repo, `src/` → `node build.mjs` → `dist/mia-loader.gtm.html`. Current version: **1.5.1** |
 | Page table (openers, buttons, teasers, modes) | `config/config.json` on `main`, edited through the n8n form "Mia chat: page settings (marketing)" |
 | Bot logic, greetings, AI prompts, email capture | **Botpress Studio** (not in this repo) |
+| Detailed log of Botpress edits | `docs/botpress-changes.md` |
 | Test plans for the bot | `docs/botpress-test-plan.md`, `docs/botpress-test-plan-2.md` |
 
 ## AI / privacy compliance (Russell's request, Oct 2026): done and live
@@ -59,6 +60,7 @@ Last updated: 15 Oct 2026
 - [ ] If the tag reads the page table from `marketing.spotler.com/botpress/config.json`, n8n form edits (which commit to GitHub only) won't reach the site. Either n8n also publishes to the subdomain, or the file is re-uploaded after every change. The subdomain also needs `Access-Control-Allow-Origin` (spotler.com or `*`).
 
 **Minor**
+- [ ] Timeouts differ: the tag ends a conversation after 15 min idle (`TIMEOUT_MS`), Botpress after 20 min. Set both to the same value.
 - [ ] Mail+ campaign flow has no skip-greeting check (route unused).
 - [ ] Only "Today" / "Vandaag" date lines are hidden, not "Yesterday" etc.
 - [ ] The Botpress share link still shows the old tagline and "Powered by Spotler AI" (the website overrides both).
