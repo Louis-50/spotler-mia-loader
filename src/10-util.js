@@ -31,6 +31,17 @@ function store(kind) {
 var LS = store("localStorage");
 var SS = store("sessionStorage");
 
+// The permanent "AI assistant · Privacy" note under every chat view.
+function footerNote(labels) {
+  return el("p", {}, [
+    document.createTextNode(labels.aiLabel + " · "),
+    el("a", { href: labels.privacyUrl, target: "_blank", rel: "noopener", text: labels.privacy })
+  ]);
+}
+function footerMarkdown(labels) {
+  return labels.aiLabel + " · [" + labels.privacy + "](" + labels.privacyUrl + ")";
+}
+
 // Build an element. attrs: {class, id, text, html? (never used with config text)}
 function el(tag, attrs, children) {
   var e = document.createElement(tag);

@@ -91,7 +91,7 @@ function loadConfig(cb) {
 
   fetchConfig(function (fresh) {
     if (fresh) {
-      if (!cached || cached.version !== fresh.version) LS.setJSON(CONFIG_CACHE_KEY, fresh);
+      if (Consent.ok() && (!cached || cached.version !== fresh.version)) LS.setJSON(CONFIG_CACHE_KEY, fresh);
       // Slow network: the page already started on an older copy (or the
       // built-in default). Hand over the live one so the page can catch up.
       if (answered && usedVersion !== fresh.version) {

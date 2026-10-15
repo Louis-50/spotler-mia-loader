@@ -95,6 +95,7 @@ textarea:disabled { cursor: default; }
 .has-text .mic { opacity: 0; pointer-events: none; }
 .off .ico { cursor: default; pointer-events: none; }
 
+.ft a { color: inherit; text-decoration: underline; }
 .ft { align-self: center; margin: 4px 20px; font-size: 12px; line-height: 18px; color: #8795A0; font-style: italic;
       text-align: center; cursor: default; }
 

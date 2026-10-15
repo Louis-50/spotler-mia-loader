@@ -172,37 +172,34 @@ function loadBotpress(mode) {
   })(0);
 }
 
-/* ---- Botpress's own text in the visitor's language ----
-   The bot's config script is English. For another language we hand our
-   labels to botpress.init, and swap the strings Botpress doesn't let us
-   set (the "Today" line, "Delivered") in its shadow DOM as they appear. */
-var LOCAL_KEYS = ["today", "delivered", "botTagline", "powered", "placeholder"];
+/* ---- Botpress's own text: our labels, in the visitor's language ----
+   The bot's config script is English and says "Powered by Spotler AI".
+   We hand our labels to botpress.init (description, placeholder, the
+   "AI assistant · Privacy" footer), and swap what Botpress doesn't let
+   us set (the "Today" line, "Delivered") in its shadow DOM as it appears.
+   The DOM swap also covers the init values if init can't be wrapped. */
+var LOCAL_KEYS = ["today", "delivered", "botTagline", "placeholder"];
 
 function localMap() {
-  var L = BP.ctx.labels, E = SETTINGS.LABELS["en-GB"], map = null;
+  var L = BP.ctx.labels, B = SETTINGS.BOT_TEXT, map = {};
   for (var i = 0; i < LOCAL_KEYS.length; i++) {
     var k = LOCAL_KEYS[i];
-    if (L[k] && E[k] && L[k] !== E[k]) { map = map || {}; map[E[k]] = L[k]; }
+    if (L[k] && B[k] && L[k] !== B[k]) map[B[k]] = L[k];
   }
-  if (map && map[E.placeholder]) map[E.placeholder.replace(/\.+$/, "")] = L.placeholder;
-  // A footer written as "Powered by [Spotler AI](link)" splits into two text nodes.
-  var tail = " Spotler AI";
-  if (map && map[E.powered] && E.powered.slice(-tail.length) === tail && L.powered.slice(-tail.length) === tail) {
-    map[E.powered.slice(0, -tail.length)] = L.powered.slice(0, -tail.length);
-  }
+  if (map[B.placeholder]) map[B.placeholder.replace(/\.+$/, "")] = L.placeholder;
   return map;
 }
 
 function localiseInit(api) {
-  if (!localMap() || typeof api.init !== "function" || api.init.__mia) return;
-  var L = BP.ctx.labels, E = SETTINGS.LABELS["en-GB"], orig = api.init;
+  if (typeof api.init !== "function" || api.init.__mia) return;
+  var L = BP.ctx.labels, orig = api.init;
   var wrapped = function (props) {
     try {
       var c = props && (props.configuration = props.configuration || {});
       if (c) {
         c.botDescription = L.botTagline;
         c.composerPlaceholder = L.placeholder;
-        if (typeof c.footer === "string") c.footer = c.footer.split(E.powered).join(L.powered);
+        c.footer = footerMarkdown(L);
       }
     } catch (e) {}
     return orig.apply(this, arguments);
@@ -212,19 +209,23 @@ function localiseInit(api) {
 }
 
 function localiseWebchat(sr) {
-  var map = localMap();
-  if (!map) return;
-  var today = SETTINGS.LABELS["en-GB"].today, queued = false;
+  var map = localMap(), L = BP.ctx.labels, B = SETTINGS.BOT_TEXT, queued = false;
   function swapText(n) {
     var v = n.nodeValue, t = trim(v);
     if (!t) return;
     if (map.hasOwnProperty(t)) n.nodeValue = v.replace(t, map[t]);
-    else if (t.indexOf(today + " ") === 0 && map[today]) n.nodeValue = v.replace(today, map[today]);
+    else if (t.indexOf(B.today + " ") === 0 && map[B.today]) n.nodeValue = v.replace(B.today, map[B.today]);
+    else if (t === B.footer && n.parentNode) {
+      // the bot's own footer (init not wrapped): put our note in its place
+      var at = n.parentNode.tagName === "A" ? n.parentNode : n;
+      at.parentNode.replaceChild(footerNote(L), at);
+    }
   }
   function run() {
     queued = false;
-    var w = document.createTreeWalker(sr, NodeFilter.SHOW_TEXT, null, false), n;
-    while ((n = w.nextNode())) swapText(n);
+    var w = document.createTreeWalker(sr, NodeFilter.SHOW_TEXT, null, false), n, all = [];
+    while ((n = w.nextNode())) all.push(n);
+    for (var j = 0; j < all.length; j++) swapText(all[j]);
     var ph = sr.querySelectorAll("[placeholder]");
     for (var i = 0; i < ph.length; i++) {
       var p = trim(ph[i].getAttribute("placeholder"));

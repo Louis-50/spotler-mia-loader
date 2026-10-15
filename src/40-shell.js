@@ -77,7 +77,7 @@ function createShell(host, labels, row, handlers) {
 
   container.appendChild(list);
   container.appendChild(cmp);
-  container.appendChild(el("div", { "class": "ft" }, [el("p", { text: labels.powered })]));
+  container.appendChild(el("div", { "class": "ft" }, [footerNote(labels)]));
   root.appendChild(container);
 
   var locked = false;

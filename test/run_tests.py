@@ -324,11 +324,11 @@ async def main():
         txt = await shell_text(page)
         check("15a NL shell: Dutch greeting + buttons", txt and "Wat brengt je vandaag naar Spotler" in txt and "Een demo boeken" in txt and "Bekijk prijzen" in txt, txt)
         ph = await page.evaluate("document.getElementById('spotler-mia-shell').shadowRoot.querySelector('textarea').getAttribute('placeholder')")
-        check("15b NL placeholder + header title", ph == "Stel Mia een vraag..." and await page.evaluate("document.getElementById('spotler-agent-title').textContent") == "Spotler Assistent", ph)
+        check("15b NL placeholder + header title", ph == "Stel Mia een vraag..." and await page.evaluate("document.getElementById('spotler-agent-title').textContent") == "Spotler AI-assistent", ph)
         await page.locator("#spotler-agent-panel").screenshot(path=f"{OUT}/15-nl-shell.png")
         sh = await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot;
-            return [sr.querySelector('.mq-desc').textContent, sr.querySelector('.today p').textContent, sr.querySelector('.ft p').textContent] }""")
-        check("15i NL shell: tagline, Today and Powered by in Dutch", sh == ["Jouw Marketing Intelligence Assistent.", "Vandaag", "Mogelijk gemaakt door Spotler AI"], sh)
+            return [sr.querySelector('.mq-desc').textContent, sr.querySelector('.today p').textContent, sr.querySelector('.ft p').textContent, sr.querySelector('.ft a').href, sr.querySelector('.ft a').target] }""")
+        check("15i NL shell: AI tagline, Vandaag, and the 'AI-assistent · Privacy' note linking to the NL privacy page", sh == ["Jouw AI-marketingassistent.", "Vandaag", "AI-assistent · Privacy", "https://spotler.com/nl-nl/privacy-statement", "_blank"], sh)
         await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; [...sr.querySelectorAll('.btn')].find(b=>b.textContent==='Een demo boeken').click(); }""")
         await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
         bplog = await page.evaluate("window.__bpLog")
@@ -337,8 +337,8 @@ async def main():
         await page.wait_for_timeout(900)
         live = await page.evaluate("""() => { const sr=document.querySelector('#bp-embedded-webchat #webchat-root').shadowRoot;
             return { desc: sr.querySelector('.desc').textContent, today: sr.querySelector('.bpDate').textContent, ph: sr.querySelector('textarea').getAttribute('placeholder'),
-              footer: sr.querySelector('.bpFooter').textContent, status: [...sr.querySelectorAll('.bpStatus')].map(e => e.textContent) } }""")
-        check("15j NL live chat stays Dutch: tagline, Vandaag, placeholder, footer, Afgeleverd", live["desc"] == "Jouw Marketing Intelligence Assistent." and live["today"] == "Vandaag" and live["ph"] == "Stel Mia een vraag..." and live["footer"] == "Mogelijk gemaakt door Spotler AI" and live["status"] and all(x == "Afgeleverd" for x in live["status"]), live)
+              footer: sr.querySelector('.bpFooter').textContent, link: (sr.querySelector('.bpFooter a') || {}).href || '', status: [...sr.querySelectorAll('.bpStatus')].map(e => e.textContent) } }""")
+        check("15j NL live chat stays Dutch: AI tagline, Vandaag, placeholder, AI-assistent · Privacy (NL link), Afgeleverd", live["desc"] == "Jouw AI-marketingassistent." and live["today"] == "Vandaag" and live["ph"] == "Stel Mia een vraag..." and live["footer"] == "AI-assistent · Privacy" and live["link"] == "https://spotler.com/nl-nl/privacy-statement" and live["status"] and all(x == "Afgeleverd" for x in live["status"]), live)
         # Moving to an INT page ends the NL conversation and shows the INT shell
         await page.goto("https://www.spotler.com/pricing")
         await page.wait_for_timeout(1200)
@@ -356,8 +356,8 @@ async def main():
         await page.wait_for_timeout(900)
         live = await page.evaluate("""() => { const sr=document.querySelector('#bp-embedded-webchat #webchat-root').shadowRoot;
             return { desc: sr.querySelector('.desc').textContent, today: sr.querySelector('.bpDate').textContent, ph: sr.querySelector('textarea').getAttribute('placeholder'),
-              footer: sr.querySelector('.bpFooter').textContent, status: [...sr.querySelectorAll('.bpStatus')].map(e => e.textContent) } }""")
-        check("15k INT live chat keeps the bot's English text", live["desc"] == "Your Marketing Intelligence Assistant." and live["today"] == "Today" and live["ph"] == "Ask Mia a question" and live["footer"] == "Powered by Spotler AI" and live["status"] == ["Delivered"], live)
+              footer: sr.querySelector('.bpFooter').textContent, link: (sr.querySelector('.bpFooter a') || {}).href || '', status: [...sr.querySelectorAll('.bpStatus')].map(e => e.textContent) } }""")
+        check("15k INT live chat: English text, AI tagline, 'AI assistant · Privacy' linking to the INT privacy page", live["desc"] == "Your AI marketing assistant." and live["today"] == "Today" and live["ph"] == "Ask Mia a question..." and live["footer"] == "AI assistant · Privacy" and live["link"] == "https://spotler.com/privacy-statement" and live["status"] == ["Delivered"], live)
         await ctx.close()
 
         ctx = await b.new_context(viewport={"width": 1440, "height": 900})
@@ -517,6 +517,57 @@ async def main():
         h = await page.evaluate("() => ({ inCard: !!document.getElementById('spotler-cal') && document.getElementById('spotler-inline-body').contains(document.getElementById('spotler-cal')), modal: getComputedStyle(document.getElementById('hubspot-modal')).display })")
         check("17e on a half card the calendar opens inside the card", h["inCard"] and h["modal"] == "none", h)
         await page.screenshot(path=f"{OUT}/17-calendar-half.png")
+        await ctx.close()
+
+        # ---------- 18. AI disclosure: header, note and privacy link per region ----------
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+        await setup(ctx)
+        page = await ctx.new_page()
+        await page.goto("https://www.spotler.com/en-gb/pricing"); await page.wait_for_timeout(1200)
+        ft = await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot;
+            return [document.getElementById('spotler-agent-title').textContent, sr.querySelector('.mq-desc').textContent, sr.querySelector('.ft p').textContent, sr.querySelector('.ft a').href] }""")
+        check("18a UK: 'Spotler AI Assistant' header, AI tagline, 'AI assistant · Privacy' linking to the UK privacy page", ft == ["Spotler AI Assistant", "Your AI marketing assistant.", "AI assistant · Privacy", "https://spotler.com/en-gb/privacy-statement"], ft)
+        await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; sr.querySelector('.btn').click(); }""")
+        await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
+        cfg = [json.loads(e[1]) for e in await page.evaluate("window.__bpLog") if e[0] == "init"][0]
+        check("18b UK live chat: Botpress gets the AI description and the privacy footer", cfg.get("botDescription") == "Your AI marketing assistant." and cfg.get("footer") == "AI assistant · [Privacy](https://spotler.com/en-gb/privacy-statement)", cfg)
+        await page.evaluate("window.__bpEmit('customEvent', { action: 'showHubSpotCalendar', url: 'https://meetings.hubspot.com/test-owner' })")
+        await page.wait_for_timeout(900)
+        cft = await page.evaluate("() => { const r=document.getElementById('spotler-cal').shadowRoot; return [r.querySelector('.ft').textContent, r.querySelector('.ft a').href] }")
+        check("18c the calendar view keeps the note and link", cft == ["AI assistant · Privacy", "https://spotler.com/en-gb/privacy-statement"], cft)
+        await ctx.close()
+
+        # ---------- 19. Cookiebot: nothing kept before a chat without preferences consent ----------
+        for name, prefs in [("refused", "false"), ("accepted", "true")]:
+            ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+            await setup(ctx)
+            await ctx.add_init_script("window.Cookiebot = { consent: { preferences: " + prefs + ", statistics: false, marketing: false } }")
+            page = await ctx.new_page()
+            await page.goto("https://www.spotler.com/en-gb/pricing"); await page.wait_for_timeout(1300)
+            st = await page.evaluate("""() => ({ ls: Object.keys(localStorage), ss: Object.keys(sessionStorage),
+                open: document.getElementById('spotler-agent-panel').classList.contains('open'),
+                pill: getComputedStyle(document.getElementById('spotler-agent-pill')).display, bp: !!window.botpress })""")
+            if prefs == "false":
+                check("19a consent refused: page load writes nothing to storage, loads no Botpress, panel waits behind the pill", not st["ls"] and not st["ss"] and not st["open"] and st["pill"] == "flex" and not st["bp"], st)
+                await page.click("#spotler-agent-pill"); await page.wait_for_timeout(500)
+                await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; sr.querySelector('.btn').click(); }""")
+                await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
+                st2 = await page.evaluate("() => ({ ls: Object.keys(localStorage), ss: Object.keys(sessionStorage) })")
+                check("19b consent refused, visitor starts a chat: only the chat's own state is kept (no saved page table)", "spotler_mia_live" in st2["ls"] and "spotler_mia_config" not in st2["ls"], st2)
+                await page.goto("https://www.spotler.com/en-gb/pricing/compare"); await page.wait_for_timeout(1500)
+                check("19c consent refused: the chat still follows the visitor to the next page", await page.evaluate("document.getElementById('spotler-agent-panel').classList.contains('open') && document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')"))
+            else:
+                check("19d consent accepted: page table saved, panel opens as usual", "spotler_mia_config" in st["ls"] and st["open"], st)
+            await ctx.close()
+
+        # consent refused after the page already kept things: they are removed
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+        await setup(ctx)
+        page = await ctx.new_page()
+        await page.goto("https://www.spotler.com/en-gb/pricing"); await page.wait_for_timeout(1300)
+        await page.evaluate("window.Cookiebot = { consent: { preferences: false } }; window.dispatchEvent(new Event('CookiebotOnDecline'))")
+        st = await page.evaluate("() => ({ ls: Object.keys(localStorage), ss: Object.keys(sessionStorage) })")
+        check("19e consent declined later: the saved page table and panel state are removed", "spotler_mia_config" not in st["ls"] and "spotlerAgentState" not in st["ss"], st)
         await ctx.close()
 
         await b.close()

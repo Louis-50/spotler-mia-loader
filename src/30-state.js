@@ -10,6 +10,46 @@ var LIVE_KEY = "spotler_mia_live";      // {region, startedAt, lastActivity, sta
 var PANEL_STATE_KEY = "spotlerAgentState"; // 'open' | 'dismissed' (same key as the old tags)
 var TEASED_KEY = "spotlerTeaserPages";
 
+/* ---- consent (Cookiebot) ----
+   Before a chat starts the tag only keeps convenience state: the saved
+   page table, panel open/closed, pages already teased. With Cookiebot on
+   the page that needs "preferences" consent; without it the state lives
+   in memory for this page only. Starting a chat is the visitor asking for
+   the service, so from then on the chat's own state is kept. */
+var Consent = {
+  ok: function () {
+    var cb = window.Cookiebot;
+    if (cb && cb.consent) return !!cb.consent.preferences;
+    var m = /(?:^|;\s*)CookieConsent=([^;]*)/.exec(document.cookie || "");
+    if (m) return /preferences:true/.test(decodeURIComponent(m[1]));
+    return true;                      // no consent tool on this page
+  },
+  chatting: function () { return !!(LS.get(LIVE_KEY) || (typeof BP !== "undefined" && BP.engaged)); },
+  // Consent refused (or withdrawn): drop what was kept before it was known.
+  purge: function () {
+    if (Consent.ok()) return;
+    LS.del(CONFIG_CACHE_KEY);
+    SS.del(TEASED_KEY);
+    if (!Consent.chatting()) SS.del(PANEL_STATE_KEY);
+    log("no preferences consent: pre-chat storage cleared");
+  }
+};
+["CookiebotOnDecline", "CookiebotOnConsentReady", "CookiebotOnAccept"].forEach(function (ev) {
+  window.addEventListener(ev, function () { Consent.purge(); });
+});
+
+// Pre-chat session state: sessionStorage with consent (or once chatting), else memory.
+var PS = (function () {
+  var mem = {};
+  function stored() { return Consent.ok() || Consent.chatting(); }
+  return {
+    get: function (k) { return stored() ? SS.get(k) : (mem.hasOwnProperty(k) ? mem[k] : null); },
+    set: function (k, v) { if (stored()) SS.set(k, v); else mem[k] = String(v); },
+    getJSON: function (k) { try { return JSON.parse(this.get(k)); } catch (e) { return null; } },
+    setJSON: function (k, v) { this.set(k, JSON.stringify(v)); }
+  };
+})();
+
 var State = {
   getLive: function (regionId) {
     var live = LS.getJSON(LIVE_KEY);

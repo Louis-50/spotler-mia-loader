@@ -432,7 +432,7 @@ function initHubSpot() {
       var card = el("div", { class: "card" }, [stage, pending]);
       var intro = el("div", { class: "m intro" }, [avatar("av"), el("div", { class: "b", text: l.calIntro || "Pick a time that works for you." })]);
       var bar = el("div", { class: "bar" }, [back]);
-      var ft = el("div", { class: "ft", text: l.powered || "" });
+      var ft = el("div", { class: "ft" }, [footerNote(l)]);
       var sheet = el("div", { class: "sheet" }, [intro, card, bar, ft]);
       var view = el("div", { class: "c" }, [sheet]);
       root.appendChild(view);

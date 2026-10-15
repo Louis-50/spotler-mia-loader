@@ -30,7 +30,12 @@
       sr.querySelector(".bpHeader b").textContent = cfg.botName || "";
       sr.querySelector(".desc").textContent = cfg.botDescription || "";
       sr.querySelector(".bpComposer").setAttribute("placeholder", cfg.composerPlaceholder || "");
-      sr.querySelector(".bpFooter").textContent = (cfg.footer || "").replace(/^\[(.*)\]\(.*\)$/, "$1");
+      var ft = sr.querySelector(".bpFooter"), md = cfg.footer || "", re = /\[([^\]]+)\]\(([^)]+)\)/g, last = 0, mm;
+      while ((mm = re.exec(md))) {
+        ft.appendChild(document.createTextNode(md.slice(last, mm.index)));
+        var a = document.createElement("a"); a.href = mm[2]; a.textContent = mm[1]; ft.appendChild(a); last = re.lastIndex;
+      }
+      ft.appendChild(document.createTextNode(md.slice(last)));
       setTimeout(function () { emit("webchat:initialized"); }, 50);
       setTimeout(function () {
         var stored = JSON.parse(localStorage.getItem(clientKey()) || "null") || { state: { user: { userId: "u1" } }, version: 1 };

@@ -6,7 +6,7 @@
    are only the fallback used when config.json can't be loaded.
    ================================================================== */
 var SETTINGS = {
-  VERSION: "1.4.1",
+  VERSION: "1.5.0",
 
   // ---- Page table (published by n8n) ----
   // Tried in order. GitHub's own copy is live within ~5 minutes of a commit;
@@ -59,19 +59,27 @@ var SETTINGS = {
 
   // ---- Labels (naming is still undecided: change here) ----
   LABELS: {
-    "en-GB": { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
+    "en-GB": { title: "Spotler AI Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
                restart: "Restart conversation", close: "Close chat", dismiss: "Dismiss", today: "Today", delivered: "Delivered",
-               botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
-               powered: "Powered by Spotler AI", calCancel: "Cancel", calTitle: "Book a meeting", calIntro: "Pick a time that works for you." },
-    "int":   { title: "Spotler Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
+               botName: "Mia", botTagline: "Your AI marketing assistant.",
+               aiLabel: "AI assistant", privacy: "Privacy", privacyUrl: "https://spotler.com/en-gb/privacy-statement",
+               calCancel: "Cancel", calTitle: "Book a meeting", calIntro: "Pick a time that works for you." },
+    "int":   { title: "Spotler AI Assistant", pill: "Ask Mia", placeholder: "Ask Mia a question...",
                restart: "Restart conversation", close: "Close chat", dismiss: "Dismiss", today: "Today", delivered: "Delivered",
-               botName: "Mia", botTagline: "Your Marketing Intelligence Assistant.",
-               powered: "Powered by Spotler AI", calCancel: "Cancel", calTitle: "Book a meeting", calIntro: "Pick a time that works for you." },
-    "nl":    { title: "Spotler Assistent", pill: "Vraag het Mia", placeholder: "Stel Mia een vraag...",
+               botName: "Mia", botTagline: "Your AI marketing assistant.",
+               aiLabel: "AI assistant", privacy: "Privacy", privacyUrl: "https://spotler.com/privacy-statement",
+               calCancel: "Cancel", calTitle: "Book a meeting", calIntro: "Pick a time that works for you." },
+    "nl":    { title: "Spotler AI-assistent", pill: "Vraag het Mia", placeholder: "Stel Mia een vraag...",
                restart: "Gesprek opnieuw starten", close: "Chat sluiten", dismiss: "Sluiten", today: "Vandaag", delivered: "Afgeleverd",
-               botName: "Mia", botTagline: "Jouw Marketing Intelligence Assistent.",
-               powered: "Mogelijk gemaakt door Spotler AI", calCancel: "Annuleren", calTitle: "Plan een afspraak", calIntro: "Kies een moment dat jou uitkomt." }
+               botName: "Mia", botTagline: "Jouw AI-marketingassistent.",
+               aiLabel: "AI-assistent", privacy: "Privacy", privacyUrl: "https://spotler.com/nl-nl/privacy-statement",
+               calCancel: "Annuleren", calTitle: "Plan een afspraak", calIntro: "Kies een moment dat jou uitkomt." }
   },
+
+  // The English text in the bot's own Botpress config script: swapped for
+  // the labels above where Botpress shows it.
+  BOT_TEXT: { today: "Today", delivered: "Delivered", botTagline: "Your Marketing Intelligence Assistant.",
+              placeholder: "Ask Mia a question...", footer: "Powered by Spotler AI" },
 
   AVATAR_URL: "https://files.bpcontent.cloud/2026/08/20/13/20260820133357-6Q65P1JX.webp",
 
@@ -79,7 +87,7 @@ var SETTINGS = {
   // Blank line in an opener = a new bubble. Buttons attach to the last bubble.
   DEFAULT_ROWS: [
     { url_match: "*", region: "en-GB", mode: "slideout", page: "default",
-      opener: "Hi , I'm the Spotler Agent👋 What brings you to Spotler today?\nAsk me anything related to marketing and/or communication.\n\nType your question or just make a choice from the list below",
+      opener: "Hi, I’m Mia, Spotler’s AI assistant. I can answer questions about our products and help you book a demo, or point you to a colleague.",
       buttons: [
         { label: "What can Spotler do for me?", send: "What can Spotler do for me?" },
         { label: "Book a demo", send: "Book a demo" },
@@ -89,7 +97,7 @@ var SETTINGS = {
       teaser_text: "Questions about Spotler? Ask me anything!",
       teaser_send: "I have a question about Spotler" },
     { url_match: "*", region: "int", mode: "slideout", page: "default",
-      opener: "Hi, I'm the Spotler Agent👋 What brings you to Spotler today?\nAsk me anything related to marketing and/or communication.\n\nType your question or just make a choice from the list below",
+      opener: "Hi, I’m Mia, Spotler’s AI assistant. I can answer questions about our products and help you book a demo, or point you to a colleague.",
       buttons: [
         { label: "What can Spotler do for me?", send: "What can Spotler do for me?" },
         { label: "Book a demo", send: "Book a demo" },
@@ -99,7 +107,7 @@ var SETTINGS = {
       teaser_text: "Questions about Spotler? Ask me anything!",
       teaser_send: "I have a question about Spotler" },
     { url_match: "*", region: "nl", mode: "slideout", page: "default",
-      opener: "Hoi, ik ben de Spotler Agent 👋 Wat brengt je vandaag naar Spotler?\nStel me gerust een vraag over marketing en/of communicatie.\n\nTyp je vraag of maak een keuze uit de onderstaande lijst",
+      opener: "Hoi, ik ben Mia, de AI-assistent van Spotler. Ik beantwoord vragen over onze producten, help je met een demo-afspraak of verwijs je door naar een collega.",
       buttons: [
         { label: "Wat kan Spotler voor mij betekenen?", send: "Wat kan Spotler voor mij betekenen?" },
         { label: "Een demo boeken", send: "Een demo boeken" },

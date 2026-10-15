@@ -265,7 +265,7 @@ function createSlideout(region, labels, handlers) {
     document.body.classList.add("agent-panel-open");
     pill.style.display = "none";
     hideTeaser(false);
-    SS.set(PANEL_STATE_KEY, "open");
+    PS.set(PANEL_STATE_KEY, "open");
     syncBannerHeight();
     fitHeader();
     if (handlers.onOpen) handlers.onOpen();
@@ -273,7 +273,7 @@ function createSlideout(region, labels, handlers) {
   function close() {
     panel.classList.remove("open");
     document.body.classList.remove("agent-panel-open");
-    SS.set(PANEL_STATE_KEY, "dismissed");
+    PS.set(PANEL_STATE_KEY, "dismissed");
     fitHeader();
     unnudge();
     if (isDesktop()) { pill.style.display = "flex"; scheduleTeaser(); }
@@ -281,10 +281,10 @@ function createSlideout(region, labels, handlers) {
 
   /* ---- teaser ---- */
   var teaserRow = null, teaserTimer, teaserHideTimer;
-  function teased() { return SS.getJSON(TEASED_KEY) || []; }
+  function teased() { return PS.getJSON(TEASED_KEY) || []; }
   function markTeased() {
     var list = teased();
-    if (list.indexOf(location.pathname) === -1) { list.push(location.pathname); SS.setJSON(TEASED_KEY, list); }
+    if (list.indexOf(location.pathname) === -1) { list.push(location.pathname); PS.setJSON(TEASED_KEY, list); }
   }
   function hideTeaser(markSeen) {
     teaser.hidden = true;
@@ -332,7 +332,10 @@ function createSlideout(region, labels, handlers) {
     // Restore the session's open/dismissed state (first visit: open at once).
     restore: function () {
       if (!isDesktop()) return;
-      var st = SS.get(PANEL_STATE_KEY);
+      var st = PS.get(PANEL_STATE_KEY);
+      // Without consent nothing remembers a close, so don't open by itself
+      // on every page: the pill and teaser offer the chat instead.
+      if (!st && !Consent.ok() && !Consent.chatting()) st = "dismissed";
       if (st === "dismissed") { pill.style.display = "flex"; scheduleTeaser(); }
       else open(true);
     }
