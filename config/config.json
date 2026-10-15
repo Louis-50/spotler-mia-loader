@@ -1,6 +1,6 @@
 {
-  "version": "2026-10-14.4",
-  "generatedBy": "Go-live copy, campaign pages without Studio routes; services test greeting removed",
+  "version": "2026-10-15.1",
+  "generatedBy": "AI disclosure in every first message (Mia, Spotler’s AI assistant); campaign pages without Studio routes",
   "rows": [
     {
       "url_match": "*",
@@ -8,7 +8,7 @@
       "region": "en-GB",
       "mode": "slideout",
       "page": "default",
-      "opener": "Hi , I'm the Spotler Agent👋 What brings you to Spotler today?\nAsk me anything related to marketing and/or communication.\n\nType your question or just make a choice from the list below",
+      "opener": "Hi, I’m Mia, Spotler’s AI assistant. I can answer questions about our products and help you book a demo, or point you to a colleague.",
       "buttons": [
         {
           "label": "What can Spotler do for me?",
@@ -196,7 +196,7 @@
       "region": "en-GB",
       "mode": "half",
       "page": "feedbackpro-zendesk",
-      "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
+      "opener": "Hi, I’m Mia, Spotler’s AI assistant. I know FeedbackPro inside out.\n\nAsk me anything.",
       "buttons": [
         {
           "label": "How does FeedbackPro work?",
@@ -230,7 +230,7 @@
       "region": "en-GB",
       "mode": "half",
       "page": "feedbackpro-platform",
-      "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
+      "opener": "Hi, I’m Mia, Spotler’s AI assistant. I know FeedbackPro inside out.\n\nAsk me anything.",
       "buttons": [
         {
           "label": "How does FeedbackPro work?",
@@ -266,7 +266,7 @@
       "page": "mailplus-video-overview",
       "headline": "Mail+ – built to make marketers lives easier",
       "intro": "Let’s chat! I’ll show you how Mail+ can help you. 👋",
-      "opener": "Hey, I’m Mia 👋 I know Mail+ inside out.\n\nWhether it’s automations, landing pages or segmentation, ask me anything.",
+      "opener": "Hi, I’m Mia, Spotler’s AI assistant 👋 I know Mail+ inside out.\n\nWhether it’s automations, landing pages or segmentation, ask me anything.",
       "buttons": [
         {
           "label": "How do the automations save me time?",
@@ -297,7 +297,7 @@
       "region": "nl",
       "mode": "slideout",
       "page": "default",
-      "opener": "Hoi, ik ben de Spotler Agent 👋 Wat brengt je vandaag naar Spotler?\nStel me gerust een vraag over marketing en/of communicatie.\n\nTyp je vraag of maak een keuze uit de onderstaande lijst",
+      "opener": "Hoi, ik ben Mia, de AI-assistent van Spotler. Ik beantwoord vragen over onze producten, help je met een demo-afspraak of verwijs je door naar een collega.",
       "buttons": [
         {
           "label": "Wat kan Spotler voor mij betekenen?",
@@ -485,7 +485,7 @@
       "region": "int",
       "mode": "slideout",
       "page": "default",
-      "opener": "Hi, I'm the Spotler Agent👋 What brings you to Spotler today?\nAsk me anything related to marketing and/or communication.\n\nType your question or just make a choice from the list below",
+      "opener": "Hi, I’m Mia, Spotler’s AI assistant. I can answer questions about our products and help you book a demo, or point you to a colleague.",
       "buttons": [
         {
           "label": "What can Spotler do for me?",
