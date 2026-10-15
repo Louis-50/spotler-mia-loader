@@ -41,7 +41,6 @@
 .st { margin-top: -4px; font-size: 12px; line-height: 16px; color: #696F83; text-align: right; animation: miaFade 0.3s ease-out both; }
 .m { display: flex; gap: 8px; position: relative; font-size: 14px; line-height: 20px; color: #202127;
      word-break: break-word; justify-content: flex-start; }
-.m.today { justify-content: center; margin-top: 16px; font-size: 12px; line-height: 16px; color: #2F323B; }
 .m.out { justify-content: flex-end; }
 .m.anim { animation: miaIn 0.4s ease-out both; }
 

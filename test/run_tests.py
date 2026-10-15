@@ -327,8 +327,8 @@ async def main():
         check("15b NL placeholder + header title", ph == "Stel Mia een vraag..." and await page.evaluate("document.getElementById('spotler-agent-title').textContent") == "Spotler AI-assistent", ph)
         await page.locator("#spotler-agent-panel").screenshot(path=f"{OUT}/15-nl-shell.png")
         sh = await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot;
-            return [sr.querySelector('.mq-desc').textContent, sr.querySelector('.today p').textContent, sr.querySelector('.ft p').textContent, sr.querySelector('.ft a').href, sr.querySelector('.ft a').target] }""")
-        check("15i NL shell: AI tagline, Vandaag, and the 'AI-assistent · Privacy' note linking to the NL privacy page", sh == ["Jouw AI-marketingassistent.", "Vandaag", "AI-assistent · Privacy", "https://spotler.com/nl-nl/privacy-statement", "_blank"], sh)
+            return [sr.querySelector('.mq-desc').textContent, sr.querySelector('.today') ? 'today shown' : 'no date line', sr.textContent.includes('Vandaag'), sr.querySelector('.ft p').textContent, sr.querySelector('.ft a').href, sr.querySelector('.ft a').target] }""")
+        check("15i NL shell: AI tagline, no date line, and the 'AI-assistent · Privacy' note linking to the NL privacy page", sh == ["Jouw AI-marketingassistent.", "no date line", False, "AI-assistent · Privacy", "https://spotler.com/nl-nl/privacy-statement", "_blank"], sh)
         await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; [...sr.querySelectorAll('.btn')].find(b=>b.textContent==='Een demo boeken').click(); }""")
         await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
         bplog = await page.evaluate("window.__bpLog")
@@ -336,9 +336,9 @@ async def main():
         check("15c NL start event language nl, page key prijzen", ev and ev[0]["language"] == "nl" and ev[0]["region"] == "nl" and ev[0]["pageKey"] == "prijzen" and ["sendMessage", "Een demo boeken"] in bplog, ev)
         await page.wait_for_timeout(900)
         live = await page.evaluate("""() => { const sr=document.querySelector('#bp-embedded-webchat #webchat-root').shadowRoot;
-            return { desc: sr.querySelector('.desc').textContent, today: sr.querySelector('.bpDate').textContent, ph: sr.querySelector('textarea').getAttribute('placeholder'),
+            return { desc: sr.querySelector('.desc').textContent, today: getComputedStyle(sr.querySelector('.bpDate')).display === 'none' ? 'hidden' : sr.querySelector('.bpDate').textContent, ph: sr.querySelector('textarea').getAttribute('placeholder'),
               footer: sr.querySelector('.bpFooter').textContent, link: (sr.querySelector('.bpFooter a') || {}).href || '', status: [...sr.querySelectorAll('.bpStatus')].map(e => e.textContent) } }""")
-        check("15j NL live chat stays Dutch: AI tagline, Vandaag, placeholder, AI-assistent · Privacy (NL link), Afgeleverd", live["desc"] == "Jouw AI-marketingassistent." and live["today"] == "Vandaag" and live["ph"] == "Stel Mia een vraag..." and live["footer"] == "AI-assistent · Privacy" and live["link"] == "https://spotler.com/nl-nl/privacy-statement" and live["status"] and all(x == "Afgeleverd" for x in live["status"]), live)
+        check("15j NL live chat stays Dutch: AI tagline, no Today line, placeholder, AI-assistent · Privacy (NL link), Afgeleverd", live["desc"] == "Jouw AI-marketingassistent." and live["today"] == "hidden" and live["ph"] == "Stel Mia een vraag..." and live["footer"] == "AI-assistent · Privacy" and live["link"] == "https://spotler.com/nl-nl/privacy-statement" and live["status"] and all(x == "Afgeleverd" for x in live["status"]), live)
         # Moving to an INT page ends the NL conversation and shows the INT shell
         await page.goto("https://www.spotler.com/pricing")
         await page.wait_for_timeout(1200)
@@ -355,9 +355,9 @@ async def main():
         check("15f INT start event language int, teaser text sent", ev and ev[-1]["language"] == "int" and ev[-1]["source"] == "teaser" and ["sendMessage", "Help me compare plans and pricing"] in bplog, [ev, bplog[-3:]])
         await page.wait_for_timeout(900)
         live = await page.evaluate("""() => { const sr=document.querySelector('#bp-embedded-webchat #webchat-root').shadowRoot;
-            return { desc: sr.querySelector('.desc').textContent, today: sr.querySelector('.bpDate').textContent, ph: sr.querySelector('textarea').getAttribute('placeholder'),
+            return { desc: sr.querySelector('.desc').textContent, today: getComputedStyle(sr.querySelector('.bpDate')).display === 'none' ? 'hidden' : sr.querySelector('.bpDate').textContent, ph: sr.querySelector('textarea').getAttribute('placeholder'),
               footer: sr.querySelector('.bpFooter').textContent, link: (sr.querySelector('.bpFooter a') || {}).href || '', status: [...sr.querySelectorAll('.bpStatus')].map(e => e.textContent) } }""")
-        check("15k INT live chat: English text, AI tagline, 'AI assistant · Privacy' linking to the INT privacy page", live["desc"] == "Your AI marketing assistant." and live["today"] == "Today" and live["ph"] == "Ask Mia a question..." and live["footer"] == "AI assistant · Privacy" and live["link"] == "https://spotler.com/privacy-statement" and live["status"] == ["Delivered"], live)
+        check("15k INT live chat: English text, no Today line, AI tagline, 'AI assistant · Privacy' linking to the INT privacy page", live["desc"] == "Your AI marketing assistant." and live["today"] == "hidden" and live["ph"] == "Ask Mia a question..." and live["footer"] == "AI assistant · Privacy" and live["link"] == "https://spotler.com/privacy-statement" and live["status"] == ["Delivered"], live)
         await ctx.close()
 
         ctx = await b.new_context(viewport={"width": 1440, "height": 900})

@@ -176,9 +176,10 @@ function loadBotpress(mode) {
    The bot's config script is English and says "Powered by Spotler AI".
    We hand our labels to botpress.init (description, placeholder, the
    "AI assistant · Privacy" footer), and swap what Botpress doesn't let
-   us set (the "Today" line, "Delivered") in its shadow DOM as it appears.
+   us set ("Delivered") in its shadow DOM as it appears, and hide the
+   "Today" date line (the preview has none either).
    The DOM swap also covers the init values if init can't be wrapped. */
-var LOCAL_KEYS = ["today", "delivered", "botTagline", "placeholder"];
+var LOCAL_KEYS = ["delivered", "botTagline", "placeholder"];
 
 function localMap() {
   var L = BP.ctx.labels, B = SETTINGS.BOT_TEXT, map = {};
@@ -214,12 +215,25 @@ function localiseWebchat(sr) {
     var v = n.nodeValue, t = trim(v);
     if (!t) return;
     if (map.hasOwnProperty(t)) n.nodeValue = v.replace(t, map[t]);
-    else if (t.indexOf(B.today + " ") === 0 && map[B.today]) n.nodeValue = v.replace(B.today, map[B.today]);
+    else if (isToday(t)) hideDateLine(n, t);
     else if (t === B.footer && n.parentNode) {
       // the bot's own footer (init not wrapped): put our note in its place
       var at = n.parentNode.tagName === "A" ? n.parentNode : n;
       at.parentNode.replaceChild(footerNote(L), at);
     }
+  }
+  function isToday(t) {
+    var words = [B.today, L.today];
+    for (var i = 0; i < words.length; i++) if (words[i] && (t === words[i] || t.indexOf(words[i] + " ") === 0)) return true;
+    return false;
+  }
+  // The date separator, never a word inside a message: hide the largest
+  // wrapper that holds nothing but this date (its lines go with it).
+  function hideDateLine(n, t) {
+    var e = n.parentNode;
+    if (!e || e.nodeType !== 1 || (e.closest && e.closest(".bpMessageContainer"))) return;
+    while (e.parentNode && e.parentNode.nodeType === 1 && e.parentNode !== sr && trim(e.parentNode.textContent) === t) e = e.parentNode;
+    e.style.display = "none";
   }
   function run() {
     queued = false;

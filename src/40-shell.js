@@ -59,7 +59,6 @@ function createShell(host, labels, row, handlers) {
       el("p", { "class": "mq-desc", text: labels.botTagline })
     ])
   ]));
-  vp.appendChild(el("div", { "class": "m today" }, [el("p", { text: labels.today })]));
   vp.appendChild(openerBox);
   vp.appendChild(userBox);
   scroll.appendChild(vp);
