@@ -15,57 +15,146 @@ var BP = {
   awaitingConv: false, // a restart is in flight: ignore the old conversation
   mode: null,
   ctx: null,           // {region, labels, row, ui, shell, remountShell}
-  langSentFor: {},
+  convId: null,        // the conversation the webchat is on
+  startSentFor: {},
   safetyTimer: null,
   observer: null
 };
 
 function bp() { return window.botpress; }
 
-/* ---- the event Botpress already reads ({type:"language", ...}) ----
-   New fields are additive; page/route are only sent for rows that set a
-   route, so the Studio gates for the campaign routes behave as today. */
+/* ---- website contract v2 (bot: src/lib/website-events.ts) ----
+   Page → bot through botpress.sendEvent:
+     start     once per conversation, right before the first message
+     page      every later page view while the conversation is live
+     leadinfo  the company, when it becomes readable after the start
+     end       before the tag ends a conversation (timeout, restart)
+     demoBooked  70-hubspot.js
+   The bot never greets and never replies to these. */
+function pageKey() { return (BP.ctx.row && BP.ctx.row.page) || "default"; }
+function campaign() { return (BP.ctx.row && BP.ctx.row.campaign) || ""; }
+
 function startEventPayload(source) {
-  var ctx = BP.ctx, row = ctx.row || {};
-  var p = {
-    type: "language",
-    language: ctx.region.language,
-    region: ctx.region.id,
+  var ctx = BP.ctx, row = ctx.row || {}, co = leadinfoCompany();
+  return {
+    type: "start",
+    version: 2,
+    locale: ctx.region.locale,
     startPage: location.pathname,
     startUrl: location.origin + location.pathname,
-    pageKey: row.page || "default",
+    pageKey: pageKey(),
     source: source || "unknown",
-    opener: String(row.opener || "").split(/\n\s*\n/)[0].slice(0, 500)
+    opener: String(row.opener || "").split(/\n\s*\n/)[0].slice(0, 500),
+    campaign: campaign(),
+    companyDomain: co ? co.domain : "",
+    companyName: co ? co.name : ""
   };
-  if (row.route) { p.page = row.page || ""; p.route = row.route; }
-  return p;
 }
 
 function sendStartEvent(convId, attempt) {
   attempt = attempt || 0;
-  if (!convId || BP.langSentFor[convId]) return;
+  if (!convId || BP.startSentFor[convId]) return;
   var api = bp();
   if (!api || typeof api.sendEvent !== "function") {
     if (attempt < 40) setTimeout(function () { sendStartEvent(convId, attempt + 1); }, 250);
     return;
   }
-  BP.langSentFor[convId] = true;
+  BP.startSentFor[convId] = true;
   var payload = startEventPayload(BP.pendingSource || BP.mode);
   try {
     Promise.resolve(api.sendEvent(payload)).then(function () {
-      log("start event confirmed", payload.language, convId);
+      log("start event confirmed", payload.locale, convId);
       var live = LS.getJSON(LIVE_KEY);
-      if (live) { live.convId = convId; LS.setJSON(LIVE_KEY, live); }
+      if (live) {
+        live.convId = convId;
+        if (payload.companyDomain) live.leadinfo = payload.companyDomain;
+        LS.setJSON(LIVE_KEY, live);
+      }
+      sendLeadinfo();   // the company may have become readable meanwhile
     }, function (err) {
-      BP.langSentFor[convId] = false;
+      BP.startSentFor[convId] = false;
       log("start event rejected", err);
       if (attempt < 10) setTimeout(function () { sendStartEvent(convId, attempt + 1); }, 1000);
     });
   } catch (e) {
-    BP.langSentFor[convId] = false;
+    BP.startSentFor[convId] = false;
     if (attempt < 10) setTimeout(function () { sendStartEvent(convId, attempt + 1); }, 1000);
   }
 }
+
+// The other page → bot events: fire and forget, a few retries if rejected.
+function sendBotEvent(payload, retries, attempt) {
+  attempt = attempt || 0;
+  var api = bp();
+  if (!api || typeof api.sendEvent !== "function") {
+    if (attempt < 20) setTimeout(function () { sendBotEvent(payload, retries, attempt + 1); }, 250);
+    return;
+  }
+  function retry(err) {
+    log(payload.type + " event rejected", err);
+    if (attempt < retries) setTimeout(function () { sendBotEvent(payload, retries, attempt + 1); }, 1000);
+  }
+  try {
+    Promise.resolve(api.sendEvent(payload)).then(function () { log(payload.type + " event sent"); }, retry);
+  } catch (e) { retry(e); }
+}
+
+function sendPageEvent() {
+  sendBotEvent({ type: "page", page: location.pathname, url: location.origin + location.pathname,
+                 pageKey: pageKey(), title: String(document.title || "").slice(0, 200) }, 3);
+}
+
+// Ordering guard: the bot may see the first message before the start
+// event, so the user data carries what it needs to answer it.
+function writeUserData() {
+  var api = bp();
+  if (!api || !api.updateUser) return;
+  try {
+    Promise.resolve(api.updateUser({ data: { locale: BP.ctx.region.locale, pageKey: pageKey(), campaign: campaign() } }))
+      .then(null, function (err) { log("updateUser rejected", err); });
+  } catch (e) {}
+}
+
+/* ---- Leadinfo: the company the visitor's IP belongs to ----
+   GTM's Data Layer Push tag puts it in the data layer on every page; it is
+   read only with Cookiebot consent for LEADINFO_CONSENT. Known at the start:
+   on the start event. Readable later (consent given, or a later page): one
+   leadinfo event per company per conversation. */
+function leadinfoConsent() {
+  if (!SETTINGS.LEADINFO_REQUIRE_CONSENT) return true;
+  var cat = SETTINGS.LEADINFO_CONSENT, cb = window.Cookiebot;
+  if (cb && cb.consent) return !!cb.consent[cat];
+  var m = /(?:^|;\s*)CookieConsent=([^;]*)/.exec(document.cookie || "");
+  return !!(m && decodeURIComponent(m[1]).indexOf(cat + ":true") !== -1);
+}
+
+function leadinfoCompany() {
+  if (!leadinfoConsent()) return null;
+  var dl = window.dataLayer || [];
+  for (var i = dl.length - 1; i >= 0; i--) {
+    var e = dl[i];
+    if (e && e.event === SETTINGS.LEADINFO_EVENT && e.company_domain) {
+      return { domain: trim(String(e.company_domain)).toLowerCase().slice(0, 200),
+               name: e.company_name ? trim(String(e.company_name)).slice(0, 200) : "" };
+    }
+  }
+  return null;
+}
+
+function sendLeadinfo() {
+  var live = LS.getJSON(LIVE_KEY);
+  // Only into a conversation the bot already has a start event for.
+  if (!BP.loaded || !live || !live.convId || live.convId !== BP.convId) return;
+  var co = leadinfoCompany();
+  if (!co || live.leadinfo === co.domain) return;
+  live.leadinfo = co.domain;
+  LS.setJSON(LIVE_KEY, live);
+  sendBotEvent({ type: "leadinfo", companyDomain: co.domain, companyName: co.name }, 3);
+}
+
+["CookiebotOnAccept", "CookiebotOnConsentReady"].forEach(function (ev) {
+  window.addEventListener(ev, function () { setTimeout(sendLeadinfo, 0); });
+});
 
 // Trust sendMessage's promise; retry only if the API is missing or rejects
 // (same rule as the live tags, so a message is never sent twice).
@@ -97,29 +186,24 @@ function flushPending() {
   sendAsUser(text);
 }
 
-// Skip-greeting gate in Studio reads proactiveClickAt (fresh = skip).
-function markProactive(text) {
-  var api = bp();
-  if (api && api.updateUser) {
-    try { api.updateUser({ data: { proactiveClickAt: String(now()), proactiveTopic: String(text || "") } }); } catch (e) {}
-  }
-}
-
 function attachBotpressListeners() {
   var api = bp();
 
   api.on("webchat:initialized", function () {
-    if (BP.pending) markProactive(BP.pending.text);
-    else if (api.updateUser) {
-      try { api.updateUser({ data: { proactiveClickAt: "0", proactiveTopic: "" } }); } catch (e) {}
-    }
+    if (BP.mode !== "resume") writeUserData();
   });
 
   api.on("conversation", function (convId) {
     if (!convId) return;
+    BP.convId = convId;
     var live = LS.getJSON(LIVE_KEY);
     var known = live && live.convId === convId;
-    if (known && BP.mode === "resume") { log("resumed", convId); return; }
+    if (known && BP.mode === "resume") {
+      log("resumed", convId);
+      sendPageEvent();
+      sendLeadinfo();
+      return;
+    }
     if (BP.awaitingConv && convId === BP.prevConvId) return; // old one, restart pending
     BP.awaitingConv = false;
     SS.del("spotler_calendar_contact");
@@ -358,7 +442,7 @@ function engage(text, source) {
   BP.mode = text ? "new" : "open";
   BP.awaitingConv = true;
   BP.prevConvId = SS.get("spotler_last_conversation_id");
-  if (text) markProactive(text);
+  writeUserData();
   watchForUserMessage();
   try {
     Promise.resolve(bp().restartConversation()).catch(function (err) { log("restart failed", err); BP.awaitingConv = false; });
@@ -373,7 +457,6 @@ function resume() {
 // Teaser click: live chat → send straight in; otherwise start one.
 function teaserSend(text) {
   if (BP.loaded && BP.revealed && LS.getJSON(LIVE_KEY)) {
-    markProactive(text);
     sendAsUser(text);
     return;
   }
@@ -381,7 +464,13 @@ function teaserSend(text) {
 }
 
 // Restart button and timeout: end the conversation, bring the shell back.
+// The bot hears it first (end event), so its end handler runs at once; a
+// closed tab sends nothing and the bot's own 15-minute expiry covers it.
 function resetToShell(reason) {
+  var live = LS.getJSON(LIVE_KEY);
+  if ((reason === "timeout" || reason === "restart") && BP.loaded && live && live.convId) {
+    sendBotEvent({ type: "end", reason: reason }, 0);
+  }
   State.end(reason);
   BP.engaged = false;
   BP.pending = null;
@@ -398,6 +487,7 @@ function startTimeoutWatch() {
   function check() {
     var live = LS.getJSON(LIVE_KEY);
     if (live && now() - live.lastActivity > SETTINGS.TIMEOUT_MS) { resetToShell("timeout"); return; }
+    if (live) sendLeadinfo();
     // Ended in another tab (timeout/restart there) while this one shows the live chat.
     if (!live && BP.revealed) resetToShell("ended in another tab");
   }

@@ -20,6 +20,9 @@ CONFIG = open(os.path.join(ROOT, "test/mock/config.json")).read()
 OUT = os.path.join(ROOT, "test/out"); os.makedirs(OUT, exist_ok=True)
 AVATAR = bytes.fromhex("89504e470d0a1a0a0000000d4948445200000001000000010806000000" "1f15c4890000000d49444154789c63f8cfc0f01f0005000201a5f6e0540000000049454e44ae426082")
 
+# Website contract v2 start event (bot repo: docs/build-spec.md section 1).
+START_KEYS = sorted(["type", "version", "locale", "startPage", "startUrl", "pageKey", "source", "opener", "campaign", "companyDomain", "companyName"])
+
 results = []
 def check(name, cond, detail=""):
     results.append((name, bool(cond), detail))
@@ -87,10 +90,15 @@ async def main():
         names = [e[0] for e in bplog]
         check("2b Botpress loaded after click", bp_requests(reqs))
         ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
-        check("2c one start event with region/page fields", len(ev) == 1 and ev[0]["language"] == "en-GB" and ev[0]["startPage"] == "/en-gb/pricing/compare" and ev[0]["source"] == "button" and ev[0]["pageKey"] == "pricing", ev)
-        check("2d no page/route on slide-out rows", ev and "route" not in ev[0] and "page" not in ev[0], ev)
-        up = [e[1] for e in bplog if e[0] == "updateUser"]
-        check("2e skip-greeting flag set before start event", up and '"proactiveTopic":"Book a demo"' in up[-1] and names.index("updateUser") < names.index("sendEvent"), bplog)
+        check("2c one start event, contract v2 shape (exact fields)", len(ev) == 1 and sorted(ev[0]) == START_KEYS and ev[0]["type"] == "start" and ev[0]["version"] == 2
+              and ev[0]["locale"] == "en-GB" and ev[0]["startPage"] == "/en-gb/pricing/compare" and ev[0]["startUrl"] == "https://www.spotler.com/en-gb/pricing/compare"
+              and ev[0]["pageKey"] == "pricing" and ev[0]["source"] == "button" and ev[0]["opener"].startswith("Hi , I'm the Spotler Agent") and len(ev[0]["opener"]) <= 500
+              and ev[0]["campaign"] == "" and ev[0]["companyDomain"] == "" and ev[0]["companyName"] == "", ev)
+        check("2d no v1 fields (language, region, page, route)", ev and not any(k in ev[0] for k in ("language", "region", "page", "route")), ev)
+        up = [json.loads(e[1]) for e in bplog if e[0] == "updateUser"]
+        check("2e updateUser {locale, pageKey, campaign} before the start event and the first message", up == [{"locale": "en-GB", "pageKey": "pricing", "campaign": ""}]
+              and names.index("updateUser") < names.index("sendEvent") < names.index("sendMessage"), bplog)
+        check("2e no proactiveClickAt / proactiveTopic", not any("proactive" in e[1] for e in bplog if len(e) > 1), bplog)
         check("2f message sent once, after start event", names.count("sendMessage") == 1 and names.index("sendEvent") < names.index("sendMessage"), names)
         await page.wait_for_timeout(500)
         check("2g shell faded out", await page.evaluate("document.getElementById('spotler-mia-shell').classList.contains('mia-out')"))
@@ -108,7 +116,11 @@ async def main():
         bplog = await page.evaluate("window.__bpLog")
         check("3a resumed same conversation", any(e[0] == "resume" for e in bplog), bplog)
         check("3b no shell on resume", await page.evaluate("!document.getElementById('spotler-mia-shell')"))
-        check("3c no second start event / message", not any(e[0] in ("sendEvent", "sendMessage") for e in bplog), bplog)
+        await page.wait_for_timeout(300)
+        bplog = await page.evaluate("window.__bpLog")
+        ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
+        check("3c no second start event / message / user data on resume", not any(e[0] in ("sendMessage", "updateUser") for e in bplog) and not any(e["type"] == "start" for e in ev), bplog)
+        check("3d page event for the new page (page, url, pageKey, title), once", ev == [{"type": "page", "page": "/en-gb/products", "url": "https://www.spotler.com/en-gb/products", "pageKey": "products", "title": "Spotler test page"}], ev)
 
         # ---------- 4. timeout: shell returns, conversation id cleared ----------
         await page.evaluate("""() => { const l=JSON.parse(localStorage.getItem('spotler_mia_live')); l.lastActivity = Date.now() - 16*60*1000; localStorage.setItem('spotler_mia_live', JSON.stringify(l)); document.dispatchEvent(new Event('visibilitychange')); }""")
@@ -118,6 +130,8 @@ async def main():
         cleared = await page.evaluate("JSON.parse(localStorage.getItem('bp-webchat-test-client-client')).state")
         check("4c Botpress conversationId cleared, user kept", "conversationId" not in cleared and cleared.get("user"), cleared)
         check("4d live record removed", await page.evaluate("localStorage.getItem('spotler_mia_live') === null"))
+        ends = [json.loads(e[1]) for e in await page.evaluate("window.__bpLog") if e[0] == "sendEvent" and '"end"' in e[1]]
+        check("4e end event {type: end, reason: timeout} sent to the bot", ends == [{"type": "end", "reason": "timeout"}], ends)
 
         # ---------- 5. engage again on same page: restart path ----------
         await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; const ta=sr.querySelector('textarea'); ta.value='How much is Mail+?'; ta.dispatchEvent(new Event('input')); ta.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true})); }""")
@@ -128,12 +142,20 @@ async def main():
         ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
         check("5b start event for the new conversation, source typed", ev and ev[-1]["source"] == "typed", ev)
         check("5c typed message sent", ["sendMessage", "How much is Mail+?"] in bplog, bplog)
+        ri = names.index("restartConversation")
+        check("5d restart path: user data written again before restartConversation, end event before it", any(e[0] == "updateUser" and json.loads(e[1]) == {"locale": "en-GB", "pageKey": "products", "campaign": ""} for e in bplog[:ri])
+              and any(e[0] == "sendEvent" and json.loads(e[1]).get("type") == "end" for e in bplog[:ri]), bplog)
+        check("5e start event v2 for the new conversation, after the restart", ev and ev[-1]["type"] == "start" and ev[-1]["pageKey"] == "products" and names.index("restartConversation") < len(names) - 1 - names[::-1].index("sendEvent"), names)
 
         # ---------- 6. restart button: shell returns ----------
+        await page.wait_for_timeout(400)
+        n_before = len(await page.evaluate("window.__bpLog"))
         await page.click("#spotler-agent-restart")
         await page.wait_for_timeout(300)
         check("6a restart brings shell back", (await shell_text(page) or "").find("Book a demo") != -1)
         check("6b live cleared", await page.evaluate("localStorage.getItem('spotler_mia_live') === null"))
+        after = [json.loads(e[1]) for e in (await page.evaluate("window.__bpLog"))[n_before:] if e[0] == "sendEvent"]
+        check("6c end event {type: end, reason: restart} sent on Restart", after == [{"type": "end", "reason": "restart"}], after)
         await ctx.close()
 
         # ---------- 7. guards ----------
@@ -253,13 +275,18 @@ async def main():
         await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
         bplog = await page.evaluate("window.__bpLog")
         ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
-        check("11f start event keeps page/route for Studio gate (services/B)", ev and ev[0].get("page") == "services" and ev[0].get("route") == "B" and ev[0]["source"] == "button", ev)
+        check("11f start event carries campaign mailplus (route column not forwarded)", ev and ev[0]["campaign"] == "mailplus" and ev[0]["pageKey"] == "services" and "route" not in ev[0] and ev[0]["source"] == "button", ev)
+        up = [json.loads(e[1]) for e in bplog if e[0] == "updateUser"]
+        check("11f user data carries the campaign too", up == [{"locale": "en-GB", "pageKey": "services", "campaign": "mailplus"}], up)
         check("11g message sent", ["sendMessage", "What does it cost?"] in bplog, bplog)
         # carry over: campaign chat follows into the slide-out
         await page.goto("https://www.spotler.com/en-gb/pricing/compare")
         await page.wait_for_function("document.getElementById('bp-embedded-webchat') && document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
         bplog = await page.evaluate("window.__bpLog")
         check("11h campaign conversation resumes in slide-out", any(e[0] == "resume" for e in bplog) and await page.evaluate("!!document.getElementById('spotler-agent-panel') && !document.getElementById('spotler-mia-shell')"), bplog)
+        await page.wait_for_timeout(300)
+        ev = [json.loads(e[1]) for e in await page.evaluate("window.__bpLog") if e[0] == "sendEvent"]
+        check("11i page event on the next page (pricing), no new start event", [e["type"] for e in ev] == ["page"] and ev[0]["pageKey"] == "pricing" and ev[0]["page"] == "/en-gb/pricing/compare", ev)
         await ctx.close()
 
         # ---------- 12. full-page on mobile ----------
@@ -306,7 +333,7 @@ async def main():
         await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
         bplog = await page.evaluate("window.__bpLog")
         ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
-        check("13d route C event, typed message sent", ev and ev[0].get("route") == "C" and ev[0].get("page") == "feedbackpro-zendesk" and ["sendMessage", "Does it work with Zendesk?"] in bplog, bplog)
+        check("13d campaign feedbackpro on the start event, typed message sent", ev and ev[0]["campaign"] == "feedbackpro" and ev[0]["pageKey"] == "feedbackpro-zendesk" and ev[0]["source"] == "typed" and ["sendMessage", "Does it work with Zendesk?"] in bplog, bplog)
         await page.click("#spotler-inline-restart")
         await page.wait_for_timeout(300)
         check("13e card restart brings the shell back", "FeedbackPro inside out" in (await shell_text(page) or ""))
@@ -333,7 +360,7 @@ async def main():
         await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
         bplog = await page.evaluate("window.__bpLog")
         ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
-        check("15c NL start event language nl, page key prijzen", ev and ev[0]["language"] == "nl" and ev[0]["region"] == "nl" and ev[0]["pageKey"] == "prijzen" and ["sendMessage", "Een demo boeken"] in bplog, ev)
+        check("15c NL start event locale nl, page key prijzen", ev and ev[0]["locale"] == "nl" and ev[0]["pageKey"] == "prijzen" and ["sendMessage", "Een demo boeken"] in bplog, ev)
         await page.wait_for_timeout(900)
         live = await page.evaluate("""() => { const sr=document.querySelector('#bp-embedded-webchat #webchat-root').shadowRoot;
             return { desc: sr.querySelector('.desc').textContent, today: getComputedStyle(sr.querySelector('.bpDate')).display === 'none' ? 'hidden' : sr.querySelector('.bpDate').textContent, ph: sr.querySelector('textarea').getAttribute('placeholder'),
@@ -352,7 +379,7 @@ async def main():
         await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
         bplog = await page.evaluate("window.__bpLog")
         ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
-        check("15f INT start event language int, teaser text sent", ev and ev[-1]["language"] == "int" and ev[-1]["source"] == "teaser" and ["sendMessage", "Help me compare plans and pricing"] in bplog, [ev, bplog[-3:]])
+        check("15f INT start event locale int, teaser text sent", ev and ev[-1]["locale"] == "int" and ev[-1]["source"] == "teaser" and ["sendMessage", "Help me compare plans and pricing"] in bplog, [ev, bplog[-3:]])
         await page.wait_for_timeout(900)
         live = await page.evaluate("""() => { const sr=document.querySelector('#bp-embedded-webchat #webchat-root').shadowRoot;
             return { desc: sr.querySelector('.desc').textContent, today: getComputedStyle(sr.querySelector('.bpDate')).display === 'none' ? 'hidden' : sr.querySelector('.bpDate').textContent, ph: sr.querySelector('textarea').getAttribute('placeholder'),
@@ -371,12 +398,93 @@ async def main():
         await page.wait_for_timeout(4400)
         tz = await page.evaluate("[document.getElementById('spotler-agent-teaser').className, document.getElementById('spotler-agent-teaser-text').textContent, document.getElementById('spotler-agent-pill').textContent]")
         check("15g NL default teaser beside the pill, Dutch pill", tz[0] == "nl" and tz[1] == "Vragen over Spotler? Vraag maar raak!" and "Vraag het Mia" in tz[2], tz)
-        for loc in ["/de-de/", "/en-au/pricing", "/sv-se"]:
+        for loc in ["/fr-fr/", "/it-it/pricing"]:
             logs.clear()
             await page.goto("https://www.spotler.com" + loc)
             await page.wait_for_timeout(700)
             off = await page.evaluate("!document.getElementById('spotler-agent-panel') && !document.getElementById('spotler-mia-shell')")
-            check(f"15h no chat on {loc}", off and any("no chat for this locale" in l for l in logs), logs)
+            check(f"15h no chat on a locale outside the eight ({loc})", off and any("no chat for this locale" in l for l in logs), logs)
+        await ctx.close()
+
+        # ---------- 20. the five new locales: shell, labels, start event ----------
+        # Mock page table has no rows for them: the built-in rows (DE/ES/SV in their language, en-DE/en-AU = INT).
+        NEW = [("/de-de/preise", "de-DE", "Spotler KI-Assistent", "Hallo, ich bin Mia", "Demo buchen", "Stellen Sie Mia eine Frage..."),
+               ("/en-de/pricing", "en-DE", "Spotler AI Assistant", "Hi, I’m Mia", "Book a demo", "Ask Mia a question..."),
+               ("/es-es/precios", "es-ES", "Asistente de IA de Spotler", "Hola, soy Mia", "Reservar una demo", "Haz una pregunta a Mia..."),
+               ("/sv-se/priser", "sv-SE", "Spotler AI-assistent", "Hej, jag är Mia", "Boka en demo", "Ställ en fråga till Mia..."),
+               ("/en-au/pricing", "en-AU", "Spotler AI Assistant", "Hi, I’m Mia", "Book a demo", "Ask Mia a question...")]
+        for path, loc, title, opener, btn, ph in NEW:
+            ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+            await setup(ctx)
+            page = await ctx.new_page()
+            await page.goto("https://www.spotler.com" + path); await page.wait_for_timeout(1200)
+            st = await page.evaluate("""() => { const sr=document.getElementById('spotler-mia-shell') && document.getElementById('spotler-mia-shell').shadowRoot;
+                return sr ? { title: document.getElementById('spotler-agent-title').textContent, text: sr.textContent, ph: sr.querySelector('textarea').getAttribute('placeholder'),
+                  privacy: sr.querySelector('.ft a').href } : null }""")
+            check(f"20a {loc}: shell on, its labels and opener", st and st["title"] == title and opener in st["text"] and btn in st["text"] and st["ph"] == ph and st["privacy"] == "https://spotler.com/privacy-statement", st)
+            await page.evaluate("(b) => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; [...sr.querySelectorAll('.btn')].find(x=>x.textContent===b).click(); }", btn)
+            await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
+            bplog = await page.evaluate("window.__bpLog")
+            ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
+            up = [json.loads(e[1]) for e in bplog if e[0] == "updateUser"]
+            check(f"20b {loc}: start event and user data carry locale {loc}", ev and ev[0]["type"] == "start" and ev[0]["locale"] == loc and up == [{"locale": loc, "pageKey": "default", "campaign": ""}] and ["sendMessage", btn] in bplog, [ev, up])
+            await ctx.close()
+
+        # The real config/config.json: new-locale rows and campaign ids parse in the tag
+        REAL = open(os.path.join(ROOT, "config/config.json"), encoding="utf-8").read()
+        ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+        await setup(ctx, config=REAL)
+        page = await ctx.new_page()
+        await page.goto("https://www.spotler.com/en-au/"); await page.wait_for_timeout(1200)
+        txt = await shell_text(page) or ""
+        check("20c real config: en-AU uses its own * row", "Hi, I’m Mia, Spotler’s AI assistant" in txt and "Pricing" in txt, txt[:160])
+        await page.goto("https://www.spotler.com/en-gb/discover/mailplus-video-overview"); await page.wait_for_timeout(1500)
+        await page.evaluate("() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; sr.querySelector('.btn').click(); }")
+        await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
+        ev = [json.loads(e[1]) for e in await page.evaluate("window.__bpLog") if e[0] == "sendEvent"]
+        check("20d real config: the Mail+ page sends campaign mailplus", ev and ev[0]["campaign"] == "mailplus" and ev[0]["pageKey"] == "mailplus-video-overview", ev)
+        await ctx.close()
+
+        # ---------- 21. Leadinfo: company from the data layer, behind marketing consent ----------
+        LI = "window.dataLayer = window.dataLayer || []; window.dataLayer.push({event: 'leadinfo_company', company_domain: 'Example.co.uk', company_name: 'Example Ltd'});"
+        async def li_chat(consent):
+            ctx = await b.new_context(viewport={"width": 1440, "height": 900})
+            await setup(ctx)
+            if consent is not None:
+                await ctx.add_init_script("window.Cookiebot = { consent: { necessary: true, preferences: true, statistics: false, marketing: " + consent + " } }")
+            await ctx.add_init_script(LI)
+            page = await ctx.new_page()
+            await page.goto("https://www.spotler.com/en-gb/pricing"); await page.wait_for_timeout(1200)
+            await page.evaluate("() => { const sr=document.getElementById('spotler-mia-shell').shadowRoot; sr.querySelector('.btn').click(); }")
+            await page.wait_for_function("document.getElementById('bp-embedded-webchat').classList.contains('bp-ready')", timeout=8000)
+            await page.wait_for_timeout(300)
+            return ctx, page
+        def events(log, t): return [json.loads(e[1]) for e in log if e[0] == "sendEvent" and json.loads(e[1]).get("type") == t]
+
+        ctx, page = await li_chat("true")
+        log = await page.evaluate("window.__bpLog")
+        st = events(log, "start")
+        check("21a marketing consent: company on the start event, no separate leadinfo event", st and st[0]["companyDomain"] == "example.co.uk" and st[0]["companyName"] == "Example Ltd" and not events(log, "leadinfo"), log)
+        await page.goto("https://www.spotler.com/en-gb/products"); await page.wait_for_timeout(1500)
+        log = await page.evaluate("window.__bpLog")
+        check("21b next page, same company: page event only, no leadinfo repeat", [json.loads(e[1])["type"] for e in log if e[0] == "sendEvent"] == ["page"], log)
+        await ctx.close()
+
+        ctx, page = await li_chat("false")
+        log = await page.evaluate("window.__bpLog")
+        st = events(log, "start")
+        check("21c no marketing consent: company not read (empty on the start event)", st and st[0]["companyDomain"] == "" and st[0]["companyName"] == "" and not events(log, "leadinfo"), st)
+        await page.evaluate("window.Cookiebot.consent.marketing = true; window.dispatchEvent(new Event('CookiebotOnAccept'))")
+        await page.wait_for_timeout(300)
+        await page.evaluate("window.dispatchEvent(new Event('CookiebotOnAccept'))")
+        await page.wait_for_timeout(300)
+        li = events(await page.evaluate("window.__bpLog"), "leadinfo")
+        check("21d consent given after the start: one leadinfo event with the company", li == [{"type": "leadinfo", "companyDomain": "example.co.uk", "companyName": "Example Ltd"}], li)
+        await ctx.close()
+
+        ctx, page = await li_chat(None)
+        st = events(await page.evaluate("window.__bpLog"), "start")
+        check("21e no Cookiebot on the page: company not read (strict, as the old hand-over tag)", st and st[0]["companyDomain"] == "", st)
         await ctx.close()
 
         # ---------- 14. header fit beside the open panel ----------
@@ -454,9 +562,7 @@ async def main():
         bplog = await page.evaluate("window.__bpLog")
         booked = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent" and "demoBooked" in e[1]]
         check("17c booking reported to the bot (demoBooked with date, time and contact)", booked and booked[0]["meetingWhen"] and booked[0]["userEmail"] == "jo.bloggs@acme.com", booked)
-        names = [e[0] + (e[1] if e[0] == "updateUser" else "") for e in bplog]
-        di = next(i for i, e in enumerate(bplog) if e[0] == "sendEvent" and "demoBooked" in e[1])
-        check("17h skip-greeting flag refreshed right before demoBooked (no greeting after booking)", any(e[0] == "updateUser" and '"proactiveTopic":"demoBooked"' in e[1] for e in bplog[:di]), bplog[-4:])
+        check("17h no skip-greeting flag around demoBooked (the bot never greets)", not any(e[0] == "updateUser" and "proactive" in e[1] for e in bplog), bplog[-4:])
         await page.wait_for_timeout(2000)
         done = await page.evaluate("() => ({ hidden: !document.getElementById('spotler-cal').classList.contains('on'), empty: !document.getElementById('spotler-cal').shadowRoot.querySelector('iframe') })")
         check("17d after booking the chat comes back on its own (no Cancel needed)", done["hidden"] and done["empty"], done)

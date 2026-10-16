@@ -55,7 +55,9 @@ function validateConfig(cfg) {
       region: r.region,
       mode: (r.mode === "half" || r.mode === "full") ? r.mode : "slideout",
       page: typeof r.page === "string" ? r.page : "",
-      route: typeof r.route === "string" ? r.route : "",
+      // Campaign id (mailplus, feedbackpro…) for the bot's campaign profile.
+      // The old `route` column (Studio routes B/C) is no longer read.
+      campaign: typeof r.campaign === "string" ? trim(r.campaign).toLowerCase().slice(0, 60) : "",
       opener: typeof r.opener === "string" ? r.opener.slice(0, 1200) : "",
       buttons: (r.buttons || []).filter(function (b) { return b && trim(b.label); }).slice(0, 6).map(function (b) {
         return { label: trim(b.label).slice(0, 80), send: trim(b.send || b.label).slice(0, 300) };

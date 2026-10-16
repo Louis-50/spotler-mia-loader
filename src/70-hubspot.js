@@ -661,12 +661,6 @@ function initHubSpot() {
           console.warn("[BP] Could not parse HubSpot booking details", err);
         }
 
-        // The bot's flow sees demoBooked as a new event; with the click from
-        // minutes ago no longer "fresh" its gate would run the greeting.
-        // Refresh the skip-greeting flag first.
-        try {
-          if (window.botpress.updateUser) window.botpress.updateUser({ data: { proactiveClickAt: String(now()), proactiveTopic: "demoBooked" } });
-        } catch (err) {}
         try { State.touch(); } catch (err) {}
         log("calendar: booking reported (conversation " + (SS.get("spotler_last_conversation_id") || "?") + ")");
         console.log('[BP] sending demoBooked to botpress:', JSON.stringify(payload));

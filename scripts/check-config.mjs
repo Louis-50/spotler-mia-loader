@@ -2,8 +2,11 @@
 // does. Usage: node scripts/check-config.mjs config/config.json
 // Exit code 1 = refuse to publish.
 import { readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 
-const REGIONS = ["en-GB", "int", "nl"];
+const REGIONS = ["en-GB", "int", "nl", "de-DE", "en-DE", "es-ES", "sv-SE", "en-AU"];
+// Region → the path its own rows must sit under (int has none).
+const PREFIX = { "en-GB": "/en-gb", nl: "/nl-nl", "de-DE": "/de-de", "en-DE": "/en-de", "es-ES": "/es-es", "sv-SE": "/sv-se", "en-AU": "/en-au" };
 const MODES = ["slideout", "half", "full", undefined, ""];
 const MATCH = ["exact", "prefix", "contains", undefined, ""];
 const LIMITS = { opener: 1200, teaser_text: 200, teaser_send: 300, headline: 200, intro: 400 };
@@ -18,8 +21,10 @@ export function checkConfig(cfg) {
     if (!r.url_match) errors.push(`${at}: url_match is empty`);
     else if (r.url_match !== "*" && r.match_type !== "contains" && !r.url_match.startsWith("/")) errors.push(`${at}: url_match must start with / (or be *)`);
     if (!REGIONS.includes(r.region)) errors.push(`${at}: region must be one of ${REGIONS.join(", ")}`);
-    if (r.region === "en-GB" && r.url_match.startsWith("/") && r.match_type !== "contains" && !r.url_match.toLowerCase().startsWith("/en-gb")) errors.push(`${at}: en-GB rows must be under /en-gb`);
-    if (r.region === "nl" && r.url_match.startsWith("/") && r.match_type !== "contains" && !r.url_match.toLowerCase().startsWith("/nl-nl")) errors.push(`${at}: nl rows must be under /nl-nl`);
+    const prefix = PREFIX[r.region];
+    if (prefix && r.url_match && r.url_match.startsWith("/") && r.match_type !== "contains" && !r.url_match.toLowerCase().startsWith(prefix)) errors.push(`${at}: ${r.region} rows must be under ${prefix}`);
+    // campaign: the bot's campaign profile id (mailplus, feedbackpro…). The old Studio `route` column is still allowed (tag v1.4.1 reads it).
+    if (r.campaign != null && r.campaign !== "" && !/^[a-z0-9][a-z0-9-]{0,59}$/.test(r.campaign)) errors.push(`${at}: campaign must be a lowercase id like mailplus`);
     if (!MODES.includes(r.mode)) errors.push(`${at}: mode must be slideout, half or full`);
     if (!MATCH.includes(r.match_type)) errors.push(`${at}: match_type must be exact, prefix or contains`);
     for (const [k, max] of Object.entries(LIMITS)) {
@@ -43,7 +48,7 @@ export function checkConfig(cfg) {
   return errors;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const errors = checkConfig(JSON.parse(readFileSync(process.argv[2] || "config/config.json", "utf8")));
   if (errors.length) { console.error("Config refused:\n- " + errors.join("\n- ")); process.exit(1); }
   console.log("Config OK");

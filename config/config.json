@@ -1,6 +1,6 @@
 {
-  "version": "2026-10-15.1",
-  "generatedBy": "AI disclosure in every first message (Mia, Spotler’s AI assistant); campaign pages without Studio routes",
+  "version": "2026-10-16.1",
+  "generatedBy": "v1.6 contract: campaign column (mailplus, feedbackpro); default rows for de-DE, en-DE, es-ES, sv-SE, en-AU (INT copy for now)",
   "rows": [
     {
       "url_match": "*",
@@ -196,6 +196,7 @@
       "region": "en-GB",
       "mode": "half",
       "page": "feedbackpro-zendesk",
+      "campaign": "feedbackpro",
       "opener": "Hi, I’m Mia, Spotler’s AI assistant. I know FeedbackPro inside out.\n\nAsk me anything.",
       "buttons": [
         {
@@ -230,6 +231,7 @@
       "region": "en-GB",
       "mode": "half",
       "page": "feedbackpro-platform",
+      "campaign": "feedbackpro",
       "opener": "Hi, I’m Mia, Spotler’s AI assistant. I know FeedbackPro inside out.\n\nAsk me anything.",
       "buttons": [
         {
@@ -264,6 +266,7 @@
       "region": "en-GB",
       "mode": "full",
       "page": "mailplus-video-overview",
+      "campaign": "mailplus",
       "headline": "Mail+ – built to make marketers lives easier",
       "intro": "Let’s chat! I’ll show you how Mail+ can help you. 👋",
       "opener": "Hi, I’m Mia, Spotler’s AI assistant 👋 I know Mail+ inside out.\n\nWhether it’s automations, landing pages or segmentation, ask me anything.",
@@ -666,6 +669,146 @@
       "page": "resources",
       "teaser_text": "Subscribe to the Spotler Insights newsletter to stay informed",
       "teaser_send": "I want to subscribe to the Spotler Insights newsletter"
+    },
+    {
+      "url_match": "*",
+      "match_type": "prefix",
+      "region": "de-DE",
+      "mode": "slideout",
+      "page": "default",
+      "opener": "Hi, I’m Mia, Spotler’s AI assistant. I can answer questions about our products and help you book a demo, or point you to a colleague.",
+      "buttons": [
+        {
+          "label": "What can Spotler do for me?",
+          "send": "What can Spotler do for me?"
+        },
+        {
+          "label": "Book a demo",
+          "send": "Book a demo"
+        },
+        {
+          "label": "Product support",
+          "send": "Product support"
+        },
+        {
+          "label": "Pricing",
+          "send": "Pricing"
+        }
+      ],
+      "teaser_text": "Questions about Spotler? Ask me anything!",
+      "teaser_send": "I have a question about Spotler"
+    },
+    {
+      "url_match": "*",
+      "match_type": "prefix",
+      "region": "en-DE",
+      "mode": "slideout",
+      "page": "default",
+      "opener": "Hi, I’m Mia, Spotler’s AI assistant. I can answer questions about our products and help you book a demo, or point you to a colleague.",
+      "buttons": [
+        {
+          "label": "What can Spotler do for me?",
+          "send": "What can Spotler do for me?"
+        },
+        {
+          "label": "Book a demo",
+          "send": "Book a demo"
+        },
+        {
+          "label": "Product support",
+          "send": "Product support"
+        },
+        {
+          "label": "Pricing",
+          "send": "Pricing"
+        }
+      ],
+      "teaser_text": "Questions about Spotler? Ask me anything!",
+      "teaser_send": "I have a question about Spotler"
+    },
+    {
+      "url_match": "*",
+      "match_type": "prefix",
+      "region": "es-ES",
+      "mode": "slideout",
+      "page": "default",
+      "opener": "Hi, I’m Mia, Spotler’s AI assistant. I can answer questions about our products and help you book a demo, or point you to a colleague.",
+      "buttons": [
+        {
+          "label": "What can Spotler do for me?",
+          "send": "What can Spotler do for me?"
+        },
+        {
+          "label": "Book a demo",
+          "send": "Book a demo"
+        },
+        {
+          "label": "Product support",
+          "send": "Product support"
+        },
+        {
+          "label": "Pricing",
+          "send": "Pricing"
+        }
+      ],
+      "teaser_text": "Questions about Spotler? Ask me anything!",
+      "teaser_send": "I have a question about Spotler"
+    },
+    {
+      "url_match": "*",
+      "match_type": "prefix",
+      "region": "sv-SE",
+      "mode": "slideout",
+      "page": "default",
+      "opener": "Hi, I’m Mia, Spotler’s AI assistant. I can answer questions about our products and help you book a demo, or point you to a colleague.",
+      "buttons": [
+        {
+          "label": "What can Spotler do for me?",
+          "send": "What can Spotler do for me?"
+        },
+        {
+          "label": "Book a demo",
+          "send": "Book a demo"
+        },
+        {
+          "label": "Product support",
+          "send": "Product support"
+        },
+        {
+          "label": "Pricing",
+          "send": "Pricing"
+        }
+      ],
+      "teaser_text": "Questions about Spotler? Ask me anything!",
+      "teaser_send": "I have a question about Spotler"
+    },
+    {
+      "url_match": "*",
+      "match_type": "prefix",
+      "region": "en-AU",
+      "mode": "slideout",
+      "page": "default",
+      "opener": "Hi, I’m Mia, Spotler’s AI assistant. I can answer questions about our products and help you book a demo, or point you to a colleague.",
+      "buttons": [
+        {
+          "label": "What can Spotler do for me?",
+          "send": "What can Spotler do for me?"
+        },
+        {
+          "label": "Book a demo",
+          "send": "Book a demo"
+        },
+        {
+          "label": "Product support",
+          "send": "Product support"
+        },
+        {
+          "label": "Pricing",
+          "send": "Pricing"
+        }
+      ],
+      "teaser_text": "Questions about Spotler? Ask me anything!",
+      "teaser_send": "I have a question about Spotler"
     }
   ]
 }

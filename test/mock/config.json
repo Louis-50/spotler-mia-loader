@@ -197,6 +197,7 @@
       "mode": "half",
       "page": "feedbackpro-zendesk",
       "route": "C",
+      "campaign": "feedbackpro",
       "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
       "buttons": [
         {
@@ -232,6 +233,7 @@
       "mode": "half",
       "page": "feedbackpro-platform",
       "route": "C",
+      "campaign": "feedbackpro",
       "opener": "Hey, I’m Mia. I know FeedbackPro inside out.\n\nAsk me anything.",
       "buttons": [
         {
@@ -267,6 +269,7 @@
       "mode": "full",
       "page": "services",
       "route": "B",
+      "campaign": "mailplus",
       "headline": "Mail+ – built to make marketers lives easier",
       "intro": "Let’s chat! I’ll show you how Mail+ can help you. 👋",
       "opener": "You clicked to see how it all comes together. Here it is in just 45 seconds.\n\n[video] https://files.bpcontent.cloud/2026/08/10/16/20260810160832-27BW9XR8.mov\n\nI'm Mia. I know Mail+ inside out, so ask me anything the video didn't cover.",

@@ -22,21 +22,25 @@ Current status, what changed in Botpress and open items: [`docs/STATUS.md`](docs
 
 ```bash
 npm install
-node build.mjs                # → dist/mia-loader.gtm.html (≈76 KB)
-python3 test/run_tests.py     # 103 checks against a mocked Botpress
+node build.mjs                # → dist/mia-loader.gtm.html (≈82 KB)
+python3 test/run_tests.py     # 127 checks against a mocked Botpress (Windows: python or py; needs `pip install playwright` + `playwright install chromium`)
 ```
 
-1. In GTM, create a Custom HTML tag "Mia lazy loader" and paste `dist/mia-loader.gtm.html`.
+1. In GTM, create a Custom HTML tag "Mia lazy loader" and paste `dist/mia-loader.gtm.html`. The build warns if `BOT_CONFIG_URL` is still the placeholder: don't paste that build.
 2. Trigger: all pages. The tag reads Cookiebot itself (see *Consent*), so it needs no consent condition of its own; Cookiebot must load before it (page `<head>`).
-3. Pause the old tags for every region switched on (`ENABLED_REGIONS`: `en-GB`, `nl`, `int`) in the **same** publish: the UK, NL and INT slide-outs and both UK campaign tags. Only one Botpress chat can load per page; the new tag stands down if it finds another `#bp-embedded-webchat`.
-4. Test in GTM Preview: the console shows `[Mia] …` lines (`config from …`, `loading Botpress (new)`, `start event confirmed`, `revealed live chat`).
+3. Pause the old tags for every region switched on (`ENABLED_REGIONS`: all eight locales) in the **same** publish: the UK, NL and INT slide-outs, both UK campaign tags and the *Leadinfo → Botpress Hand-over* tag (v128; the tag now does its job, and its `updateUser` would overwrite the tag's user data). Keep *Leadinfo - Data Layer Push* (v121). Only one Botpress chat can load per page; the new tag stands down if it finds another `#bp-embedded-webchat`.
+4. Test in GTM Preview: the console shows `[Mia] …` lines (`config from …`, `loading Botpress (new)`, `start event confirmed`, `revealed live chat`, `page event sent`, `end event sent`).
+
+**Rollback** to the Studio bot: paste the previous tag back into GTM (the last Studio build is v1.5.1: `git show 1ee582d:dist/mia-loader.gtm.html`; or GTM's own version history). Switching only `BOT_CONFIG_URL` back to the Studio URL (kept in a comment) is not enough: the Studio bot reads the v1 contract (`type:"language"`, `proactiveClickAt`) that v1.6 no longer sends.
 
 ## Settings (`src/00-settings.js`)
 
 | Setting | Value | Notes |
 | --- | --- | --- |
 | `TIMEOUT_MS` | 15 min | Must equal the Botpress inactivity timeout |
-| `ENABLED_REGIONS` | `["en-GB", "nl", "int"]` | Rollout switch. Emergency off-switch without a GTM publish: add `"enabledRegions": ["en-GB"]` to `config.json` (lists the regions that stay on) |
+| `BOT_CONFIG_URL` | mia-dev (ADK) | The bot's webchat config script (dashboard → bot → Webchat → Share). The Studio URL is kept in a comment beside it; see *Rollback* |
+| `ENABLED_REGIONS` | all eight locales | Rollout switch. Emergency off-switch without a GTM publish: add `"enabledRegions": ["en-GB"]` to `config.json` (lists the regions that stay on; locale by locale at the switch) |
+| `LEADINFO_*` | `leadinfo_company`, consent `marketing` | Where the company comes from and the Cookiebot category it needs. `LEADINFO_REQUIRE_CONSENT: false` if Legal rules no consent is needed |
 | `LEGACY_EXCLUDE` | `[]` | Pages the tag stays off (none now: the campaign pages are rows in `config.json`) |
 | `CONFIG_URLS` | GitHub raw, then jsDelivr | Where the page table is read from (see *Page table*) |
 | `INJECT_URL` | webchat v3.7 | All regions on one version |
@@ -46,7 +50,10 @@ python3 test/run_tests.py     # 103 checks against a mocked Botpress
 
 ## Page table (`config.json`)
 
-Each row: `url_match`, `match_type` (`exact` · `prefix` · `contains`), `region`, `mode` (`slideout` · `half` · `full`), `page`, `route`, `opener`, `buttons` (`[{label, send}]`, up to 4), `teaser_text`, `teaser_send`, `headline`, `intro`.
+Each row: `url_match`, `match_type` (`exact` · `prefix` · `contains`), `region`, `mode` (`slideout` · `half` · `full`), `page`, `campaign`, `opener`, `buttons` (`[{label, send}]`, up to 6), `teaser_text`, `teaser_send`, `headline`, `intro`.
+
+- `campaign`: the bot's campaign profile (`mailplus`, `feedbackpro`), set on the Mail+ and FeedbackPro rows. It replaces the Studio `route` column, which tag v1.6 no longer reads. Tag v1.4.1/v1.5.1 (live, reading `config.json` from `main`) ignores `campaign` and rows for regions it doesn't know, so the file stays compatible with both.
+- The new locales' `*` rows are copies of the INT row (English) until marketing writes local copy.
 
 - The most specific match wins: exact, then the longest prefix or contains, then the region's `*` row.
 - A row only needs the columns it changes. Blank columns come from the region's `*` row.
@@ -59,13 +66,28 @@ Each row: `url_match`, `match_type` (`exact` · `prefix` · `contains`), `region
 - **First page:** the static shell renders. No Botpress requests are made.
 - **Button click or typed message:** the shell shows the message and a typing indicator. The tag then:
   1. loads Botpress;
-  2. sets `proactiveClickAt` (the skip-greeting gate);
-  3. on the new conversation, sends `{type:"language", language, region, startPage, startUrl, pageKey, source, opener}`, then the message;
+  2. on `webchat:initialized`, writes `updateUser({ data: { locale, pageKey, campaign } })` (the ordering guard: the bot may see the message before the start event);
+  3. on the new conversation, sends the start event, then the message;
   4. fades to the live chat once the message renders there.
-- **Next page:** while the conversation is live, Botpress loads straight away and the slide-out shows the history.
-- **15 minutes idle, or Restart:** the tag clears only the Botpress `conversationId` (the user is kept) and the shell returns. The next message starts a new conversation.
-- **`page` and `route`:** these are only sent for rows that set a `route`. No row sets one now: the Studio campaign routes sent their own intro after the visitor's first message.
+- **Next page:** while the conversation is live, Botpress loads straight away, the slide-out shows the history and the tag sends a `page` event.
+- **15 minutes idle, or Restart:** the tag sends an `end` event, clears only the Botpress `conversationId` (the user is kept) and the shell returns. The next message starts a new conversation (`restartConversation()`, user data again, a new start event). A closed tab sends nothing; the bot's own 15-minute expiry covers it.
 - **dataLayer events:** `spotler_mia_start` (`miaSource`, `miaRegion`, `miaPage`), `spotler_mia_ready`, `spotler_mia_end` (`miaEndReason`).
+
+## Website contract v2 (tag → bot)
+
+All through `window.botpress.sendEvent(payload)`; the bot (ADK, `src/lib/website-events.ts`) never replies to them. The full contract is section 1 of the bot's `docs/build-spec.md`.
+
+| Event | When | Payload |
+| --- | --- | --- |
+| `start` | Once per conversation, right before the first message | `{type:"start", version:2, locale, startPage, startUrl, pageKey, source, opener, campaign, companyDomain, companyName}`. `locale` is one of `int`, `en-GB`, `nl`, `de-DE`, `en-DE`, `es-ES`, `sv-SE`, `en-AU`; `pageKey` is `default` without a row; `source` is `button`, `typed`, `teaser` (or `open` for the mic with nothing typed); `opener` is the first bubble, max 500 characters |
+| `page` | Each later page view while the conversation is live | `{type:"page", page, url, pageKey, title}` |
+| `leadinfo` | The company becomes readable after the start (consent given later, or it arrives on a later page); once per company per conversation | `{type:"leadinfo", companyDomain, companyName}` |
+| `end` | Before the tag ends a conversation | `{type:"end", reason:"timeout" \| "restart"}` |
+| `demoBooked` | HubSpot reports a booking | unchanged, see *Demo calendar* |
+
+The v1 `language` event and `proactiveClickAt` / `proactiveTopic` are gone (the bot never greets).
+
+**Leadinfo:** GTM's *Leadinfo - Data Layer Push* tag pushes `{event:"leadinfo_company", company_domain, company_name}` on every page. The tag reads the last such entry only with Cookiebot `marketing` consent (no Cookiebot means no consent, as in the old hand-over tag). Known at the start: on the start event; otherwise a `leadinfo` event on `CookiebotOnAccept`, on a later page or on the 30-second check.
 
 ## Modes
 
@@ -82,12 +104,19 @@ Each row: `url_match`, `match_type` (`exact` · `prefix` · `contains`), `region
 
 ## Regions
 
-| Region | URLs | Language event | Notes |
+| Region | URLs | `locale` sent | Notes |
 | --- | --- | --- | --- |
 | `en-GB` | `/en-gb/…` | `en-GB` | |
 | `nl` | `/nl-nl/…` | `nl` | Dutch in the preview and the live chat: the tag passes its labels to `botpress.init` and swaps Botpress's fixed strings ("Delivered" → "Afgeleverd"). Teaser sits beside the pill |
+| `de-DE` | `/de-de/…` | `de-DE` | German labels and built-in row |
+| `en-DE` | `/en-de/…` | `en-DE` | INT labels and built-in row |
+| `es-ES` | `/es-es/…` | `es-ES` | Spanish labels and built-in row |
+| `sv-SE` | `/sv-se/…` | `sv-SE` | Swedish labels and built-in row |
+| `en-AU` | `/en-au/…` | `en-AU` | INT labels and built-in row |
 | `int` | everything else | `int` | |
-| — | `/de-de`, `/en-de`, `/es-es`, `/sv-se`, `/en-au` and any other `/xx-xx` | — | No chat, as today |
+| — | any other `/xx-xx` | — | No chat |
+
+The region id is the `region` value in `config.json`. The new locales' privacy link is the INT page until each locale's own is confirmed.
 
 Moving to a page in another region ends the conversation and shows that region's shell.
 
@@ -96,11 +125,11 @@ Moving to a page in another region ends the conversation and shows that region's
 - **Header and footer:** "Spotler AI Assistant" / "Your AI marketing assistant." and a permanent footer "AI assistant · Privacy" (NL "AI-assistent · Privacy") in the preview, the live chat and the calendar view. Privacy links to `spotler.com/en-gb/privacy-statement`, `/nl-nl/privacy-statement` or `/privacy-statement`.
 - **Live chat text:** the tag wraps `botpress.init` to set `botDescription`, `composerPlaceholder` and `footer` from `LABELS` for every region. A shadow-DOM pass swaps what Botpress doesn't expose and hides the "Today" date line.
 - **Consent:** with Cookiebot on the page and no *preferences* consent, nothing is written to browser storage before a chat starts. The page table isn't saved, panel state stays in memory, and the panel waits behind the pill instead of opening by itself. Starting a chat keeps the chat's own state (`spotler_mia_live`, Botpress's `bp-webchat-*`). A later decline removes what was saved. Pages without Cookiebot behave as before.
-- **Bot side:** greetings, AI answers, hand-off wording and the privacy line before email requests live in Botpress Studio. See `docs/STATUS.md`.
+- **Bot side:** AI answers, hand-off wording and the privacy line before email requests live in the bot (Studio for v1.5.1, the ADK bot `mia-dev` / `mia-live` from v1.6). See `docs/STATUS.md`.
 
 ## Demo calendar
 
-The bot's `showHubSpotCalendar` custom event opens HubSpot's scheduler inside the chat (the slide-out widens for HubSpot's two columns; half and full cards host it in place), with Cancel, page-scroll lock and the footer note. After a booking the tag refreshes the skip-greeting flag, sends `{type:"demoBooked", userEmail, ownerName, meetingDateFormatted, meetingTime, …}` to the bot and returns to the chat. HubSpot only starts loading once the panel has its final width, so it shows two columns from the first view.
+The bot's `showHubSpotCalendar` custom event opens HubSpot's scheduler inside the chat (the slide-out widens for HubSpot's two columns; half and full cards host it in place), with Cancel, page-scroll lock and the footer note. After a booking the tag sends `{type:"demoBooked", userEmail, ownerName, meetingDateFormatted, meetingTime, …}` to the bot and returns to the chat. HubSpot only starts loading once the panel has its final width, so it shows two columns from the first view.
 
 ## Editing the page table (marketing)
 
