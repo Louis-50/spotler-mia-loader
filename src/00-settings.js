@@ -12,10 +12,11 @@ var SETTINGS = {
   // Tried in order. GitHub's own copy is live within ~5 minutes of a commit;
   // jsDelivr's @main alias can stay on an old commit for hours even after a
   // purge, so it is only the backup.
-  CONFIG_URLS: [
-    "https://raw.githubusercontent.com/Louis-50/spotler-mia-loader/main/config/config.json",
-    "https://cdn.jsdelivr.net/gh/Louis-50/spotler-mia-loader@main/config/config.json"
-  ],
+  // CONFIG_BRANCH: the git branch the page table is read from. "v1.5" for
+  // the staging build only (it has the campaign column and the new-locale
+  // rows); back to "main" at the switch, once v1.5 is merged.
+  CONFIG_BRANCH: "v1.5",
+  CONFIG_URLS: null,              // built from CONFIG_BRANCH below SETTINGS
   CONFIG_WAIT_MS: 1500,           // first visit: show the built-in default after this
 
   // ---- Botpress ----
@@ -23,7 +24,7 @@ var SETTINGS = {
   // The bot this tag talks to: the bot's webchat config script (Botpress
   // dashboard → bot → Webchat → Share → the second <script> src).
   // ADK bot mia-dev (website contract v2: start/page/leadinfo/end events):
-  BOT_CONFIG_URL: "https://files.bpcontent.cloud/PASTE-mia-dev-webchat-config-script-URL-HERE.js",
+  BOT_CONFIG_URL: "https://files.bpcontent.cloud/2026/10/15/22/20261015224851-5TAWVLVR.js",
   // Rollback, the Studio bot "Live on site - Language Gate". It speaks the v1
   // contract (type "language", proactiveClickAt), so a real rollback is the
   // v1.5.1 tag from main, not this URL alone:
@@ -188,6 +189,11 @@ var SETTINGS = {
     // en-DE and en-AU: copies of the INT row (set below SETTINGS).
   ]
 };
+
+SETTINGS.CONFIG_URLS = [
+  "https://raw.githubusercontent.com/Louis-50/spotler-mia-loader/" + SETTINGS.CONFIG_BRANCH + "/config/config.json",
+  "https://cdn.jsdelivr.net/gh/Louis-50/spotler-mia-loader@" + SETTINGS.CONFIG_BRANCH + "/config/config.json"
+];
 
 // English-language locales outside the UK: the INT labels and fallback row.
 SETTINGS.LABELS["en-DE"] = SETTINGS.LABELS["en-AU"] = SETTINGS.LABELS["int"];

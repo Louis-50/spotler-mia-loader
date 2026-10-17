@@ -23,10 +23,10 @@ Current status, what changed in Botpress and open items: [`docs/STATUS.md`](docs
 ```bash
 npm install
 node build.mjs                # → dist/mia-loader.gtm.html (≈82 KB)
-python3 test/run_tests.py     # 127 checks against a mocked Botpress (Windows: python or py; needs `pip install playwright` + `playwright install chromium`)
+python3 test/run_tests.py     # 129 checks against a mocked Botpress (Windows: python or py; needs `pip install playwright` + `playwright install chromium`)
 ```
 
-1. In GTM, create a Custom HTML tag "Mia lazy loader" and paste `dist/mia-loader.gtm.html`. The build warns if `BOT_CONFIG_URL` is still the placeholder: don't paste that build.
+1. In GTM, create a Custom HTML tag "Mia lazy loader" and paste `dist/mia-loader.gtm.html`. The build warns if `BOT_CONFIG_URL` is still the placeholder: don't paste that build. The live build needs `CONFIG_BRANCH: "main"` (the staging build reads `v1.5`); the n8n form only publishes to `main`.
 2. Trigger: all pages. The tag reads Cookiebot itself (see *Consent*), so it needs no consent condition of its own; Cookiebot must load before it (page `<head>`).
 3. Pause the old tags for every region switched on (`ENABLED_REGIONS`: all eight locales) in the **same** publish: the UK, NL and INT slide-outs, both UK campaign tags and the *Leadinfo → Botpress Hand-over* tag (v128; the tag now does its job, and its `updateUser` would overwrite the tag's user data). Keep *Leadinfo - Data Layer Push* (v121). Only one Botpress chat can load per page; the new tag stands down if it finds another `#bp-embedded-webchat`.
 4. Test in GTM Preview: the console shows `[Mia] …` lines (`config from …`, `loading Botpress (new)`, `start event confirmed`, `revealed live chat`, `page event sent`, `end event sent`).
@@ -38,11 +38,12 @@ python3 test/run_tests.py     # 127 checks against a mocked Botpress (Windows: p
 | Setting | Value | Notes |
 | --- | --- | --- |
 | `TIMEOUT_MS` | 15 min | Must equal the Botpress inactivity timeout |
-| `BOT_CONFIG_URL` | mia-dev (ADK) | The bot's webchat config script (dashboard → bot → Webchat → Share). The Studio URL is kept in a comment beside it; see *Rollback* |
+| `BOT_CONFIG_URL` | mia-dev (ADK), `…/2026/10/15/22/20261015224851-5TAWVLVR.js` | The bot's webchat config script (dashboard → bot → Webchat → Share). The Studio URL is kept in a comment beside it; see *Rollback* |
 | `ENABLED_REGIONS` | all eight locales | Rollout switch. Emergency off-switch without a GTM publish: add `"enabledRegions": ["en-GB"]` to `config.json` (lists the regions that stay on; locale by locale at the switch) |
 | `LEADINFO_*` | `leadinfo_company`, consent `marketing` | Where the company comes from and the Cookiebot category it needs. `LEADINFO_REQUIRE_CONSENT: false` if Legal rules no consent is needed |
 | `LEGACY_EXCLUDE` | `[]` | Pages the tag stays off (none now: the campaign pages are rows in `config.json`) |
-| `CONFIG_URLS` | GitHub raw, then jsDelivr | Where the page table is read from (see *Page table*) |
+| `CONFIG_BRANCH` | `"v1.5"` (staging build) | The git branch `config.json` is read from; `CONFIG_URLS` is built from it. The staging build reads `v1.5` (campaign column, new-locale rows). **At the switch, merge `v1.5` and set it back to `"main"`** before the live build |
+| `CONFIG_URLS` | GitHub raw, then jsDelivr, on `CONFIG_BRANCH` | Where the page table is read from (see *Page table*) |
 | `INJECT_URL` | webchat v3.7 | All regions on one version |
 | `LABELS` | per region | Header title, tagline, pill, placeholder, the "AI assistant · Privacy" footer and its privacy link, calendar texts |
 | `BOT_TEXT` | English | The strings in the bot's own Botpress config script, swapped for `LABELS` in the live chat |

@@ -20,6 +20,10 @@ CONFIG = open(os.path.join(ROOT, "test/mock/config.json")).read()
 OUT = os.path.join(ROOT, "test/out"); os.makedirs(OUT, exist_ok=True)
 AVATAR = bytes.fromhex("89504e470d0a1a0a0000000d4948445200000001000000010806000000" "1f15c4890000000d49444154789c63f8cfc0f01f0005000201a5f6e0540000000049454e44ae426082")
 
+# The branch the built tag reads config.json from (src/00-settings.js CONFIG_BRANCH).
+import re
+CONFIG_BRANCH = re.search(r'CONFIG_BRANCH:\s*"([^"]+)"', open(os.path.join(ROOT, "src/00-settings.js"), encoding="utf-8").read()).group(1)
+
 # Website contract v2 start event (bot repo: docs/build-spec.md section 1).
 START_KEYS = sorted(["type", "version", "locale", "startPage", "startUrl", "pageKey", "source", "opener", "campaign", "companyDomain", "companyName"])
 
@@ -192,6 +196,7 @@ async def main():
         txt = await shell_text(page) or ""
         check("7e live config wins over an older cached copy on the first load", "OLD CACHED OPENER" not in txt and "Spotler Agent" in txt, txt[:120])
         check("7e config read from GitHub first, with a cache-busting stamp", any("raw.githubusercontent.com" in u and "config.json?t=" in u for u in reqs) and not any("cdn.jsdelivr.net" in u for u in reqs))
+        check(f"7e config read from the CONFIG_BRANCH branch ({CONFIG_BRANCH})", any(u.startswith(f"https://raw.githubusercontent.com/Louis-50/spotler-mia-loader/{CONFIG_BRANCH}/config/config.json?t=") for u in reqs), [u for u in reqs if "config.json" in u])
         await ctx.close()
 
         # slow network: the page starts on an old cached copy, then catches up when the live file lands
@@ -222,6 +227,7 @@ async def main():
         page.on("console", lambda m: logs.append(m.text))
         await page.goto("https://www.spotler.com/en-gb/pricing/compare"); await page.wait_for_timeout(900)
         check("7f GitHub down: config comes from the jsDelivr backup", any("config from network" in l for l in logs) and any("cdn.jsdelivr.net" in u for u in reqs), logs)
+        check(f"7f jsDelivr backup on the same branch (@{CONFIG_BRANCH})", any(f"cdn.jsdelivr.net/gh/Louis-50/spotler-mia-loader@{CONFIG_BRANCH}/config/config.json" in u for u in reqs), [u for u in reqs if "config.json" in u])
         await ctx.close()
 
         # ---------- 8. config down: built-in default ----------
