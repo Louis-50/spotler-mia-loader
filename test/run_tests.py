@@ -14,7 +14,6 @@ HALF = open(os.path.join(ROOT, "test/mock/campaign-half.html")).read().replace("
 SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40"><rect width="120" height="40" fill="#002a4d"/></svg>'
 MOBILE_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
 INJECT = open(os.path.join(ROOT, "test/mock/inject.js")).read()
-BOTCFG = open(os.path.join(ROOT, "test/mock/botconfig.js")).read()
 # A fixed copy of the page table (with half/full campaign rows), so tests do not depend on the live config.json.
 CONFIG = open(os.path.join(ROOT, "test/mock/config.json")).read()
 OUT = os.path.join(ROOT, "test/out"); os.makedirs(OUT, exist_ok=True)
@@ -38,7 +37,6 @@ async def setup(ctx, config_ok=True, config=None, raw_down=False, slow_ms=0):
         url = route.request.url
         reqs.append(url)
         if "cdn.botpress.cloud" in url: return await route.fulfill(body=INJECT, content_type="application/javascript")
-        if "files.bpcontent.cloud" in url and url.endswith(".js"): return await route.fulfill(body=BOTCFG, content_type="application/javascript")
         if url.endswith(".webp"): return await route.fulfill(body=AVATAR, content_type="image/png")
         if "raw.githubusercontent.com" in url and raw_down: return await route.fulfill(status=503, body="")
         if "cdn.jsdelivr.net" in url or "raw.githubusercontent.com" in url:
@@ -93,6 +91,18 @@ async def main():
         bplog = await page.evaluate("window.__bpLog")
         names = [e[0] for e in bplog]
         check("2b Botpress loaded after click", bp_requests(reqs))
+        check("2b no bot config script requested (the tag calls init itself)", not any("files.bpcontent.cloud" in u and u.endswith(".js") for u in reqs), [u for u in reqs if "bpcontent" in u])
+        inits = [json.loads(e[1]) for e in bplog if e[0] == "initProps"]
+        icfg = [json.loads(e[1]) for e in bplog if e[0] == "init"]
+        check("2k botpress.init called once, with the selector and the mia-dev ids", names.count("init") == 1 and "init ignored" not in names and "fab" not in names
+              and inits == [{"botId": "76065f80-2d7f-43a4-9217-26d320157352", "clientId": "dadbe1bf-4b11-49a4-ab85-3e9dd59f3254", "selector": "#bp-embedded-webchat"}], [inits, names])
+        check("2k init configuration: embedded in #bp-embedded-webchat, our labels and footer, no Powered by, history on, no home page or proactive bubble",
+              icfg and icfg[0] == {"embeddedChatId": "bp-embedded-webchat", "botName": "Mia", "botDescription": "Your AI marketing assistant.", "composerPlaceholder": "Ask Mia a question...",
+                                   "footer": "AI assistant · [Privacy](https://spotler.com/en-gb/privacy-statement)", "showPoweredBy": False, "storageLocation": "localStorage",
+                                   "proactiveMessageEnabled": False, "conversationHistory": True, "homePageEnabled": False}, icfg)
+        on_names = [e[1] for e in bplog if e[0] == "on"]
+        check("2l every botpress.on() listener is attached before init", on_names and max(i for i, e in enumerate(bplog) if e[0] == "on") < names.index("init")
+              and all(n in on_names for n in ("webchat:initialized", "conversation", "message", "webchat:ready", "customEvent")), [on_names, names[:12]])
         ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
         check("2c one start event, contract v2 shape (exact fields)", len(ev) == 1 and sorted(ev[0]) == START_KEYS and ev[0]["type"] == "start" and ev[0]["version"] == 2
               and ev[0]["locale"] == "en-GB" and ev[0]["startPage"] == "/en-gb/pricing/compare" and ev[0]["startUrl"] == "https://www.spotler.com/en-gb/pricing/compare"
@@ -102,7 +112,7 @@ async def main():
         up = [json.loads(e[1]) for e in bplog if e[0] == "updateUser"]
         check("2e updateUser {locale, pageKey, campaign} before the start event and the first message", up == [{"locale": "en-GB", "pageKey": "pricing", "campaign": ""}]
               and names.index("updateUser") < names.index("sendEvent") < names.index("sendMessage"), bplog)
-        check("2e no proactiveClickAt / proactiveTopic", not any("proactive" in e[1] for e in bplog if len(e) > 1), bplog)
+        check("2e no proactiveClickAt / proactiveTopic", not any("proactiveClickAt" in e[1] or "proactiveTopic" in e[1] for e in bplog if len(e) > 1), bplog)
         check("2f message sent once, after start event", names.count("sendMessage") == 1 and names.index("sendEvent") < names.index("sendMessage"), names)
         await page.wait_for_timeout(500)
         check("2g shell faded out", await page.evaluate("document.getElementById('spotler-mia-shell').classList.contains('mia-out')"))
@@ -124,6 +134,7 @@ async def main():
         bplog = await page.evaluate("window.__bpLog")
         ev = [json.loads(e[1]) for e in bplog if e[0] == "sendEvent"]
         check("3c no second start event / message / user data on resume", not any(e[0] in ("sendMessage", "updateUser") for e in bplog) and not any(e["type"] == "start" for e in ev), bplog)
+        check("3e resume page: init once, embedded (not the floating button)", [e[0] for e in bplog].count("init") == 1 and not any(e[0] in ("fab", "init ignored") for e in bplog), [e[0] for e in bplog][:12])
         check("3d page event for the new page (page, url, pageKey, title), once", ev == [{"type": "page", "page": "/en-gb/products", "url": "https://www.spotler.com/en-gb/products", "pageKey": "products", "title": "Spotler test page"}], ev)
 
         # ---------- 4. timeout: shell returns, conversation id cleared ----------

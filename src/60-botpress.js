@@ -245,10 +245,11 @@ function loadBotpress(mode) {
   (function waitForApi(tries) {
     var api = bp();
     if (api && typeof api.on === "function") {
+      // Every listener first: init fires webchat:initialized and the
+      // conversation events, and a listener added later misses them.
       attachBotpressListeners();
-      localiseInit(api);
       initHubSpot();
-      loadScript(SETTINGS.BOT_CONFIG_URL, function () { log("bot config failed to load"); });
+      initWebchat(api);
       return;
     }
     if (tries < 300) setTimeout(function () { waitForApi(tries + 1); }, 100);
@@ -256,13 +257,40 @@ function loadBotpress(mode) {
   })(0);
 }
 
+/* ---- botpress.init: the tag starts the webchat itself ----
+   No bot config script (Botpress's "Share" script calls init without an
+   embed target, so the webchat would render as the floating button).
+   inject.js v3.7 embeds when configuration.embeddedChatId names an element
+   id; `selector` is passed too but v3.7 does not read it. botpress.init is
+   read-only in v3.7, so it can't be wrapped: our labels go in here. */
+function initWebchat(api) {
+  var L = BP.ctx.labels;
+  try {
+    Promise.resolve(api.init({
+      botId: SETTINGS.BOT_ID,
+      clientId: SETTINGS.CLIENT_ID,
+      selector: "#bp-embedded-webchat",
+      configuration: {
+        embeddedChatId: "bp-embedded-webchat",
+        botName: L.botName,
+        botDescription: L.botTagline,
+        composerPlaceholder: L.placeholder,
+        footer: footerMarkdown(L),
+        showPoweredBy: false,
+        storageLocation: "localStorage",
+        proactiveMessageEnabled: false,
+        conversationHistory: true,
+        homePageEnabled: false
+      }
+    })).then(null, function (err) { log("botpress.init failed", err); });
+  } catch (e) { log("botpress.init failed", e); }
+}
+
 /* ---- Botpress's own text: our labels, in the visitor's language ----
-   The bot's config script is English and says "Powered by Spotler AI".
-   We hand our labels to botpress.init (description, placeholder, the
-   "AI assistant · Privacy" footer), and swap what Botpress doesn't let
-   us set ("Delivered") in its shadow DOM as it appears, and hide the
-   "Today" date line (the preview has none either).
-   The DOM swap also covers the init values if init can't be wrapped. */
+   init carries our description, placeholder and the "AI assistant ·
+   Privacy" footer. The shadow-DOM pass swaps what Botpress doesn't let
+   us set ("Delivered"), hides the "Today" date line (the preview has
+   none either), and still covers the English bot texts in BOT_TEXT. */
 var LOCAL_KEYS = ["delivered", "botTagline", "placeholder"];
 
 function localMap() {
@@ -273,24 +301,6 @@ function localMap() {
   }
   if (map[B.placeholder]) map[B.placeholder.replace(/\.+$/, "")] = L.placeholder;
   return map;
-}
-
-function localiseInit(api) {
-  if (typeof api.init !== "function" || api.init.__mia) return;
-  var L = BP.ctx.labels, orig = api.init;
-  var wrapped = function (props) {
-    try {
-      var c = props && (props.configuration = props.configuration || {});
-      if (c) {
-        c.botDescription = L.botTagline;
-        c.composerPlaceholder = L.placeholder;
-        c.footer = footerMarkdown(L);
-      }
-    } catch (e) {}
-    return orig.apply(this, arguments);
-  };
-  wrapped.__mia = true;
-  try { api.init = wrapped; } catch (e) {}
 }
 
 function localiseWebchat(sr) {

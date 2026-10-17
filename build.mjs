@@ -39,5 +39,7 @@ writeFileSync("dist/mia-loader.debug.html", `<script>\n${banner}\n${body}\n</scr
 writeFileSync("dist/mia-loader.js", `${banner}\n${min.code}\n`);
 const kb = n => (n / 1024).toFixed(1) + " KB";
 console.log(`built ${files.length} source files → dist/mia-loader.gtm.html (${kb(min.code.length)} minified, ${kb(body.length)} readable)`);
-if (/PASTE-/.test(readFileSync("src/00-settings.js", "utf8").match(/^\s*BOT_CONFIG_URL:.*$/m)[0]))
-  console.warn("WARNING: BOT_CONFIG_URL is still the placeholder (src/00-settings.js): this tag loads no bot. Do not paste it into GTM.");
+const settings = readFileSync("src/00-settings.js", "utf8"), uuid = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+for (const k of ["BOT_ID", "CLIENT_ID"])
+  if (!new RegExp(`^\\s*${k}: "${uuid}",`, "m").test(settings))
+    console.warn(`WARNING: ${k} in src/00-settings.js is not a Botpress id: this tag loads no bot. Do not paste it into GTM.`);

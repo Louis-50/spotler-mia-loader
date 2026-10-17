@@ -23,22 +23,22 @@ Current status, what changed in Botpress and open items: [`docs/STATUS.md`](docs
 ```bash
 npm install
 node build.mjs                # → dist/mia-loader.gtm.html (≈82 KB)
-python3 test/run_tests.py     # 129 checks against a mocked Botpress (Windows: python or py; needs `pip install playwright` + `playwright install chromium`)
+python3 test/run_tests.py     # 134 checks against a mocked Botpress (Windows: python or py; needs `pip install playwright` + `playwright install chromium`)
 ```
 
-1. In GTM, create a Custom HTML tag "Mia lazy loader" and paste `dist/mia-loader.gtm.html`. The build warns if `BOT_CONFIG_URL` is still the placeholder: don't paste that build. The live build needs `CONFIG_BRANCH: "main"` (the staging build reads `v1.5`); the n8n form only publishes to `main`.
+1. In GTM, create a Custom HTML tag "Mia lazy loader" and paste `dist/mia-loader.gtm.html`. The build warns if `BOT_ID` or `CLIENT_ID` isn't a Botpress id: don't paste that build. The live build needs `CONFIG_BRANCH: "main"` (the staging build reads `v1.5`); the n8n form only publishes to `main`.
 2. Trigger: all pages. The tag reads Cookiebot itself (see *Consent*), so it needs no consent condition of its own; Cookiebot must load before it (page `<head>`).
 3. Pause the old tags for every region switched on (`ENABLED_REGIONS`: all eight locales) in the **same** publish: the UK, NL and INT slide-outs, both UK campaign tags and the *Leadinfo → Botpress Hand-over* tag (v128; the tag now does its job, and its `updateUser` would overwrite the tag's user data). Keep *Leadinfo - Data Layer Push* (v121). Only one Botpress chat can load per page; the new tag stands down if it finds another `#bp-embedded-webchat`.
 4. Test in GTM Preview: the console shows `[Mia] …` lines (`config from …`, `loading Botpress (new)`, `start event confirmed`, `revealed live chat`, `page event sent`, `end event sent`).
 
-**Rollback** to the Studio bot: paste the previous tag back into GTM (the last Studio build is v1.5.1: `git show 1ee582d:dist/mia-loader.gtm.html`; or GTM's own version history). Switching only `BOT_CONFIG_URL` back to the Studio URL (kept in a comment) is not enough: the Studio bot reads the v1 contract (`type:"language"`, `proactiveClickAt`) that v1.6 no longer sends.
+**Rollback** to the Studio bot: paste the previous tag back into GTM (the last Studio build is v1.5.1: `git show 1ee582d:dist/mia-loader.gtm.html`; or GTM's own version history). Switching only `BOT_ID` / `CLIENT_ID` back to the Studio ids (kept in a comment) is not enough: the Studio bot reads the v1 contract (`type:"language"`, `proactiveClickAt`) that v1.6 no longer sends.
 
 ## Settings (`src/00-settings.js`)
 
 | Setting | Value | Notes |
 | --- | --- | --- |
 | `TIMEOUT_MS` | 15 min | Must equal the Botpress inactivity timeout |
-| `BOT_CONFIG_URL` | mia-dev (ADK), `…/2026/10/15/22/20261015224851-5TAWVLVR.js` | The bot's webchat config script (dashboard → bot → Webchat → Share). The Studio URL is kept in a comment beside it; see *Rollback* |
+| `BOT_ID`, `CLIENT_ID` | mia-dev (ADK) | The bot and its webchat client (dashboard → bot → Webchat → Share). The tag loads `inject.js` and calls `botpress.init` itself; no bot config script is loaded. The Studio ids are kept in a comment; see *Rollback* |
 | `ENABLED_REGIONS` | all eight locales | Rollout switch. Emergency off-switch without a GTM publish: add `"enabledRegions": ["en-GB"]` to `config.json` (lists the regions that stay on; locale by locale at the switch) |
 | `LEADINFO_*` | `leadinfo_company`, consent `marketing` | Where the company comes from and the Cookiebot category it needs. `LEADINFO_REQUIRE_CONSENT: false` if Legal rules no consent is needed |
 | `LEGACY_EXCLUDE` | `[]` | Pages the tag stays off (none now: the campaign pages are rows in `config.json`) |
@@ -124,7 +124,7 @@ Moving to a page in another region ends the conversation and shows that region's
 ## AI disclosure, privacy and consent
 
 - **Header and footer:** "Spotler AI Assistant" / "Your AI marketing assistant." and a permanent footer "AI assistant · Privacy" (NL "AI-assistent · Privacy") in the preview, the live chat and the calendar view. Privacy links to `spotler.com/en-gb/privacy-statement`, `/nl-nl/privacy-statement` or `/privacy-statement`.
-- **Live chat text:** the tag wraps `botpress.init` to set `botDescription`, `composerPlaceholder` and `footer` from `LABELS` for every region. A shadow-DOM pass swaps what Botpress doesn't expose and hides the "Today" date line.
+- **Live chat:** the tag calls `botpress.init` once, after every `botpress.on()` listener is attached, with `botId`, `clientId`, `selector` and a `configuration` of `embeddedChatId: "bp-embedded-webchat"` (what webchat v3.7 reads to embed; without it Botpress renders its floating button), `botName`, `botDescription`, `composerPlaceholder` and `footer` from `LABELS`, `showPoweredBy: false`, `storageLocation: "localStorage"`, `proactiveMessageEnabled: false`, `conversationHistory: true`, `homePageEnabled: false`. Nothing else (colours, avatar, stylesheet) comes from the bot's dashboard settings. A shadow-DOM pass swaps what Botpress doesn't expose and hides the "Today" date line.
 - **Consent:** with Cookiebot on the page and no *preferences* consent, nothing is written to browser storage before a chat starts. The page table isn't saved, panel state stays in memory, and the panel waits behind the pill instead of opening by itself. Starting a chat keeps the chat's own state (`spotler_mia_live`, Botpress's `bp-webchat-*`). A later decline removes what was saved. Pages without Cookiebot behave as before.
 - **Bot side:** AI answers, hand-off wording and the privacy line before email requests live in the bot (Studio for v1.5.1, the ADK bot `mia-dev` / `mia-live` from v1.6). See `docs/STATUS.md`.
 

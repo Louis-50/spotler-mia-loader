@@ -15,13 +15,20 @@
     list.appendChild(m);
   }
   function newConv() { return "conv_" + Math.random().toString(36).slice(2, 10); }
-  var convId = null;
+  var convId = null, initialized = false;
+  // Like v3.7: init is read-only, a second init is ignored, and the chat is
+  // embedded only when configuration.embeddedChatId names an element (else
+  // it would be the floating button, which never reaches the tag).
   window.botpress = {
-    on: function (n, fn) { (handlers[n] = handlers[n] || []).push(fn); },
-    init: function (props) {
+    on: function (n, fn) { log.push(["on", n]); (handlers[n] = handlers[n] || []).push(fn); },
+    __init: function (props) {
+      if (initialized) { log.push(["init ignored"]); return Promise.resolve(); }
+      initialized = true;
       var cfg = (props && props.configuration) || {};
       log.push(["init", JSON.stringify(cfg)]);
-      var host = document.querySelector("#bp-embedded-webchat");
+      log.push(["initProps", JSON.stringify({ botId: props.botId, clientId: props.clientId, selector: props.selector })]);
+      var host = cfg.embeddedChatId && document.getElementById(cfg.embeddedChatId);
+      if (!host) { log.push(["fab"]); return Promise.resolve(); }
       root = document.createElement("div"); root.id = "webchat-root"; root.className = "bpEmbeddedWebchat";
       host.appendChild(root);
       var sr = root.attachShadow({ mode: "open" });
@@ -44,6 +51,7 @@
         emit("conversation", convId);
         setTimeout(function () { emit("webchat:ready"); }, 100);
       }, 150);
+      return Promise.resolve();
     },
     updateUser: function (u) { log.push(["updateUser", JSON.stringify(u.data)]); return Promise.resolve(); },
     sendEvent: function (e) { log.push(["sendEvent", JSON.stringify(e)]); if (e.type === "language" && !e.__quiet && !window.__skipGreeting) { addMsg("incoming", "Greeting from Botpress"); } return Promise.resolve(); },
@@ -63,4 +71,5 @@
       return Promise.resolve();
     }
   };
+  Object.defineProperty(window.botpress, "init", { value: window.botpress.__init, writable: false });
 })();

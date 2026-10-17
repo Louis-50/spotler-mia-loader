@@ -21,14 +21,16 @@ var SETTINGS = {
 
   // ---- Botpress ----
   INJECT_URL: "https://cdn.botpress.cloud/webchat/v3.7/inject.js",
-  // The bot this tag talks to: the bot's webchat config script (Botpress
-  // dashboard → bot → Webchat → Share → the second <script> src).
+  // The bot this tag talks to. The tag calls botpress.init itself (no bot
+  // config script). Ids: Botpress dashboard → bot → Webchat → Share.
   // ADK bot mia-dev (website contract v2: start/page/leadinfo/end events):
-  BOT_CONFIG_URL: "https://files.bpcontent.cloud/2026/10/15/22/20261015224851-5TAWVLVR.js",
-  // Rollback, the Studio bot "Live on site - Language Gate". It speaks the v1
-  // contract (type "language", proactiveClickAt), so a real rollback is the
-  // v1.5.1 tag from main, not this URL alone:
-  // BOT_CONFIG_URL: "https://files.bpcontent.cloud/2026/05/27/14/20260527141930-9RFHOWXE.js",
+  BOT_ID: "76065f80-2d7f-43a4-9217-26d320157352",
+  CLIENT_ID: "dadbe1bf-4b11-49a4-ab85-3e9dd59f3254",
+  // The Studio bot "Live on site - Language Gate" (its old config script
+  // 20260527141930-9RFHOWXE.js). It speaks the v1 contract (type "language",
+  // proactiveClickAt), so a real rollback is pasting the previous tag back:
+  // BOT_ID: "b4965474-62de-4d69-af64-13f61d4492dc",
+  // CLIENT_ID: "bc17c11d-632b-451e-94bc-cb000c467d10",
   CDN_ORIGINS: ["https://cdn.botpress.cloud", "https://files.bpcontent.cloud", "https://raw.githubusercontent.com"],
 
   // ---- Conversation lifecycle ----

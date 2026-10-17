@@ -32,7 +32,6 @@ function modeAllowed(mode) {
 function boot() {
   if (window.__spotlerMiaStarted) return;          // GTM can fire a tag twice
   window.__spotlerMiaStarted = SETTINGS.VERSION;
-  if (/PASTE-/.test(SETTINGS.BOT_CONFIG_URL)) log("WARNING: BOT_CONFIG_URL is a placeholder, no bot will load");
 
   var path = location.pathname;
   if (isLegacyExcluded(path)) { log("off: page still on a legacy tag"); return; }

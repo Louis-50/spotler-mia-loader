@@ -1,1 +1,0 @@
-window.botpress.init({ botId: "test", selector: "#bp-embedded-webchat", configuration: { botName: "Mia", botDescription: "Your Marketing Intelligence Assistant.", composerPlaceholder: "Ask Mia a question", footer: "[Powered by Spotler AI](https://www.spotler.com)" } });
