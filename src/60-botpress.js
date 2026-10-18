@@ -260,8 +260,10 @@ function loadBotpress(mode) {
 /* ---- botpress.init: the tag starts the webchat itself ----
    No bot config script (Botpress's "Share" script calls init without an
    embed target, so the webchat would render as the floating button).
-   inject.js v3.7 embeds when configuration.embeddedChatId names an element
-   id; `selector` is passed too but v3.7 does not read it. botpress.init is
+   inject.js v3.7 embeds when a version "v2" configuration's embeddedChatId
+   names an element id; `selector` is passed too but v3.7 does not read it.
+   Server-side webchat settings don't reach a direct init (allowedOrigins
+   is still enforced by the server). botpress.init is
    read-only in v3.7, so it can't be wrapped: our labels go in here. */
 function initWebchat(api) {
   var L = BP.ctx.labels;
@@ -271,16 +273,26 @@ function initWebchat(api) {
       clientId: SETTINGS.CLIENT_ID,
       selector: "#bp-embedded-webchat",
       configuration: {
+        // Without version "v2" inject.js parses this as a legacy v0 config:
+        // it drops embeddedChatId (floating button), history and more.
+        version: "v2",
         embeddedChatId: "bp-embedded-webchat",
         botName: L.botName,
         botDescription: L.botTagline,
+        botAvatar: SETTINGS.AVATAR_URL,
         composerPlaceholder: L.placeholder,
         footer: footerMarkdown(L),
-        showPoweredBy: false,
         storageLocation: "localStorage",
         proactiveMessageEnabled: false,
         conversationHistory: true,
-        homePageEnabled: false
+        // The static shell's look (40-shell.css): navy, Inter, 24px bubbles
+        // (Botpress bubble radius = 6px × radius, so 4).
+        color: "#002A4D",
+        themeMode: "light",
+        variant: "solid",
+        headerVariant: "solid",
+        radius: 4,
+        fontFamily: "inter"
       }
     })).then(null, function (err) { log("botpress.init failed", err); });
   } catch (e) { log("botpress.init failed", e); }

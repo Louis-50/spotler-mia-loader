@@ -96,10 +96,17 @@ async def main():
         icfg = [json.loads(e[1]) for e in bplog if e[0] == "init"]
         check("2k botpress.init called once, with the selector and the mia-dev ids", names.count("init") == 1 and "init ignored" not in names and "fab" not in names
               and inits == [{"botId": "76065f80-2d7f-43a4-9217-26d320157352", "clientId": "dadbe1bf-4b11-49a4-ab85-3e9dd59f3254", "selector": "#bp-embedded-webchat"}], [inits, names])
-        check("2k init configuration: embedded in #bp-embedded-webchat, our labels and footer, no Powered by, history on, no home page or proactive bubble",
-              icfg and icfg[0] == {"embeddedChatId": "bp-embedded-webchat", "botName": "Mia", "botDescription": "Your AI marketing assistant.", "composerPlaceholder": "Ask Mia a question...",
-                                   "footer": "AI assistant · [Privacy](https://spotler.com/en-gb/privacy-statement)", "showPoweredBy": False, "storageLocation": "localStorage",
-                                   "proactiveMessageEnabled": False, "conversationHistory": True, "homePageEnabled": False}, icfg)
+        check("2k init configuration: version v2, embedded in #bp-embedded-webchat, history on, no showPoweredBy / homePageEnabled",
+              icfg and icfg[0].get("version") == "v2" and list(icfg[0])[0] == "version" and icfg[0].get("embeddedChatId") == "bp-embedded-webchat"
+              and icfg[0].get("conversationHistory") is True and "showPoweredBy" not in icfg[0] and "homePageEnabled" not in icfg[0], icfg)
+        check("2k init configuration: our labels, footer, avatar and the shell's theme",
+              icfg and icfg[0] == {"version": "v2", "embeddedChatId": "bp-embedded-webchat", "botName": "Mia", "botDescription": "Your AI marketing assistant.",
+                                   "botAvatar": "https://files.bpcontent.cloud/2026/08/20/13/20260820133357-6Q65P1JX.webp", "composerPlaceholder": "Ask Mia a question...",
+                                   "footer": "AI assistant · [Privacy](https://spotler.com/en-gb/privacy-statement)", "storageLocation": "localStorage",
+                                   "proactiveMessageEnabled": False, "conversationHistory": True,
+                                   "color": "#002A4D", "themeMode": "light", "variant": "solid", "headerVariant": "solid", "radius": 4, "fontFamily": "inter"}, icfg)
+        mount = await page.evaluate("() => ({ inHost: !!document.querySelector('#bp-embedded-webchat > #webchat-root'), fab: !!document.querySelector('body > .bpChatContainer, #fab-root') })")
+        check("2m live chat mounts inside #bp-embedded-webchat (no floating .bpChatContainer on body)", mount["inHost"] and not mount["fab"], mount)
         on_names = [e[1] for e in bplog if e[0] == "on"]
         check("2l every botpress.on() listener is attached before init", on_names and max(i for i, e in enumerate(bplog) if e[0] == "on") < names.index("init")
               and all(n in on_names for n in ("webchat:initialized", "conversation", "message", "webchat:ready", "customEvent")), [on_names, names[:12]])

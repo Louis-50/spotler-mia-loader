@@ -24,11 +24,26 @@
     __init: function (props) {
       if (initialized) { log.push(["init ignored"]); return Promise.resolve(); }
       initialized = true;
-      var cfg = (props && props.configuration) || {};
-      log.push(["init", JSON.stringify(cfg)]);
+      var raw = (props && props.configuration) || {};
+      log.push(["init", JSON.stringify(raw)]);
       log.push(["initProps", JSON.stringify({ botId: props.botId, clientId: props.clientId, selector: props.selector })]);
-      var host = cfg.embeddedChatId && document.getElementById(cfg.embeddedChatId);
-      if (!host) { log.push(["fab"]); return Promise.resolve(); }
+      // Like v3.7's versioned schema: without version "v2" the object is a
+      // legacy v0 config that keeps only these keys (no embeddedChatId).
+      var cfg = raw;
+      if (raw.version !== "v2") {
+        cfg = {};
+        ["botName", "botDescription", "composerPlaceholder", "color", "radius", "fontFamily", "showPoweredBy", "storageLocation"].forEach(function (k) {
+          if (raw.hasOwnProperty(k)) cfg[k] = raw[k];
+        });
+        if (raw.showPoweredBy === false) cfg.footer = "";
+      }
+      var host = cfg.version === "v2" && cfg.embeddedChatId && document.getElementById(cfg.embeddedChatId);
+      if (!host) {
+        log.push(["fab"]);
+        var fab = document.createElement("div"); fab.id = "fab-root"; fab.className = "bpChatContainer";
+        document.body.appendChild(fab);
+        return Promise.resolve();
+      }
       root = document.createElement("div"); root.id = "webchat-root"; root.className = "bpEmbeddedWebchat";
       host.appendChild(root);
       var sr = root.attachShadow({ mode: "open" });
